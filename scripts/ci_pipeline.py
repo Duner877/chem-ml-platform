@@ -139,6 +139,40 @@ def _electron_builder_available() -> bool:
     return (ROOT / "desktop" / "node_modules" / "electron-builder").exists()
 
 
+#: Per-run pytest temp roots.  Without ``--basetemp`` pytest garbage-collects
+#: stale numbered directories in the *global* temp root, and on a hardened
+#: host that bulk delete fails closed -- a fully green test run then exits
+#: non-zero (observed: one garbage directory holding 856 files, blocked by the
+#: safe-delete shim).  The quality gate already uses a per-run root for the
+#: same reason; the CI pipeline must not depend on shared temp state either.
+_PYTEST_TMP_ROOT = ROOT / "output" / "ci_pytest_tmp"
+_pytest_tmp_seq = 0
+
+
+def _pytest_command(marker: str) -> List[str]:
+    global _pytest_tmp_seq
+    _pytest_tmp_seq += 1
+    base = _PYTEST_TMP_ROOT / f"run{os.getpid()}_{_pytest_tmp_seq}"
+    base.mkdir(parents=True, exist_ok=True)
+    return [
+        PYTHON,
+        "-m",
+        "pytest",
+        "-m",
+        marker,
+        "-q",
+        "--tb=short",
+        "-p",
+        "no:cacheprovider",
+        f"--basetemp={base}",
+    ]
+
+
+def _reproducible_command(command: List[str]) -> str:
+    """The command as a reader can re-run it: machine-local paths stripped."""
+    return " ".join(part for part in command if not part.startswith("--basetemp="))
+
+
 def build_stages() -> List[Stage]:
     """The 12 declared stages, in spec order."""
     stages: List[Stage] = []
@@ -171,7 +205,7 @@ def build_stages() -> List[Stage]:
             number=3,
             title="单元测试",
             category="unit",
-            command=[PYTHON, "-m", "pytest", "-m", "unit", "-q", "--tb=short"],
+            command=_pytest_command("unit"),
             timeout=900,
             manual_command="python -m pytest -m unit",
         )
@@ -181,7 +215,7 @@ def build_stages() -> List[Stage]:
             number=4,
             title="集成测试",
             category="integration",
-            command=[PYTHON, "-m", "pytest", "-m", "integration", "-q", "--tb=short"],
+            command=_pytest_command("integration"),
             timeout=1800,
             manual_command="python -m pytest -m integration",
         )
@@ -191,7 +225,7 @@ def build_stages() -> List[Stage]:
             number=5,
             title="安全测试",
             category="security",
-            command=[PYTHON, "-m", "pytest", "-m", "security", "-q", "--tb=short"],
+            command=_pytest_command("security"),
             timeout=900,
             manual_command="python -m pytest -m security",
         )
@@ -374,7 +408,7 @@ def run_stage(stage: Stage) -> StageResult:
         category=stage.category,
         status=status,
         detail=detail,
-        command=" ".join(stage.command),
+        command=_reproducible_command(stage.command),
         exit_code=exit_code,
         timeout_s=stage.timeout,
         duration_ms=elapsed,
@@ -384,7 +418,7 @@ def run_stage(stage: Stage) -> StageResult:
     )
     result.commands.append(
         {
-            "command": " ".join(stage.command),
+            "command": _reproducible_command(stage.command),
             "status": status,
             "exit_code": exit_code,
             "log": result.log_path,
