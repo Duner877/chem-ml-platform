@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://chem-ml-platform/datasets/metadata.schema.json",
   "title": "Chem ML Platform dataset metadata",
-  "description": "v0.7.1 task G metadata schema. One record per dataset; validated by data_layer.quality and scripts/dataset_governance.py.",
+  "description": "Dataset metadata schema (introduced in v0.7.1 task G). One record per dataset; validated by data_layer.quality and scripts/dataset_governance.py.",
   "type": "object",
   "required": [
     "schema_version",

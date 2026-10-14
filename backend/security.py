@@ -319,8 +319,12 @@ class SecurityConfig:
                     "RELEASE MODE without a session token -- protected routes fail closed"
                     if self.fail_closed
                     else "no session token configured -- loopback-only developer mode; "
-                         "launch via the desktop shell or start-platform.bat to enable "
-                         "session-token authentication"
+                         "the session token is minted and injected only by the desktop "
+                         "shell (desktop/src/main.js). The browser launcher "
+                         "(start-platform.bat) runs this mode deliberately without a "
+                         "token: a page served to a browser cannot be handed a secret "
+                         "that other local processes cannot also read, so browser mode "
+                         "stays open on loopback and reports that honestly here."
                 )
             ),
         }

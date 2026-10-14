@@ -176,7 +176,6 @@ class ScientificAgentNode(_AgentBase):
         "AI 科学助手节点：理解自然语言科学问题，自动规划并生成工作流，"
         "调用节点执行，最后给出带置信度的结论与报告。"
     )
-    version = "0.7.1"
     tags = ["agent", "ai", "planner", "autonomous"]
     icon = "AG"
 
@@ -265,7 +264,6 @@ class AgentPlanNode(_AgentBase):
         "只做规划不执行：把自然语言问题转成工作流 JSON，"
         "便于人工审查后再运行。"
     )
-    version = "0.7.1"
     tags = ["agent", "planner", "dry-run"]
     icon = "AP"
 

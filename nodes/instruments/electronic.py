@@ -30,7 +30,6 @@ class UVVisNode(InstrumentNode):
     name = "UV-Vis"
     category = "Instruments/Electronic"
     description = "紫外-可见吸收光谱仪：基于 Woodward-Fieser 规则估算最大吸收波长 λmax。"
-    version = "0.7.1"
     tags = ["instrument", "uvvis", "absorption", "woodward-fieser"]
     aliases = ["UVVis", "UV-Vis"]
     icon = "UV"
@@ -78,7 +77,6 @@ class FluorescenceNode(InstrumentNode):
     name = "Fluorescence"
     category = "Instruments/Electronic"
     description = "荧光光谱仪：基于镜像规则与 Stokes 位移生成激发 / 发射谱。"
-    version = "0.7.1"
     tags = ["instrument", "fluorescence", "emission", "stokes"]
     aliases = ["Fluorescence", "FL"]
     icon = "FL"

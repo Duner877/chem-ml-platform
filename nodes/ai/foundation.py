@@ -177,7 +177,6 @@ class ChemBERTaNode(ChemicalFoundationModelNode):
     name = "ChemBERTa"
     category = "AI/Foundation Models"
     description = "基于 SMILES 子词哈希的化学语言模型编码器，输出分子嵌入与性质预测。"
-    version = "0.7.1"
     tags = ["ai", "foundation model", "chemberta", "smiles"]
     aliases = ["ChemBERTa"]
     icon = "CB"
@@ -198,7 +197,6 @@ class GROVERNode(ChemicalFoundationModelNode):
     name = "GROVER"
     category = "AI/Foundation Models"
     description = "基于图消息传递网络的分子表征模型，输出原子级与分子级嵌入。"
-    version = "0.7.1"
     tags = ["ai", "foundation model", "grover", "gnn", "message passing"]
     aliases = ["GROVER"]
     icon = "GR"
@@ -219,7 +217,6 @@ class GraphormerNode(ChemicalFoundationModelNode):
     name = "Graphormer"
     category = "AI/Foundation Models"
     description = "图 Transformer 编码器：带度数与最短路径结构编码的自注意力分子表征。"
-    version = "0.7.1"
     tags = ["ai", "foundation model", "graphormer", "transformer"]
     aliases = ["Graphormer"]
     icon = "GH"
@@ -240,7 +237,6 @@ class UniMolNode(ChemicalFoundationModelNode):
     name = "Uni-Mol"
     category = "AI/Foundation Models"
     description = "三维分子编码器：基于原子间距离矩阵的几何感知注意力表征。"
-    version = "0.7.1"
     tags = ["ai", "foundation model", "unimol", "3d"]
     aliases = ["UniMol"]
     icon = "UM"

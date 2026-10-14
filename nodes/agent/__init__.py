@@ -31,7 +31,11 @@ from nodes.agent.reasoning import Finding, Reasoner, reason
 from nodes.agent.tools import AgentTool, AgentToolRegistry, tool_registry
 from nodes.agent.workflow_generator import WorkflowGenerator, generate_workflow
 
-__version__ = "0.7.1"
+#: Package version follows the platform version (v0.7.2 fix, ISSUE-18).
+try:  # pragma: no cover - the fallback only triggers outside the monorepo
+    from chemml_version import VERSION as __version__
+except ImportError:  # pragma: no cover
+    __version__ = "0.7.2"
 
 __all__ = [
     "ScientificAgentNode",

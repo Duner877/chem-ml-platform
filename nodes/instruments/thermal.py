@@ -24,7 +24,6 @@ class DSCNode(InstrumentNode):
     name = "DSC"
     category = "Instruments/Thermal"
     description = "差示扫描量热仪：玻璃化转变、熔融与结晶热分析。"
-    version = "0.7.1"
     tags = ["instrument", "dsc", "thermal", "glass transition", "melting"]
     aliases = ["DSC"]
     icon = "DS"
@@ -79,7 +78,6 @@ class TGANode(InstrumentNode):
     name = "TGA"
     category = "Instruments/Thermal"
     description = "热重分析仪：多步失重过程模拟，输出各步起始温度与残余质量。"
-    version = "0.7.1"
     tags = ["instrument", "tga", "thermal", "decomposition"]
     aliases = ["TGA"]
     icon = "TG"
@@ -155,7 +153,6 @@ class DMANode(InstrumentNode):
     name = "DMA"
     category = "Instruments/Thermal"
     description = "动态力学分析仪：储能 / 损耗模量与 tan δ 随温度变化曲线。"
-    version = "0.7.1"
     tags = ["instrument", "dma", "mechanical", "tan delta"]
     aliases = ["DMA"]
     icon = "DM"

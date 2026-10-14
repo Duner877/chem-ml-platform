@@ -63,6 +63,7 @@ SUITE_BY_STEM: Dict[str, str] = {
     "test_v07_gpu": "integration",
     # -- unit: single-module behaviour ---------------------------------------
     "test_nodes": "unit",
+    "test_v07_2_version_consistency": "unit",
 }
 
 #: Files that may not run without a specific host capability.

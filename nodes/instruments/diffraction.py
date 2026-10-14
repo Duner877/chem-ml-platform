@@ -63,7 +63,6 @@ class XRDNode(InstrumentNode):
     name = "XRD"
     category = "Instruments/Diffraction"
     description = "粉末 X 射线衍射仪：由晶胞与原子占位计算衍射峰位与强度（含 Scherrer 展宽）。"
-    version = "0.7.1"
     tags = ["instrument", "xrd", "diffraction", "crystal"]
     aliases = ["XRD", "PXRD"]
     icon = "XR"
@@ -131,7 +130,6 @@ class SingleCrystalXRDNode(InstrumentNode):
     name = "Single Crystal XRD"
     category = "Instruments/Diffraction"
     description = "单晶 X 射线衍射：衍射峰指标化、晶胞参数精修并输出晶体结构对象。"
-    version = "0.7.1"
     tags = ["instrument", "xrd", "single crystal", "indexing"]
     aliases = ["SCXRD"]
     icon = "SC"

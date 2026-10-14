@@ -24,7 +24,6 @@ class DLSNode(InstrumentNode):
     name = "DLS"
     category = "Instruments/Particle"
     description = "动态光散射粒度仪：基于累积量法输出粒径分布、Z-average 与 PDI。"
-    version = "0.7.1"
     tags = ["instrument", "dls", "particle size", "pdi"]
     aliases = ["DLS"]
     icon = "DL"
@@ -96,7 +95,6 @@ class BETNode(InstrumentNode):
     name = "BET Surface Area"
     category = "Instruments/Particle"
     description = "氮气吸附-脱附仪：BET 比表面积与孔容分析，输出 BET 线性拟合结果。"
-    version = "0.7.1"
     tags = ["instrument", "bet", "surface area", "porosity"]
     aliases = ["BET"]
     icon = "BT"

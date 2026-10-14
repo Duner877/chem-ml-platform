@@ -25,7 +25,9 @@ set HOST=127.0.0.1
 set PORT=8000
 
 echo.
-echo   Chem ML Platform v0.6.0  -  Scientific Foundation Model Edition
+REM The banner below is verified by `python scripts/version.py --check`
+REM (v0.7.2 fix, ISSUE-18): it used to still say v0.6.0 in the v0.7.2 package.
+echo   Chem ML Platform v0.7.2  -  Trusted Delivery Release
 echo   ------------------------------------------------------------
 echo   Web UI + API : http://%HOST%:%PORT%
 echo   API docs     : http://%HOST%:%PORT%/api/docs

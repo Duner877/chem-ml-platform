@@ -87,7 +87,6 @@ class ReportBuilderNode(ScientificNode):
     name = "Report Builder"
     category = "Report"
     description = "把上游的谱图、分子、材料、表格与文本结果汇总为一份结构化科学报告。"
-    version = "0.7.2"
     tags = ["report", "汇总", "summary", "document"]
     icon = "file-text"
 
@@ -280,7 +279,6 @@ class SummaryTableNode(ScientificNode):
     name = "Summary Table"
     category = "Report"
     description = "将任意上游科学对象压平为一张“指标 / 数值”汇总表，便于直接与报告或导出节点衔接。"
-    version = "0.7.2"
     tags = ["report", "table", "汇总", "summary"]
     icon = "table"
 
@@ -351,7 +349,6 @@ class ReportExportNode(ScientificNode):
     name = "Report Export"
     category = "Report"
     description = "把结构化报告落盘为 Markdown / HTML / DOCX / JSON 产物文件，返回路径文本。"
-    version = "0.7.2"
     tags = ["report", "export", "导出", "artifact"]
     #: v0.7.1 task E/F: writes artefact files into the run directory.
     capabilities = ["writes_files"]

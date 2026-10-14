@@ -176,7 +176,6 @@ class VisionNode(ScientificNode):
     name = "Vision Model"
     category = "AI/Vision"
     description = "对显微图像 / 化学成像图运行 ViT / CLIP / SAM / DINO 风格的视觉模型。"
-    version = "0.7.1"
     tags = ["ai", "vision", "vit", "clip", "sam", "dino"]
     aliases = ["Vision", "ViT", "CLIP", "SAM", "DINO"]
     icon = "VI"

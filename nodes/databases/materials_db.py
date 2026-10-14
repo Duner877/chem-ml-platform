@@ -212,7 +212,6 @@ class MaterialsProjectNode(MaterialsDatabaseNode):
     name = "Materials Project"
     category = "Databases/Materials"
     description = "查询 Materials Project 晶体结构摘要（需要 MP_API_KEY，否则回退内置材料库）。"
-    version = "0.7.1"
     tags = ["database", "materials project", "dft"]
     aliases = ["MP", "MaterialsProject"]
     icon = "MP"
@@ -252,7 +251,6 @@ class CODNode(MaterialsDatabaseNode):
     name = "COD"
     category = "Databases/Materials"
     description = "检索 Crystallography Open Database 晶体学条目。"
-    version = "0.7.1"
     tags = ["database", "cod", "crystallography"]
     aliases = ["COD"]
     icon = "CD"
@@ -268,7 +266,6 @@ class ICSDNode(MaterialsDatabaseNode):
     name = "ICSD"
     category = "Databases/Materials"
     description = "ICSD 无机晶体结构数据库（需授权；本节点使用内置晶体参考数据）。"
-    version = "0.7.1"
     tags = ["database", "icsd", "inorganic"]
     aliases = ["ICSD"]
     icon = "IS"
@@ -284,7 +281,6 @@ class AFLOWNode(MaterialsDatabaseNode):
     name = "AFLOW"
     category = "Databases/Materials"
     description = "检索 AFLOW 高通量计算材料数据库（热力学与电子结构）。"
-    version = "0.7.1"
     tags = ["database", "aflow", "high-throughput"]
     aliases = ["AFLOW"]
     icon = "AF"

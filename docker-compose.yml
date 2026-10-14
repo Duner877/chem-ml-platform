@@ -1,4 +1,4 @@
-# Chem ML Platform v0.7.1 -- compose stack.
+# Chem ML Platform v0.7.2 -- compose stack.
 #
 #   docker compose up --build        # API + frontend on http://localhost:8000
 #   docker compose --profile db up   # additionally start PostgreSQL and Redis
@@ -15,7 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: chem-ml-platform:0.7.1
+    image: chem-ml-platform:0.7.2
     container_name: chemml-api
     restart: unless-stopped
     ports:

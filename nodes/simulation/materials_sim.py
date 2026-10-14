@@ -141,7 +141,6 @@ class VASPNode(SolidStateNode):
     name = "VASP"
     category = "Simulation/Materials"
     description = "生成 VASP/POSCAR 输入并运行；未安装时使用内置紧束缚引擎。"
-    version = "0.7.1"
     tags = ["simulation", "materials", "vasp", "dft"]
     aliases = ["VASP"]
     icon = "VA"
@@ -156,7 +155,6 @@ class QuantumESPRESSONode(SolidStateNode):
     name = "Quantum ESPRESSO"
     category = "Simulation/Materials"
     description = "生成 Quantum ESPRESSO 输入并运行；未安装时使用内置紧束缚引擎。"
-    version = "0.7.1"
     tags = ["simulation", "materials", "quantum-espresso", "pw"]
     aliases = ["QuantumESPRESSO", "QE", "pw.x"]
     icon = "QE"

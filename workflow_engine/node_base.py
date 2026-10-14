@@ -27,6 +27,21 @@ from .errors import NodeExecutionError, NodeInputError
 from .objects import ScientificObject
 from .ports import Port, port_by_name, types_compatible
 
+#: Default node version = the platform version.
+#:
+#: v0.7.2 fix (ISSUE-18).  Node classes used to restate the platform version as
+#: a literal in 89 places, so the released node catalogue advertised ``0.7.1``
+#: while the product reported ``0.7.2`` -- and ``scripts/version.py --check``
+#: could not see it, because those literals lived in files it never scanned.
+#: Reading it from the single source removes the possibility of that drift.
+#:
+#: A node that genuinely needs its own semantic version still may declare one;
+#: the literal is kept next to the import so the version check can verify it.
+try:  # pragma: no cover - the fallback only triggers outside the monorepo
+    from chemml_version import VERSION as _PLATFORM_VERSION
+except ImportError:  # pragma: no cover
+    _PLATFORM_VERSION = "0.7.2"
+
 __all__ = [
     "ParameterSpec",
     "ScientificNode",
@@ -168,7 +183,9 @@ class ScientificNode:
     name: str = "Scientific Node"
     category: str = "General"
     description: str = ""
-    version: str = "0.1.0"
+    #: Defaults to the platform version (see ``_PLATFORM_VERSION`` above); a node
+    #: that needs an independent semantic version overrides it explicitly.
+    version: str = _PLATFORM_VERSION
     icon: str = ""
     tags: List[str] = []
     aliases: List[str] = []

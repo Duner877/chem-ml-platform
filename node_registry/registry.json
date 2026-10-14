@@ -59,7 +59,7 @@
     {
       "node_name": "AFLOW",
       "type": "AFLOWNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -120,7 +120,7 @@
     {
       "node_name": "AFM",
       "type": "AFMNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -187,7 +187,7 @@
     {
       "node_name": "Agent Planner",
       "type": "AgentPlanNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "question",
@@ -246,7 +246,7 @@
     {
       "node_name": "BET Surface Area",
       "type": "BETNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -306,7 +306,7 @@
     {
       "node_name": "BMRB",
       "type": "BMRBNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -368,7 +368,7 @@
     {
       "node_name": "Baseline Correction",
       "type": "BaselineCorrectionNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -421,7 +421,7 @@
     {
       "node_name": "COD",
       "type": "CODNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -482,7 +482,7 @@
     {
       "node_name": "CP2K",
       "type": "CP2KNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -566,7 +566,7 @@
     {
       "node_name": "Cyclic Voltammetry",
       "type": "CVNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -626,7 +626,7 @@
     {
       "node_name": "ChEMBL",
       "type": "ChEMBLNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -687,7 +687,7 @@
     {
       "node_name": "ChemBERTa",
       "type": "ChemBERTaNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -749,7 +749,7 @@
     {
       "node_name": "DLS",
       "type": "DLSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -809,7 +809,7 @@
     {
       "node_name": "DMA",
       "type": "DMANode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -869,7 +869,7 @@
     {
       "node_name": "DSC",
       "type": "DSCNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -930,7 +930,7 @@
     {
       "node_name": "EIS",
       "type": "EISNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -990,7 +990,7 @@
     {
       "node_name": "Export Result",
       "type": "ExportNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "data",
@@ -1044,7 +1044,7 @@
     {
       "node_name": "FTIR Imaging",
       "type": "FTIRImagingNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1111,7 +1111,7 @@
     {
       "node_name": "Fluorescence",
       "type": "FluorescenceNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1171,7 +1171,7 @@
     {
       "node_name": "Functional Groups",
       "type": "FunctionalGroupNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "data",
@@ -1224,7 +1224,7 @@
     {
       "node_name": "GC-MS",
       "type": "GCMSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1284,7 +1284,7 @@
     {
       "node_name": "GNPS",
       "type": "GNPSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -1346,7 +1346,7 @@
     {
       "node_name": "GROMACS",
       "type": "GROMACSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -1428,7 +1428,7 @@
     {
       "node_name": "GROVER",
       "type": "GROVERNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -1491,7 +1491,7 @@
     {
       "node_name": "Gaussian",
       "type": "GaussianNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -1575,7 +1575,7 @@
     {
       "node_name": "GPU Device Info",
       "type": "GpuDeviceInfoNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -1622,7 +1622,7 @@
     {
       "node_name": "Graphormer",
       "type": "GraphormerNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -1684,7 +1684,7 @@
     {
       "node_name": "HMDB",
       "type": "HMDBNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -1746,7 +1746,7 @@
     {
       "node_name": "Hyperspectral Imaging",
       "type": "HyperspectralNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1813,7 +1813,7 @@
     {
       "node_name": "ICP-MS",
       "type": "ICPMSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1873,7 +1873,7 @@
     {
       "node_name": "ICSD",
       "type": "ICSDNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -1934,7 +1934,7 @@
     {
       "node_name": "FTIR",
       "type": "IRNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -1994,7 +1994,7 @@
     {
       "node_name": "Load Image",
       "type": "ImageFileNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -2034,7 +2034,7 @@
     {
       "node_name": "Inference Benchmark",
       "type": "InferenceBenchmarkNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -2074,7 +2074,7 @@
     {
       "node_name": "LAMMPS",
       "type": "LAMMPSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -2156,7 +2156,7 @@
     {
       "node_name": "LC-MS",
       "type": "LCMSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -2216,7 +2216,7 @@
     {
       "node_name": "LLM Reasoner",
       "type": "LLMNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "prompt",
@@ -2281,7 +2281,7 @@
     {
       "node_name": "MALDI-TOF",
       "type": "MALDINode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -2341,7 +2341,7 @@
     {
       "node_name": "MassBank",
       "type": "MassBankNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -2403,7 +2403,7 @@
     {
       "node_name": "Material Discovery",
       "type": "MaterialDiscoveryNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "xrd",
@@ -2492,7 +2492,7 @@
     {
       "node_name": "Material Input",
       "type": "MaterialInputNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -2529,7 +2529,7 @@
     {
       "node_name": "Materials Project",
       "type": "MaterialsProjectNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -2590,7 +2590,7 @@
     {
       "node_name": "MoNA",
       "type": "MoNANode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -2651,7 +2651,7 @@
     {
       "node_name": "Model Inference",
       "type": "ModelInferenceNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -2691,7 +2691,7 @@
     {
       "node_name": "Molecular Descriptors",
       "type": "MolecularDescriptorsNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -2751,7 +2751,7 @@
     {
       "node_name": "Molecule Input",
       "type": "MoleculeInputNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -2793,7 +2793,7 @@
     {
       "node_name": "NIST Library",
       "type": "NISTNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -2855,7 +2855,7 @@
     {
       "node_name": "NMR Spectrometer",
       "type": "NMRNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -2916,7 +2916,7 @@
     {
       "node_name": "Normalize",
       "type": "NormalizeNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -2965,7 +2965,7 @@
     {
       "node_name": "ORCA",
       "type": "ORCANode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -3049,7 +3049,7 @@
     {
       "node_name": "OpenMM",
       "type": "OpenMMNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -3128,7 +3128,7 @@
     {
       "node_name": "PDB",
       "type": "PDBNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -3190,7 +3190,7 @@
     {
       "node_name": "Peak Picking",
       "type": "PeakPickingNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -3255,7 +3255,7 @@
     {
       "node_name": "Profile to Centroid",
       "type": "ProfileCentroidNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -3316,7 +3316,7 @@
     {
       "node_name": "Property Prediction",
       "type": "PropertyPredictionNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -3383,7 +3383,7 @@
     {
       "node_name": "Psi4",
       "type": "Psi4Node",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -3466,7 +3466,7 @@
     {
       "node_name": "PubChem",
       "type": "PubChemNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -3527,7 +3527,7 @@
     {
       "node_name": "PyTorch Tensor Operation",
       "type": "PyTorchTensorOpNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -3566,7 +3566,7 @@
     {
       "node_name": "Quantum ESPRESSO",
       "type": "QuantumESPRESSONode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "material",
@@ -3649,7 +3649,7 @@
     {
       "node_name": "Raman Mapping",
       "type": "RamanMappingNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -3716,7 +3716,7 @@
     {
       "node_name": "Raman",
       "type": "RamanNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -3775,7 +3775,7 @@
     {
       "node_name": "Report Agent",
       "type": "ReportAgentNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "data",
@@ -3832,7 +3832,7 @@
     {
       "node_name": "Report Builder",
       "type": "ReportBuilderNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -3920,7 +3920,7 @@
     {
       "node_name": "Report Export",
       "type": "ReportExportNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "report",
@@ -3975,7 +3975,7 @@
     {
       "node_name": "Resample",
       "type": "ResampleNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -4020,7 +4020,7 @@
     {
       "node_name": "SEM",
       "type": "SEMNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -4087,7 +4087,7 @@
     {
       "node_name": "Scientific Agent",
       "type": "ScientificAgentNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "question",
@@ -4161,7 +4161,7 @@
     {
       "node_name": "Molecular Similarity",
       "type": "SimilarityNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "a",
@@ -4221,7 +4221,7 @@
     {
       "node_name": "Similarity Search",
       "type": "SimilaritySearchNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",
@@ -4281,7 +4281,7 @@
     {
       "node_name": "Single Crystal XRD",
       "type": "SingleCrystalXRDNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -4341,7 +4341,7 @@
     {
       "node_name": "Smoothing",
       "type": "SmoothingNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -4390,7 +4390,7 @@
     {
       "node_name": "Load Spectrum",
       "type": "SpectrumFileNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -4429,7 +4429,7 @@
     {
       "node_name": "Spectrum Math",
       "type": "SpectrumMathNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "a",
@@ -4488,7 +4488,7 @@
     {
       "node_name": "Substructure Search",
       "type": "SubstructureSearchNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -4540,7 +4540,7 @@
     {
       "node_name": "Summary Table",
       "type": "SummaryTableNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "spectrum",
@@ -4614,7 +4614,7 @@
     {
       "node_name": "TEM",
       "type": "TEMNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -4681,7 +4681,7 @@
     {
       "node_name": "TGA",
       "type": "TGANode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -4741,7 +4741,7 @@
     {
       "node_name": "Load Table",
       "type": "TableFileNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -4778,7 +4778,7 @@
     {
       "node_name": "Text Input",
       "type": "TextInputNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -4815,7 +4815,7 @@
     {
       "node_name": "Train Model",
       "type": "TrainModelNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "table",
@@ -4871,7 +4871,7 @@
     {
       "node_name": "UV-Vis",
       "type": "UVVisNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -4931,7 +4931,7 @@
     {
       "node_name": "Uni-Mol",
       "type": "UniMolNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "molecule",
@@ -4993,7 +4993,7 @@
     {
       "node_name": "Unknown Compound Identification",
       "type": "UnknownCompoundIdentificationNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "ms",
@@ -5096,7 +5096,7 @@
     {
       "node_name": "VASP",
       "type": "VASPNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "material",
@@ -5179,7 +5179,7 @@
     {
       "node_name": "Load Vendor Spectrum",
       "type": "VendorSpectrumNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [],
       "outputs": [
         {
@@ -5236,7 +5236,7 @@
     {
       "node_name": "Vision Model",
       "type": "VisionNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "image",
@@ -5298,7 +5298,7 @@
     {
       "node_name": "XAS",
       "type": "XASNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -5359,7 +5359,7 @@
     {
       "node_name": "XPS",
       "type": "XPSNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -5419,7 +5419,7 @@
     {
       "node_name": "XRD",
       "type": "XRDNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "sample",
@@ -5479,7 +5479,7 @@
     {
       "node_name": "ZINC",
       "type": "ZINCNode",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "inputs": [
         {
           "name": "query",

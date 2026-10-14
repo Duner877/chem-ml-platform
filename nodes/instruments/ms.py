@@ -146,7 +146,6 @@ class LCMSNode(MassSpectrometryNode):
     name = "LC-MS"
     category = "Instruments/Mass Spectrometry"
     description = "液相色谱-质谱联用：电喷雾电离，适合极性 / 热不稳定化合物的一级与二级质谱。"
-    version = "0.7.1"
     tags = ["instrument", "ms", "lcms", "esi"]
     aliases = ["LCMS", "LC_MS"]
     icon = "LC"
@@ -170,7 +169,6 @@ class GCMSNode(MassSpectrometryNode):
     name = "GC-MS"
     category = "Instruments/Mass Spectrometry"
     description = "气相色谱-质谱联用：电子轰击电离 (70 eV)，适合挥发性 / 热稳定化合物。"
-    version = "0.7.1"
     tags = ["instrument", "ms", "gcms", "ei"]
     aliases = ["GCMS", "GC_MS"]
     icon = "GC"
@@ -188,7 +186,6 @@ class MALDINode(MassSpectrometryNode):
     name = "MALDI-TOF"
     category = "Instruments/Mass Spectrometry"
     description = "基质辅助激光解吸电离飞行时间质谱，适合多肽 / 聚合物 / 大分子。"
-    version = "0.7.1"
     tags = ["instrument", "ms", "maldi", "tof"]
     aliases = ["MALDI", "MALDITOF"]
     icon = "ML"
@@ -206,7 +203,6 @@ class ICPMSNode(InstrumentNode):
     name = "ICP-MS"
     category = "Instruments/Mass Spectrometry"
     description = "电感耦合等离子体质谱：元素定性定量分析，按天然同位素丰度给出同位素峰簇。"
-    version = "0.7.1"
     tags = ["instrument", "ms", "icpms", "elemental"]
     aliases = ["ICPMS", "ICP_MS"]
     icon = "IC"

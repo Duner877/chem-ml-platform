@@ -55,7 +55,6 @@ class SpectrumFileNode(ScientificNode):
         "读取 mzML、mzXML、MGF、MSP、JCAMP-DX、XY 或 Bruker 目录中的谱图，"
         "返回统一的 Spectrum 科学对象。"
     )
-    version = "0.7.1"
     tags = ["io", "spectrum", "mzml", "mgf", "jcamp"]
     icon = "LS"
 
@@ -112,7 +111,6 @@ class TableFileNode(ScientificNode):
     name = "Load Table"
     category = "IO"
     description = "读取 CSV / TSV 表格文件，输出 Table 科学对象。"
-    version = "0.7.1"
     tags = ["io", "table", "csv"]
     icon = "LT"
 
@@ -199,7 +197,6 @@ class ImageFileNode(ScientificNode):
     description = (
         "读取 PNG / TIFF / JPEG 显微图像，转换为带物理像素尺寸的 Image 科学对象。"
     )
-    version = "0.7.1"
     tags = ["io", "image", "sem", "tem", "microscopy", "png"]
     icon = "LI"
 
@@ -279,7 +276,6 @@ class MoleculeInputNode(ScientificNode):
     name = "Molecule Input"
     category = "IO"
     description = "由 SMILES 构建分子对象，自动计算分子式、精确质量与理化描述符。"
-    version = "0.7.1"
     tags = ["io", "molecule", "smiles"]
     icon = "MI"
     # v0.7.2 P0-05: known-answer verified -- ethanol resolves to C2H6O with
@@ -326,7 +322,6 @@ class MaterialInputNode(ScientificNode):
     name = "Material Input"
     category = "IO"
     description = "由化学式与晶胞参数构建材料对象（用于电池 / 催化 / 半导体工作流）。"
-    version = "0.7.1"
     tags = ["io", "material", "crystal"]
     icon = "MT"
 
@@ -372,7 +367,6 @@ class TextInputNode(ScientificNode):
     name = "Text Input"
     category = "IO"
     description = "输出一段文本对象，可作为 LLM 节点的提示词或报告素材。"
-    version = "0.7.1"
     tags = ["io", "text", "prompt"]
     icon = "TI"
 
@@ -402,7 +396,6 @@ class ExportNode(ScientificNode):
     name = "Export Result"
     category = "IO"
     description = "将任意科学对象导出为 JSON / CSV / PNG / Markdown / TXT 文件。"
-    version = "0.7.1"
     tags = ["io", "export", "artifact"]
     capabilities = ["writes_files"]
     icon = "EX"

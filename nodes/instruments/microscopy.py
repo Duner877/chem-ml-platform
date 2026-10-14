@@ -82,7 +82,6 @@ class SEMNode(_MicroscopyNode):
     name = "SEM"
     category = "Instruments/Microscopy"
     description = "扫描电子显微镜：形貌衬度成像，输出颗粒形貌统计（等效直径、长径比）。"
-    version = "0.7.1"
     tags = ["instrument", "sem", "microscopy", "morphology"]
     aliases = ["SEM"]
     icon = "SE"
@@ -99,7 +98,6 @@ class TEMNode(_MicroscopyNode):
     name = "TEM"
     category = "Instruments/Microscopy"
     description = "透射电子显微镜：高分辨晶格成像，输出粒径分布与晶面间距统计。"
-    version = "0.7.1"
     tags = ["instrument", "tem", "microscopy", "lattice"]
     aliases = ["TEM"]
     icon = "TE"
@@ -116,7 +114,6 @@ class AFMNode(_MicroscopyNode):
     name = "AFM"
     category = "Instruments/Microscopy"
     description = "原子力显微镜：表面形貌与粗糙度分析，输出 Ra / Rq 粗糙度指标。"
-    version = "0.7.1"
     tags = ["instrument", "afm", "microscopy", "roughness"]
     aliases = ["AFM"]
     icon = "AF"

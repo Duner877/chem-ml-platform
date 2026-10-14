@@ -247,7 +247,6 @@ class LLMNode(ScientificNode):
     name = "LLM Reasoner"
     category = "AI/LLM"
     description = "调用 GPT / Claude / Gemini / Qwen / DeepSeek / Ollama 进行科学推理与解释生成。"
-    version = "0.7.1"
     tags = ["ai", "llm", "gpt", "claude", "gemini", "reasoning"]
     #: v0.7.1 task E/F: cloud providers need the network; prompts may carry
     #: sensitive research data, so the permission prompt warns and local /

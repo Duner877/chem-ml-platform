@@ -17,7 +17,6 @@ class MeltingPointNoteNode(ScientificNode):
     name = "Melting Point Note"
     category = "Custom"
     description = "生成熔点记录备注，用于报告归档。"
-    version = "1.0.0"
     tags = ["demo", "thermal"]
     icon = "MP"
 
@@ -63,7 +62,7 @@ python -m nodes.loader --query "Melting"     # 确认注册成功
 | `name` | ✅ | 画布上显示的名称，建议英文（前端可切换中英文，节点名保持稳定） |
 | `category` | ✅ | 面板分组，如 `Analysis` / `Instruments` / `Custom` |
 | `description` | ✅ | 一句话说明；写清科学用途 |
-| `version` | — | 语义化版本，默认 `1.0.0` |
+| `version` | — | 语义化版本。**不填即自动取平台版本**（来自 `chemml_version.VERSION`）；只有当节点需要独立于平台的版本号时才显式声明 |
 | `tags` | — | 搜索关键词列表 |
 | `icon` | — | 两个字母的角标，如 `"MP"` |
 | `input_ports` | — | `Port` 列表，默认 `[]` |

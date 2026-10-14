@@ -127,7 +127,6 @@ class ORCANode(QuantumChemistryNode):
     name = "ORCA"
     category = "Simulation/Quantum"
     description = "调用 ORCA 做单点能 / 几何优化 / 频率计算；未安装时使用内置扩展 Hückel 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "quantum", "orca", "dft"]
     capabilities = ["requires_external_software", "experimental"]
     aliases = ["ORCA"]
@@ -143,7 +142,6 @@ class GaussianNode(QuantumChemistryNode):
     name = "Gaussian"
     category = "Simulation/Quantum"
     description = "生成 Gaussian 输入并运行；未安装时使用内置扩展 Hückel 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "quantum", "gaussian", "dft"]
     capabilities = ["requires_external_software", "experimental"]
     aliases = ["Gaussian", "g16", "g09"]
@@ -159,7 +157,6 @@ class Psi4Node(QuantumChemistryNode):
     name = "Psi4"
     category = "Simulation/Quantum"
     description = "生成 Psi4 输入脚本并运行；未安装时使用内置扩展 Hückel 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "quantum", "psi4"]
     aliases = ["Psi4"]
     icon = "PS"
@@ -174,7 +171,6 @@ class CP2KNode(QuantumChemistryNode):
     name = "CP2K"
     category = "Simulation/Quantum"
     description = "生成 CP2K 输入并运行 DFT；未安装时使用内置扩展 Hückel 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "quantum", "cp2k", "dft"]
     aliases = ["CP2K"]
     icon = "CP"

@@ -130,7 +130,6 @@ class MaterialDiscoveryNode(ScientificNode):
         "材料发现与优化：融合 XRD / SEM / XPS / DFT 证据，"
         "按目标性质对候选组分排序并输出优化材料。"
     )
-    version = "0.7.1"
     tags = ["question", "materials discovery", "optimisation", "battery", "catalyst"]
     aliases = ["MatDiscovery"]
     icon = "MD"

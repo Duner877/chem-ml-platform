@@ -214,7 +214,6 @@ class MassBankNode(SpectralDatabaseNode):
     name = "MassBank"
     category = "Databases/Spectral"
     description = "检索 MassBank 高分辨质谱库（按精确质量 / 分子式匹配）。"
-    version = "0.7.1"
     tags = ["database", "massbank", "ms", "spectral library"]
     aliases = ["MassBank"]
     icon = "MB"
@@ -254,7 +253,6 @@ class MoNANode(SpectralDatabaseNode):
     name = "MoNA"
     category = "Databases/Spectral"
     description = "检索 MoNA 质谱记录（按质量 / 分子式匹配）。"
-    version = "0.7.1"
     tags = ["database", "mona", "ms"]
     aliases = ["MoNA"]
     icon = "MN"
@@ -291,7 +289,6 @@ class GNPSNode(SpectralDatabaseNode):
     name = "GNPS"
     category = "Databases/Spectral"
     description = "检索 GNPS 社区质谱库（分子网络 / 分子式匹配）。"
-    version = "0.7.1"
     tags = ["database", "gnps", "ms", "molecular networking"]
     aliases = ["GNPS"]
     icon = "GP"
@@ -328,7 +325,6 @@ class HMDBNode(SpectralDatabaseNode):
     name = "HMDB"
     category = "Databases/Spectral"
     description = "检索 HMDB 代谢物质谱 / 核磁记录。"
-    version = "0.7.1"
     tags = ["database", "hmdb", "metabolomics", "nmr"]
     aliases = ["HMDB"]
     icon = "HM"
@@ -363,7 +359,6 @@ class BMRBNode(SpectralDatabaseNode):
     name = "BMRB"
     category = "Databases/Spectral"
     description = "检索 BMRB 生物核磁共振化学位移数据。"
-    version = "0.7.1"
     tags = ["database", "bmrb", "nmr", "chemical shift"]
     aliases = ["BMRB"]
     icon = "BM"
@@ -398,7 +393,6 @@ class NISTNode(SpectralDatabaseNode):
     name = "NIST Library"
     category = "Databases/Spectral"
     description = "NIST 质谱 / 红外谱库检索（需本地授权库；未授权时回退到内置参考库）。"
-    version = "0.7.1"
     tags = ["database", "nist", "ms", "ir"]
     aliases = ["NIST"]
     icon = "NI"

@@ -41,6 +41,8 @@ PY_IMPORT_TARGETS: List[Tuple[str, str]] = [
     ("backend/app.py", "VERSION|_*version_*"),
     ("node_registry/__init__.py", "__version__|_*version_*"),
     ("workflow_engine/__init__.py", "__version__"),
+    ("workflow_engine/node_base.py", "_PLATFORM_VERSION"),
+    ("nodes/agent/__init__.py", "__version__"),
     ("memory/__init__.py", "__version__"),
     ("node_sdk/python/chemml_sdk/__init__.py", "__version__"),
 ]
@@ -48,9 +50,12 @@ PY_IMPORT_TARGETS: List[Tuple[str, str]] = [
 #: Modules that legitimately keep a literal (no monorepo import available) but
 #: whose literal must still equal ``VERSION``.  Kept explicit so an omission is
 #: a visible choice rather than an oversight.
-PY_LITERAL_TARGETS: List[Tuple[str, str]] = [
-    ("nodes/report.py", r'version\s*=\s*"([0-9][^"]*)"'),
-]
+#:
+#: v0.7.2 (ISSUE-18): ``nodes/report.py`` was removed from this list.  It used
+#: to carry ``version = "0.7.2"`` on three classes; nodes now inherit the
+#: platform version from ``workflow_engine.node_base``, so there is no literal
+#: left to pin and keeping an entry here only produced a false alarm.
+PY_LITERAL_TARGETS: List[Tuple[str, str]] = []
 
 #: (label, relative path, regex with exactly one capture group for the version)
 TEXT_TARGETS: List[Tuple[str, str, str]] = [
@@ -59,6 +64,35 @@ TEXT_TARGETS: List[Tuple[str, str, str]] = [
     ("本地安装说明 version line", "本地安装说明.md", r"版本：\*\*v?([0-9]+\.[0-9]+\.[0-9]+)\*\*"),
     ("requirements header", "requirements.txt", r"^#\s*Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)"),
     ("Python SDK README", "node_sdk/python/README.md", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)"),
+]
+
+#: (label, relative path, regex, required) -- **every** match of ``regex`` must
+#: equal ``VERSION``, not just the first one.
+#:
+#: Added in v0.7.2 (ISSUE-18).  The released package was found to print
+#: ``Chem ML Platform v0.6.0`` on the launcher banner and to title the browser
+#: tab ``v0.7.1`` while the product reported ``0.7.2`` -- and this script said
+#: ``OK``, because none of these files was in the sweep.  A version assertion
+#: that only inspects the places you remembered is worse than none: it converts
+#: an unknown state into a false clean bill of health.
+#:
+#: ``required=False`` marks build output that legitimately may be absent from a
+#: source checkout (the frontend bundle), so a fresh clone still checks clean.
+ALL_TEXT_TARGETS: List[Tuple[str, str, str, bool]] = [
+    ("launcher banner (browser)", "start-platform.bat", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("launcher banner (desktop)", "start-desktop.bat", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("launcher banner (installer)", "install.bat", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("browser tab title", "frontend/index.html", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("browser tab title (built)", "frontend/dist/index.html", r"Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", False),
+    ("docker README heading", "docker/README.md", r"^#\s*部署：Docker（v([0-9]+\.[0-9]+\.[0-9]+)）", True),
+    ("docker README image section", "docker/README.md", r"^##\s*镜像内容（v([0-9]+\.[0-9]+\.[0-9]+)）", True),
+    ("docker README health sample", "docker/README.md", r'"version"\s*:\s*"([0-9]+\.[0-9]+\.[0-9]+)"', True),
+    ("docker README image tag", "docker/README.md", r"chem-ml-platform:([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("root compose header", "docker-compose.yml", r"^#\s*Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("root compose image tag", "docker-compose.yml", r"chem-ml-platform:([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("docker compose header", "docker/docker-compose.yml", r"^#\s*Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("docker compose image tag", "docker/docker-compose.yml", r"chem-ml-platform:([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("Electron shell description", "desktop/package.json", r"Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
 ]
 
 #: (label, relative path, json path) -- the value at ``json path`` must equal VERSION.
@@ -151,6 +185,24 @@ def collect_drift() -> List[str]:
         elif match.group(1) != VERSION:
             drift.append(f"{label}: {match.group(1)} != {VERSION}")
 
+    # 3b. Files where *every* occurrence must agree (v0.7.2, ISSUE-18).
+    for label, rel, pattern, required in ALL_TEXT_TARGETS:
+        path = ROOT / rel
+        if not path.exists():
+            if required:
+                drift.append(f"{label}: missing file {rel}")
+            continue
+        found = re.findall(pattern, _read(path), re.M)
+        if not found:
+            drift.append(f"{label}: no version found by pattern {pattern!r}")
+            continue
+        stale = sorted({value for value in found if value != VERSION})
+        if stale:
+            drift.append(
+                f"{label} ({rel}): {', '.join(stale)} != {VERSION} "
+                f"({len(stale)} distinct of {len(found)} occurrence(s))"
+            )
+
     # 4. JSON manifests.
     for label, rel, jpath in JSON_TARGETS:
         path = ROOT / rel
@@ -187,15 +239,54 @@ def collect_drift() -> List[str]:
         if found and found != VERSION:
             drift.append(f"workflows/{path.name}: {found} != {VERSION}")
 
-    # 7. CHANGELOG must document the version.
-    changelog = ROOT / "CHANGELOG.md"
-    if changelog.exists() and f"[{VERSION}]" not in _read(changelog):
-        drift.append(f"CHANGELOG.md: no '[{VERSION}]' section")
+    # 6b. The node catalogue (v0.7.2, ISSUE-18).  Every node used to restate the
+    # platform version as a class literal, so the generated catalogue advertised
+    # 0.7.1 next to a product reporting 0.7.2.  Nodes now inherit the version
+    # from ``workflow_engine.node_base``; this asserts the generated artefact
+    # agrees, so a future reintroduction of the literal is caught here.
+    registry = ROOT / "node_registry" / "registry.json"
+    if registry.exists():
+        try:
+            reg = json.loads(_read(registry))
+        except ValueError:
+            drift.append("node_registry/registry.json: unparsable JSON")
+        else:
+            nodes = reg.get("nodes") or []
+            if not nodes:
+                drift.append("node_registry/registry.json: no nodes recorded")
+            stale_nodes = sorted(
+                {
+                    str(n.get("version", ""))
+                    for n in nodes
+                    if str(n.get("version", "")) not in {"", VERSION}
+                }
+            )
+            if stale_nodes:
+                drift.append(
+                    f"node_registry/registry.json: node versions {', '.join(stale_nodes)} "
+                    f"!= {VERSION} (regenerate with `python -m node_registry --write`)"
+                )
     else:
-        # and the *first* documented release must be this one (no stale "latest")
-        first = re.search(r"^##\s*\[[^\]]*?([0-9]+\.[0-9]+\.[0-9]+)", _read(changelog), re.M)
-        if first and first.group(1) != VERSION:
-            drift.append(f"CHANGELOG.md: newest section is {first.group(1)}, expected {VERSION}")
+        drift.append("node_registry/registry.json: missing file")
+
+    # 7. CHANGELOG must document the version.
+    #
+    # v0.7.2 (ISSUE-18): this block used to read CHANGELOG.md from the ``else``
+    # branch unconditionally, so a missing changelog raised FileNotFoundError
+    # instead of being reported as drift.  A checker that crashes on the very
+    # condition it exists to report is a checker you cannot trust.
+    changelog = ROOT / "CHANGELOG.md"
+    if not changelog.exists():
+        drift.append("CHANGELOG.md: missing file")
+    else:
+        text = _read(changelog)
+        if f"[{VERSION}]" not in text:
+            drift.append(f"CHANGELOG.md: no '[{VERSION}]' section")
+        else:
+            # and the *first* documented release must be this one (no stale "latest")
+            first = re.search(r"^##\s*\[[^\]]*?([0-9]+\.[0-9]+\.[0-9]+)", text, re.M)
+            if first and first.group(1) != VERSION:
+                drift.append(f"CHANGELOG.md: newest section is {first.group(1)}, expected {VERSION}")
 
     return drift
 
@@ -222,6 +313,27 @@ def stamp() -> List[str]:
         if new != text:
             path.write_text(new, encoding="utf-8")
             changed.append(f"workflows/{path.name}")
+
+    # v0.7.2 (ISSUE-18): rewrite the user-visible version strings too.  Only the
+    # captured group is substituted inside the full match, so surrounding prose
+    # (``Chem ML Platform v``, ``chem-ml-platform:``, ``（v``) is preserved.
+    for label, rel, pattern, required in ALL_TEXT_TARGETS:
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        # A build artefact is regenerated by its own tool, never stamped here.
+        if not required:
+            continue
+        text = _read(path)
+        new = re.sub(
+            pattern,
+            lambda m: m.group(0).replace(m.group(1), VERSION),
+            text,
+            flags=re.M,
+        )
+        if new != text:
+            path.write_text(new, encoding="utf-8")
+            changed.append(f"{rel} [{label}]")
 
     return changed
 

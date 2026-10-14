@@ -1,14 +1,16 @@
 # Chem ML Platform — 桌面应用（Electron）
 
-v0.7.1 任务 A：把桌面外壳从「依赖开发机环境的外壳」升级为「包含后端与运行时定位的完整交付链路」。
+Electron 桌面外壳：启动时自动拉起 Python 后端、轮询健康检查、退出时清理进程树，
+在**自己的窗口**里加载界面（不经过外部浏览器）。v0.7.1 任务 A 建立了这条交付链路，
+v0.7.2 补齐了运行时探测、诊断窗口与卸载保留策略。
 
 ## 1. 交付结构（打包后 `resources/`）
 
 | 目录 | 内容 |
 | --- | --- |
-| `app/` | Python 后端与全部节点包（`backend/` `nodes/` `workflow_engine/` `simulations/` `models/` `foundation/` `ai_runtime/` `data_layer/` `simulation_runtime/` `database_runtime/` `databases/` `provenance/` `storage/` `report_agent/` `report_engine/` `agent_runtime/` `node_registry/` `memory/` `config/` `plugins/` `datasets/` `workflows/` `static/` `requirements.txt`） |
-| `frontend-dist/` | 前端生产构建（`frontend/dist`） |
-| `python-runtime/` | 可选：随应用分发的独立 Python 解释器（见该目录下 README） |
+| `app/` | Python 后端与全部节点包（`backend/` `nodes/` `workflow_engine/` `simulations/` `models/` `foundation/` `ai_runtime/` `data_layer/` `simulation_runtime/` `database_runtime/` `databases/` `provenance/` `storage/` `report_agent/` `report_engine/` `agent_runtime/` `node_registry/` `memory/` `config/` `plugins/` `datasets/` `workflows/` `requirements.txt`） |
+| `app/frontend/dist/` | 前端生产构建（`frontend/dist`）。**注意**：它在 `app/` 之下，不在 `resources/` 根下——`main.js` 的回退路径曾写错（v0.7.2 fix, ISSUE-20） |
+| `python-runtime/` | 占位目录：v0.7.2 采用**受控安装器（方案 B）**，刻意不捆绑解释器（见该目录下 README） |
 
 配置见 `desktop/package.json` 的 `build.extraResources`。
 

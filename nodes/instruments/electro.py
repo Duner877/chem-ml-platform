@@ -24,7 +24,6 @@ class CVNode(InstrumentNode):
     name = "Cyclic Voltammetry"
     category = "Instruments/Electrochemistry"
     description = "循环伏安工作站：有限差分扩散 + Butler-Volmer 动力学，输出峰电位与峰电流。"
-    version = "0.7.1"
     tags = ["instrument", "cv", "electrochemistry", "butler-volmer"]
     aliases = ["CV"]
     icon = "CV"
@@ -107,7 +106,6 @@ class EISNode(InstrumentNode):
     name = "EIS"
     category = "Instruments/Electrochemistry"
     description = "电化学阻抗谱：Randles 等效电路 + Warburg 扩散阻抗，输出 Nyquist / Bode 数据。"
-    version = "0.7.1"
     tags = ["instrument", "eis", "impedance", "nyquist"]
     aliases = ["EIS"]
     icon = "EI"

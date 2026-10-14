@@ -94,7 +94,6 @@ class IRNode(_VibrationalNode):
     name = "FTIR"
     category = "Instruments/Vibrational"
     description = "傅里叶变换红外光谱仪：由官能团特征频率预测红外吸收谱并完成谱带指认。"
-    version = "0.7.1"
     tags = ["instrument", "ir", "ftir", "vibrational"]
     aliases = ["IR", "FTIR"]
     icon = "IR"
@@ -118,7 +117,6 @@ class RamanNode(_VibrationalNode):
     name = "Raman"
     category = "Instruments/Vibrational"
     description = "拉曼光谱仪：预测拉曼位移谱（芳香环呼吸振动等强峰）并完成谱带指认。"
-    version = "0.7.1"
     tags = ["instrument", "raman", "vibrational"]
     aliases = ["Raman"]
     icon = "RA"

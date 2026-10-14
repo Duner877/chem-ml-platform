@@ -38,7 +38,6 @@ class TrainModelNode(ScientificNode):
     name = "Train Model"
     category = "AI/ML"
     description = "由含 SMILES 与目标列的表格训练分子性质预测模型（PyTorch MPNN 或 NumPy 岭回归）。"
-    version = "0.7.1"
     tags = ["ai", "ml", "training", "mpnn", "regression"]
     #: v0.7.1 task F/H: training shuffles and initialises weights randomly, so
     #: bit-identical repeat runs are not promised (seed + environment recorded).
@@ -141,7 +140,6 @@ class PropertyPredictionNode(ScientificNode):
     name = "Property Prediction"
     category = "AI/ML"
     description = "预测 LogP / TPSA / 溶解度 / QED / Lipinski 等分子性质，可加载训练好的模型。"
-    version = "0.7.1"
     tags = ["ai", "ml", "prediction", "admet"]
     aliases = ["Predict"]
     icon = "PR"
@@ -214,7 +212,6 @@ class SimilaritySearchNode(ScientificNode):
     name = "Similarity Search"
     category = "AI/ML"
     description = "以 Morgan 指纹相似度对候选库排序，用于虚拟筛选与结构确认。"
-    version = "0.7.1"
     tags = ["ai", "ml", "screening", "tanimoto"]
     aliases = ["Screen"]
     icon = "SC"

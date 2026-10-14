@@ -1,4 +1,4 @@
-# 部署：Docker（v0.7.1）
+# 部署：Docker（v0.7.2）
 
 `docker/` 目录集中存放生产部署清单。镜像构建配方仍是仓库根目录的
 `Dockerfile`（单一来源），本目录提供 compose 编排、反向代理与忽略规则。
@@ -27,7 +27,7 @@ docker compose -f docker/docker-compose.yml up --build
 
 ```bash
 curl http://localhost:8000/api/health
-# {"status":"ok","version":"0.7.1","nodes":89}
+# {"status":"ok","version":"0.7.2","nodes":89}
 ```
 
 ## 配置档（profiles）
@@ -45,15 +45,15 @@ docker compose -f docker/docker-compose.yml --profile db --profile proxy up --bu
 ## 不带 compose 的等价命令
 
 ```bash
-docker build -t chem-ml-platform:0.7.1 .
+docker build -t chem-ml-platform:0.7.2 .
 docker run --rm -p 8000:8000 \
   -e CHEMML_WORKERS=2 \
   -v "$PWD/plugins:/app/plugins" \
   -v chemml-output:/app/output \
-  chem-ml-platform:0.7.1
+  chem-ml-platform:0.7.2
 ```
 
-## 镜像内容（v0.7.1）
+## 镜像内容（v0.7.2）
 
 | 层 | 内容 |
 | --- | --- |
@@ -80,7 +80,10 @@ docker run --rm -p 8000:8000 \
 ## 生产检查清单
 
 - [ ] `output/` 挂到持久卷，避免容器重建丢产物
-- [ ] 暴露公网时，在 Nginx / 云负载均衡层加认证（API 默认无鉴权）
+- [ ] 暴露公网时按 v0.7.2 的鉴权边界配置：设 `CHEMML_ENV=release` 让其 fail-closed，
+      并注入 `CHEMML_SESSION_TOKEN`（或继续在 Nginx / 负载均衡层加认证）。
+      **不设令牌时 API 处于 loopback 开放模式**，`GET /api/security/status` 会如实报告 `mode:"off"`，
+      不会伪装成已加固部署
 - [ ] WebSocket 路径 `/ws` 需开启 `Upgrade` 头（见 `nginx.conf`）
 - [ ] `CHEMML_WORKERS` ≥ 2 利用多核；注意事件缓冲按进程分片
 - [ ] GPU 场景：PyTorch 为 CPU wheel，需要 GPU 请自建镜像装 CUDA 版

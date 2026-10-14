@@ -30,7 +30,6 @@ class XPSNode(InstrumentNode):
     name = "XPS"
     category = "Instruments/Surface"
     description = "X 射线光电子能谱：按元素特征结合能生成 Survey 全谱，含 Shirley 型本底。"
-    version = "0.7.1"
     tags = ["instrument", "xps", "surface", "oxidation state"]
     aliases = ["XPS"]
     icon = "XP"
@@ -88,7 +87,6 @@ class XASNode(InstrumentNode):
     name = "XAS"
     category = "Instruments/Surface"
     description = "X 射线吸收谱：吸收边 + 白线 + EXAFS 振荡，可用于价态与配位环境分析。"
-    version = "0.7.1"
     tags = ["instrument", "xas", "xanes", "exafs", "synchrotron"]
     aliases = ["XAS", "XANES"]
     icon = "XA"

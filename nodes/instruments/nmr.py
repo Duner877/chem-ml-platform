@@ -39,7 +39,6 @@ class NMRNode(InstrumentNode):
         "核磁共振波谱仪：支持 FID / JCAMP-DX / Bruker 数据读取，"
         "输出化学位移、峰列表、积分与二维谱。"
     )
-    version = "0.7.1"
     tags = ["instrument", "nmr", "fid", "bruker", "jcamp"]
     aliases = ["NMR"]
     icon = "NM"

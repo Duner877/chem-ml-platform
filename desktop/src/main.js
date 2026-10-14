@@ -403,11 +403,13 @@ function createWindow() {
 
   const url = `http://127.0.0.1:${PORT}/`;
   mainWindow.webContents.on("did-fail-load", () => {
-    const dist = path.join(
-      app.isPackaged ? process.resourcesPath : path.join(__dirname, ".."),
-      app.isPackaged ? "frontend-dist" : "frontend/dist",
-      "index.html"
-    );
+    // v0.7.2 fix (ISSUE-20): this fallback used to look in
+    // ``resources/frontend-dist``, a directory the build never creates.  The
+    // extraResources mapping in package.json puts the bundle under ``app/``,
+    // so the fallback could never fire.  Paths now match the build output.
+    const dist = app.isPackaged
+      ? path.join(process.resourcesPath, "app", "frontend", "dist", "index.html")
+      : path.join(__dirname, "..", "..", "frontend", "dist", "index.html");
     if (fs.existsSync(dist)) mainWindow.loadFile(dist);
   });
   if (IS_DEV) {

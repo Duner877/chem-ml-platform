@@ -174,7 +174,6 @@ class UnknownCompoundIdentificationNode(ScientificNode):
         "未知物结构鉴定：融合质谱分子离子与碎片、核磁化学位移、红外拉曼谱带，"
         "输出候选结构、置信度与解释。"
     )
-    version = "0.7.1"
     tags = ["question", "identification", "structure elucidation", "fusion"]
     aliases = ["UnknownID", "CompoundID"]
     icon = "ID"

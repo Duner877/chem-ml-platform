@@ -89,7 +89,6 @@ class GpuDeviceInfoNode(ScientificNode):
         "检测 PyTorch 版本、CUDA 可用性、GPU 名称与显存。"
         "GPU 不可用时如实报告原因，绝不虚报加速。"
     )
-    version = "0.7.1"
     tags = ["gpu", "cuda", "pytorch", "diagnostics"]
     icon = "GPU"
     deterministic = True
@@ -167,7 +166,6 @@ class PyTorchTensorOpNode(ScientificNode):
         "在指定设备上执行张量运算（matmul / add / sigmoid），"
         "输出包含实际执行设备标注。"
     )
-    version = "0.7.1"
     tags = ["gpu", "tensor", "pytorch"]
     icon = "T#"
     deterministic = True
@@ -247,7 +245,6 @@ class ModelInferenceNode(ScientificNode):
     #: node reports the honest CPU fallback / unavailable state.
     capabilities = ["requires_gpu"]
     description = "在 CPU/GPU 上执行一个小型 MLP 前向推理，标注实际设备与耗时。"
-    version = "0.7.1"
     tags = ["gpu", "inference", "mlp", "pytorch"]
     icon = "MI"
     deterministic = True
@@ -326,7 +323,6 @@ class InferenceBenchmarkNode(ScientificNode):
     #: node reports the honest CPU fallback / unavailable state.
     capabilities = ["requires_gpu"]
     description = "对指定设备进行前向吞吐基准测试（真实计时，不做假数据）。"
-    version = "0.7.1"
     tags = ["gpu", "benchmark", "pytorch"]
     icon = "BM"
     deterministic = False  # wall-clock timing is inherently non-deterministic

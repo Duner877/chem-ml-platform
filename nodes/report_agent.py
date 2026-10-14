@@ -34,7 +34,6 @@ class ReportAgentNode(ScientificNode):
     name = "Report Agent"
     category = "Agent/Reporting"
     description = "汇总上游科学对象，自动生成 Markdown / HTML / PDF 研究报告并写入产物目录。"
-    version = "0.7.1"
     tags = ["agent", "report", "markdown", "html", "pdf", "export"]
     capabilities = ["writes_files"]
     icon = "RA"

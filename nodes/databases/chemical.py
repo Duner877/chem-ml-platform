@@ -172,7 +172,6 @@ class PubChemNode(ChemicalDatabaseNode):
     name = "PubChem"
     category = "Databases/Chemical"
     description = "通过 PubChem PUG REST 按名称 / SMILES 查询分子结构与性质。"
-    version = "0.7.1"
     tags = ["database", "pubchem", "structure"]
     aliases = ["PubChem"]
     icon = "PC"
@@ -213,7 +212,6 @@ class ChEMBLNode(ChemicalDatabaseNode):
     name = "ChEMBL"
     category = "Databases/Chemical"
     description = "检索 ChEMBL 生物活性分子（含靶点与活性标注）。"
-    version = "0.7.1"
     tags = ["database", "chembl", "bioactivity"]
     aliases = ["ChEMBL"]
     icon = "CH"
@@ -256,7 +254,6 @@ class ZINCNode(ChemicalDatabaseNode):
     name = "ZINC"
     category = "Databases/Chemical"
     description = "检索 ZINC 可购买化合物库（虚拟筛选常用）。"
-    version = "0.7.1"
     tags = ["database", "zinc", "screening"]
     aliases = ["ZINC"]
     icon = "ZN"
@@ -279,7 +276,6 @@ class PDBNode(ChemicalDatabaseNode):
     name = "PDB"
     category = "Databases/Chemical"
     description = "检索 RCSB PDB 结构条目（大分子 / 配合物）。"
-    version = "0.7.1"
     tags = ["database", "pdb", "protein", "structure"]
     aliases = ["PDB"]
     icon = "PD"

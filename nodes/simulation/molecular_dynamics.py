@@ -104,7 +104,6 @@ class GROMACSNode(MolecularDynamicsNode):
     name = "GROMACS"
     category = "Simulation/MD"
     description = "调用 GROMACS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "md", "gromacs"]
     capabilities = ["requires_external_software", "experimental"]
     aliases = ["GROMACS", "gmx"]
@@ -120,7 +119,6 @@ class LAMMPSNode(MolecularDynamicsNode):
     name = "LAMMPS"
     category = "Simulation/MD"
     description = "调用 LAMMPS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "md", "lammps"]
     aliases = ["LAMMPS", "lmp"]
     icon = "LM"
@@ -135,7 +133,6 @@ class OpenMMNode(MolecularDynamicsNode):
     name = "OpenMM"
     category = "Simulation/MD"
     description = "调用 OpenMM 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。"
-    version = "0.7.1"
     tags = ["simulation", "md", "openmm"]
     aliases = ["OpenMM"]
     icon = "OM"

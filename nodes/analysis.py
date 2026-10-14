@@ -77,7 +77,6 @@ class BaselineCorrectionNode(ScientificNode):
     name = "Baseline Correction"
     category = "Analysis"
     description = "使用不对称最小二乘 (ALS) 算法扣除谱图基线，适用于拉曼与红外光谱。"
-    version = "0.7.1"
     tags = ["analysis", "baseline", "raman", "ir"]
     icon = "BC"
 
@@ -140,7 +139,6 @@ class SmoothingNode(ScientificNode):
     name = "Smoothing"
     category = "Analysis"
     description = "移动平均或 Savitzky-Golay 平滑滤波，降低高频噪声。"
-    version = "0.7.1"
     tags = ["analysis", "smooth", "denoise"]
     icon = "SM"
     # v0.7.2 P0-05: analytically verified -- a symmetric kernel reproduces
@@ -195,7 +193,6 @@ class PeakPickingNode(ScientificNode):
     name = "Peak Picking"
     category = "Analysis"
     description = "基于局部极大值与峰 prominence 的峰检测，输出峰表与带峰标注的谱图。"
-    version = "0.7.1"
     tags = ["analysis", "peaks", "centroid"]
     icon = "PP"
     # v0.7.2 P0-05: known-answer verified -- injected Gaussian peaks are
@@ -266,7 +263,6 @@ class NormalizeNode(ScientificNode):
     name = "Normalize"
     category = "Analysis"
     description = "按最大值、面积、min-max 或 SNV 归一化谱图强度。"
-    version = "0.7.1"
     tags = ["analysis", "normalize"]
     icon = "NM"
     # v0.7.2 P0-05: exact known answer -- max-normalisation maps the
@@ -309,7 +305,6 @@ class ResampleNode(ScientificNode):
     name = "Resample"
     category = "Analysis"
     description = "将谱图重采样到等间距网格，便于多谱图对齐与融合。"
-    version = "0.7.1"
     tags = ["analysis", "resample", "interpolate"]
     icon = "RS"
 
@@ -344,7 +339,6 @@ class SpectrumMathNode(ScientificNode):
     name = "Spectrum Math"
     category = "Analysis"
     description = "两个谱图之间的加 / 减 / 乘 / 除运算（按 x 轴线性插值对齐）。"
-    version = "0.7.1"
     tags = ["analysis", "math", "difference"]
     icon = "MA"
 
@@ -418,7 +412,6 @@ class MolecularDescriptorsNode(ScientificNode):
     name = "Molecular Descriptors"
     category = "Analysis"
     description = "计算分子量、LogP、TPSA、氢键供受体、可旋转键、Lipinski 违背数与 QED。"
-    version = "0.7.1"
     tags = ["analysis", "descriptors", "qed", "lipinski"]
     icon = "MD"
 
@@ -482,7 +475,6 @@ class SimilarityNode(ScientificNode):
     name = "Molecular Similarity"
     category = "Analysis"
     description = "计算两个分子的 Morgan 指纹 Tanimoto / Dice 相似度。"
-    version = "0.7.1"
     tags = ["analysis", "similarity", "tanimoto", "fingerprint"]
     icon = "SI"
 
@@ -540,7 +532,6 @@ class SubstructureSearchNode(ScientificNode):
     name = "Substructure Search"
     category = "Analysis"
     description = "使用 VF2 子图同构在分子中检索指定子结构（SMILES 片段）。"
-    version = "0.7.1"
     tags = ["analysis", "substructure", "vf2"]
     icon = "SS"
 
@@ -580,7 +571,6 @@ class FunctionalGroupNode(ScientificNode):
     name = "Functional Groups"
     category = "Analysis"
     description = "从分子结构或红外 / 拉曼谱带指认官能团，输出统计表与文字说明。"
-    version = "0.7.1"
     tags = ["analysis", "functional group", "ir", "raman"]
     icon = "FG"
 

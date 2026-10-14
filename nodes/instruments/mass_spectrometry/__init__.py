@@ -74,7 +74,6 @@ class VendorSpectrumNode(InstrumentNode):
         "读取厂商原始数据（Bruker .d / 1r、Shimadzu SPC/QGD/LCD、Thermo/Waters/Agilent "
         "文件夹）或开放格式（mzML/mzXML/MGF/MSP/JCAMP-DX/XY），返回统一的 Spectrum 对象。"
     )
-    version = "0.7.1"
     tags = ["io", "vendor", "thermo", "waters", "agilent", "bruker", "shimadzu", "spc", "mzml"]
     icon = "VS"
 
@@ -216,7 +215,6 @@ class ProfileCentroidNode(InstrumentNode):
         "把连续谱（profile）转换为峰列表（centroid）：每个峰用半高宽内的强度加权位置表示，"
         "并输出峰面积与相对强度。"
     )
-    version = "0.7.1"
     tags = ["analysis", "ms", "centroid", "profile", "peak"]
     icon = "PC"
 

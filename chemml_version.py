@@ -20,6 +20,7 @@ The ``package.json`` files cannot import Python, so ``scripts/version.py
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -31,6 +32,7 @@ __all__ = [
     "__codename__",
     "build_metadata",
     "git_commit",
+    "read_build_info",
 ]
 
 #: The product version.  Bump here and nowhere else.
@@ -44,13 +46,39 @@ __codename__ = "Trusted Delivery Release"
 
 ROOT = Path(__file__).resolve().parent
 
+#: Build stamp shipped inside the source archive by ``scripts/package.py``.
+#:
+#: v0.7.2 fix (ISSUE-21): an extracted archive is not a Git checkout, so
+#: ``git_commit()`` used to answer ``"unknown"`` for every distributed copy --
+#: including the ones the release report claims are traceable to a commit.  The
+#: packaging step therefore records the commit *at build time* alongside the
+#: tree, and this is the last link in the resolution chain.
+BUILD_INFO_PATH = ROOT / "BUILD_INFO.json"
+
+
+def read_build_info() -> Dict[str, Any]:
+    """The packaged build stamp, or ``{}`` when this is a working tree."""
+    try:
+        data = json.loads(BUILD_INFO_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
 
 def git_commit(short: bool = True) -> str:
-    """Return the current Git commit hash, or ``"unknown"`` outside a repo.
+    """Return the commit this tree came from, or ``"unknown"``.
 
-    A release report must be traceable to a commit (spec §9).  When the source
-    tree is not a Git checkout the honest answer is ``"unknown"`` -- never a
-    fabricated hash.
+    Resolution order:
+
+    1. ``CHEMML_BUILD_COMMIT`` -- an explicit override for hermetic builds;
+    2. ``git rev-parse HEAD`` -- a live checkout is always the best answer;
+    3. ``BUILD_INFO.json`` -- the stamp recorded when the archive was packaged;
+    4. ``"unknown"``.
+
+    A release report must be traceable to a commit (spec §9), and when none of
+    the above is available the honest answer is ``"unknown"`` -- never a
+    fabricated hash.  Step 3 exists so that an *extracted* copy can answer this
+    question too, instead of weakening its own provenance record.
     """
     override = os.environ.get("CHEMML_BUILD_COMMIT", "").strip()
     if override:
@@ -65,20 +93,49 @@ def git_commit(short: bool = True) -> str:
             timeout=5,
         )
     except (OSError, subprocess.SubprocessError):
-        return "unknown"
-    if out.returncode != 0:
-        return "unknown"
-    return (out.stdout or "").strip() or "unknown"
+        out = None
+    if out is not None and out.returncode == 0:
+        found = (out.stdout or "").strip()
+        if found:
+            return found
+    info = read_build_info()
+    recorded = str(
+        info.get("commit_short" if short else "commit", "") or ""
+    ).strip()
+    return recorded or "unknown"
+
+
+def commit_source() -> str:
+    """Where :func:`git_commit` got its answer -- never a guess."""
+    if os.environ.get("CHEMML_BUILD_COMMIT", "").strip():
+        return "env:CHEMML_BUILD_COMMIT"
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if out.returncode == 0 and (out.stdout or "").strip():
+            return "git"
+    except (OSError, subprocess.SubprocessError):
+        pass
+    if read_build_info().get("commit"):
+        return "BUILD_INFO.json"
+    return "unknown"
 
 
 def build_metadata() -> Dict[str, Any]:
     """Version + provenance of the artefacts produced from this tree."""
     import sys
 
+    info = read_build_info()
     return {
         "version": __version__,
         "codename": __codename__,
         "commit": git_commit(),
-        "built_at": os.environ.get("CHEMML_BUILD_TIME", "") or "",
+        "commit_source": commit_source(),
+        "built_at": os.environ.get("CHEMML_BUILD_TIME", "") or str(info.get("built_at", "") or ""),
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
     }

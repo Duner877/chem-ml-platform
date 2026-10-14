@@ -81,7 +81,6 @@ class RamanMappingNode(_ImagingNode):
     name = "Raman Mapping"
     category = "Instruments/Imaging"
     description = "拉曼面扫成像：生成高光谱数据立方体并输出组分分布图与平均谱。"
-    version = "0.7.1"
     tags = ["instrument", "imaging", "raman", "hyperspectral"]
     aliases = ["RamanMap"]
     icon = "RM"
@@ -98,7 +97,6 @@ class FTIRImagingNode(_ImagingNode):
     name = "FTIR Imaging"
     category = "Instruments/Imaging"
     description = "红外化学成像：基于特征吸收带生成组分分布图与平均红外谱。"
-    version = "0.7.1"
     tags = ["instrument", "imaging", "ftir", "infrared"]
     aliases = ["FTIRImage"]
     icon = "FI"
@@ -115,7 +113,6 @@ class HyperspectralNode(_ImagingNode):
     name = "Hyperspectral Imaging"
     category = "Instruments/Imaging"
     description = "通用高光谱成像：匹配滤波生成组分丰度图与端元光谱。"
-    version = "0.7.1"
     tags = ["instrument", "imaging", "hyperspectral", "unmixing"]
     aliases = ["HSI"]
     icon = "HS"
