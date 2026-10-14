@@ -41,23 +41,46 @@ def _extra_resources() -> list[dict]:
     return list(build.get("extraResources") or [])
 
 
-def _matches_any(rel: Path, patterns: list[str]) -> bool:
-    """electron-builder glob semantics, not :mod:`fnmatch` semantics.
+def _segment_matches(pattern_segment: str, path_segment: str) -> bool:
+    """minimatch, not :mod:`fnmatch`, semantics for one path segment.
 
-    The two differ in exactly one way that matters here: in minimatch (and in
-    electron-builder) a leading ``**/`` matches **zero** directory levels, so
-    ``**/*.py`` covers both ``foo.py`` and ``a/b/foo.py``.  ``fnmatch``
-    translates ``**/*.py`` into a pattern that requires a slash, and therefore
-    rejects the bare filename -- which silently mis-classifies every top-level
-    module as stale.
+    In minimatch a wildcard does **not** match a leading dot unless the
+    pattern itself has one there (``dot: false`` is the default, and it is what
+    electron-builder uses).  This is why ``plugins/.gitkeep`` is *not* shipped
+    by a filter of ``**/*`` -- electron-builder never copies it, and a tool that
+    mirrors its behaviour must not pretend otherwise.
     """
-    posix = rel.as_posix()
-    for pattern in patterns:
-        if fnmatch.fnmatch(posix, pattern):
-            return True
-        if pattern.startswith("**/") and fnmatch.fnmatch(posix, pattern[3:]):
-            return True
-    return False
+    if path_segment.startswith(".") and not pattern_segment.startswith("."):
+        return False
+    return fnmatch.fnmatch(path_segment, pattern_segment)
+
+
+def _segments_match(pattern_segments: list[str], path_segments: list[str]) -> bool:
+    if not pattern_segments:
+        return not path_segments
+    head = pattern_segments[0]
+    rest = pattern_segments[1:]
+    if head == "**":
+        # Globstar matches zero or more path segments, so ``**/*.py`` covers
+        # both ``foo.py`` and ``a/b/foo.py`` (fnmatch's translation of the same
+        # pattern requires a slash and silently rejects the bare filename).
+        for index in range(len(path_segments) + 1):
+            if _segments_match(rest, path_segments[index:]):
+                return True
+        return False
+    if not path_segments:
+        return False
+    if not _segment_matches(head, path_segments[0]):
+        return False
+    return _segments_match(rest, path_segments[1:])
+
+
+def _matches_any(rel: Path, patterns: list[str]) -> bool:
+    """electron-builder glob semantics, not :mod:`fnmatch` semantics."""
+    path_segments = rel.as_posix().split("/")
+    return any(
+        _segments_match(pattern.split("/"), path_segments) for pattern in patterns
+    )
 
 
 def _wanted(rel: Path, filters: list[str]) -> bool:
@@ -138,10 +161,20 @@ def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
     from chemml_version import build_stamp
 
     stamp = app / "BUILD_INFO.json"
-    text = json.dumps(build_stamp("scripts/refresh_desktop_payload.py"), indent=2) + "\n"
-    if not stamp.exists() or stamp.read_text(encoding="utf-8") != text:
-        stamp.write_text(text, encoding="utf-8")
-        copied += 1
+    try:
+        existing = json.loads(stamp.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        existing = {}
+    current = build_stamp("scripts/refresh_desktop_payload.py")
+    # Only (re)stamp when there is nothing to keep or it names a different
+    # commit.  The desktop beforeBuild hook writes this file too, with its own
+    # produced_by/built_at; rewriting an agreeing stamp every run would make
+    # the snapshot differ from a fresh build for no reason.
+    if not isinstance(existing, dict) or existing.get("commit") != current["commit"]:
+        text = json.dumps(current, indent=2) + "\n"
+        if not stamp.exists() or stamp.read_text(encoding="utf-8") != text:
+            stamp.write_text(text, encoding="utf-8")
+            copied += 1
 
     # Anything the plan does not name is payload the builder never shipped:
     # drop it, or a deleted module keeps shadowing its replacement.
@@ -161,10 +194,18 @@ def verify(app: Path = DEFAULT_APP) -> int:
     pairs = _plan(app)
     missing, differing = [], []
     for src, dst in _inside(app, pairs):
+        rel = dst.relative_to(app)
+        if rel == Path("BUILD_INFO.json"):
+            # A build-time stamp, not source: the beforeBuild hook and this
+            # tool both write it with their own produced_by/built_at, so a
+            # byte comparison would flag a difference that carries no
+            # meaning.  What must agree is the commit it names -- checked
+            # below against the tree this refresh would record.
+            continue
         if not dst.exists():
-            missing.append(str(dst.relative_to(app)))
+            missing.append(str(rel))
         elif dst.read_bytes() != src.read_bytes():
-            differing.append(str(dst.relative_to(app)))
+            differing.append(str(rel))
     wanted = {dst.relative_to(app) for _, dst in _inside(app, pairs)}
     wanted.add(Path("BUILD_INFO.json"))
     stale = sorted(_snapshot_files(app) - wanted)
@@ -177,9 +218,26 @@ def verify(app: Path = DEFAULT_APP) -> int:
     for label, items in (("missing", missing), ("differing", differing), ("stale", stale)):
         for item in items[:10]:
             print(f"  {label}: {item}")
-    ok = not (missing or differing or stale) and stamp.exists()
+    stamp_agrees = stamp.exists() and _stamp_names_current_commit(stamp)
+    ok = not (missing or differing or stale) and stamp_agrees
+    if stamp.exists() and not stamp_agrees:
+        print("  stamp names a different commit than this tree")
     print("AGREES" if ok else "STALE -- run without --verify to refresh")
     return 0 if ok else 1
+
+
+def _stamp_names_current_commit(stamp: Path) -> bool:
+    """True when the payload stamp records the commit this tree would stamp."""
+    try:
+        recorded = json.loads(stamp.read_text(encoding="utf-8")).get("commit", "")
+    except (OSError, ValueError):
+        return False
+    if not recorded:
+        return False
+    sys.path.insert(0, str(DESKTOP.parent))
+    from chemml_version import git_commit
+
+    return recorded == git_commit(short=False)
 
 
 def main() -> int:

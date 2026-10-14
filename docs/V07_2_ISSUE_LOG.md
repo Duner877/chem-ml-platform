@@ -36,6 +36,7 @@
 | ISSUE-21 | P1-06 | 低 | 解压出的副本无法自报来源提交（`git_commit()` 恒为 `unknown`） |
 | ISSUE-22 | P0-01/P1-02 | 中 | API 与文档声称「启动脚本注入会话令牌」，实际仅桌面壳注入 |
 | ISSUE-23 | P0-03 | 低 | 版本检查在 `CHANGELOG.md` 缺失时抛异常而非报告漂移 |
+| ISSUE-24 | P1-06 | 中 | 祖先 Git 仓库的 HEAD 被当作本树的构建提交（溯源造假） |
 
 ---
 
@@ -302,9 +303,128 @@
 
 ---
 
+## ISSUE-18 — 版本一致性检查覆盖不全（报 OK 但存在三处用户可见旧版本）
+
+- **问题描述**：v0.7.2 安装包实测发现三处**用户可见**的旧版本串：启动横幅 `v0.6.0`、
+  浏览器标签标题 `v0.7.1`、全部 86 个节点记录 `0.7.1`；而 `scripts/version.py --check`
+  仍然报告 `OK`。检查本身没有算错，它只是**只扫了有人记得登记的文件**——典型的「证据存在但不承载结论」。
+- **复现步骤**：解压 v0.7.2 安装包，访问 `/api/health`（返回 0.7.2）后打开页面与启动脚本，
+  与 `python scripts/version.py --check` 的 OK 输出对照。
+- **预期行为**：凡展示给用户的版本串都必须与 `chemml_version.VERSION` 一致，且检查器必须
+  能对其中任意一处变旧**报告失败**。
+- **实际行为**：三处漂移与「检查通过」同时存在。
+- **修改范围**：`scripts/version.py`（`TEXT_TARGETS` 扩展覆盖 `.bat` / `frontend/index.html` /
+  `node_registry/registry.json` / docker 文档与 compose / `desktop/package.json`；新增
+  `--write`；修复 `CHANGELOG.md` 缺失时 `collect_drift` 崩溃，即 ISSUE-23）；
+  `workflow_engine/node_base.py` 与 `nodes/`（节点版本改由 `chemml_version` 派生，删除 89 处
+  字面量）；`node_registry/registry.json` 重生成；`start-platform.bat` 横幅；
+  `frontend/index.html` 标题并重建 dist。
+- **自动化测试**：`tests/test_v07_2_version_consistency.py`（把任一目标改回旧版本必须令
+  `--check` 失败；含归档完整性用例）。
+- **验收证据**：质量门 `version_consistency` 阶段 PASS（`OK: every artefact agrees on 0.7.2`）；
+  安装副本 `/api/health` 实测 `{"status":"ok","version":"0.7.2","nodes":89}`。
+- **关联提交**：`b64c176`。
+
+## ISSUE-19 — 测试残留文件随源码包发布
+
+- **问题描述**：`workspace/raw_data/x.csv` 是测试运行残留，却被打进源码归档，违反发布干净性
+  （发布物只应包含来源可追溯的文件）。
+- **复现步骤**：解压 `Chem-ML-Platform-v0.7.2.zip`，检查 `workspace/` 内容。
+- **预期行为**：`workspace/` 仅保留 `.gitkeep`，运行期状态不入包。
+- **实际行为**：归档含残留 CSV。
+- **修改范围**：`scripts/package.py`（排除规则）；`.gitignore`。
+- **自动化测试**：`tests/test_v07_2_version_consistency.py::TestArchiveDoesNotShipItsOwnChecksum::test_workspace_runtime_state_is_not_shipped`。
+- **验收证据**：门禁 `release_cleanliness` 阶段 PASS；归档清单实测仅 `workspace/.gitkeep`。
+- **关联提交**：`b64c176`。
+
+## ISSUE-20 — 桌面壳前端回退路径与打包产物位置不一致
+
+- **问题描述**：`desktop/src/main.js` 在 `resources/app/frontend-dist` 找不到前端时回退到
+  `resources/frontend-dist`，而 `extraResources` 实际把前端放在 `resources/app/frontend/dist`。
+  回退分支**永远不会生效**——一处为「前端缺失」准备的容错，指向一个不存在的路径。
+- **复现步骤**：阅读 `desktop/package.json` 的 `extraResources` 与 `main.js` 的回退常量并对照。
+- **预期行为**：回退路径与打包布局一致，或在缺失时给出可操作的错误分类。
+- **实际行为**：回退路径恒不命中，前端缺失时会退化成难以诊断的空白窗口。
+- **修改范围**：`desktop/src/main.js`（回退路径改为 `resources/frontend/dist`）。
+- **自动化测试**：`tests/test_v07_2_desktop_runtime.py` 静态接线用例（回退路径与打包布局一致）。
+- **验收证据**：门禁 `desktop_tests` 与 `desktop_runtime_probe` 阶段 PASS。
+- **关联提交**：`b64c176`。
+
+## ISSUE-21 — 解压出的副本无法自报来源提交
+
+- **问题描述**：`chemml_version.git_commit()` 对**非 Git 工作树**（解压后的安装包、桌面壳
+  payload）恒返回 `unknown`。发布报告声称产物可追溯到提交，但每一个实际分发出去的副本都无法
+  自证来源——溯源链在最后一环断裂。
+- **复现步骤**：解压源码归档，在归档根运行 `python -c "import chemml_version; print(chemml_version.git_commit())"`。
+- **预期行为**：分发副本能 namen 自己的构建提交（打包时记录，而非现场猜测）。
+- **实际行为**：输出 `unknown`。
+- **修改范围**：`chemml_version.py`（`read_build_info()` / `commit_source()`；`git_commit()`
+  增加 `BUILD_INFO.json` 回退）；`scripts/package.py`（归档内注入 `BUILD_INFO.json`，
+  含 commit / branch / dirty / built_at）；`scripts/refresh_desktop_payload.py`（为桌面壳
+  payload 盖同一印章）。
+- **自动化测试**：`tests/test_v07_2_version_consistency.py::TestArchiveDoesNotShipItsOwnChecksum::test_build_stamps_provenance_into_the_archive`；
+  `tests/test_v07_2_desktop_runtime.py::TestPackagedPayloadIsRunnable::test_payload_refresh_stamps_the_build_commit`。
+- **验收证据**：安装副本实测自报构建提交（来源 `BUILD_INFO.json`）；桌面快照
+  `refresh_desktop_payload.py --verify` 报 `build stamp present: True` / `AGREES`。
+- **关联提交**：`347932d`（及 `ca1dcc8` 的工具落地）。
+
+## ISSUE-22 — 文档声称「启动脚本注入会话令牌」，实际仅桌面壳注入
+
+- **问题描述**：API 文档与 `backend/security.py` 的注释声称启动脚本会注入 `CHEMML_SESSION_TOKEN`。
+  实际上只有 Electron 壳通过 preload 注入 `window.__CHEMML_TOKEN__`；浏览器直开模式下没有任何
+  注入途径，令牌鉴权**无法启用**。文档描述了一条不存在的安全路径。
+- **复现步骤**：以浏览器模式启动平台，检查 `window.__CHEMML_TOKEN__` 与令牌鉴权行为。
+- **预期行为**：文档如实说明两种启动模式的能力差异。
+- **实际行为**：文档暗示浏览器模式同样受令牌保护。
+- **修改范围**：`backend/security.py`（注释改为如实说明）；`本地安装说明.md`（补充桌面启动方式）。
+- **自动化测试**：安全套件中令牌相关用例（`tests/test_v07_2_ws_security.py` 等）不受此注释影响，
+  属于文档诚实性修复。
+- **验收证据**：门禁 `security_tests` 135 项 PASS；`docs_mojibake_scan` PASS。
+- **关联提交**：`b64c176`。
+
+## ISSUE-23 — 版本检查在 `CHANGELOG.md` 缺失时抛异常
+
+- **问题描述**：`scripts/version.py` 的 `collect_drift()` 直接读取 `CHANGELOG.md`，文件缺失时
+  抛异常而不是报告漂移——检查器在自己的输入不完整时崩溃，而非给出结论。
+- **复现步骤**：临时移走 `CHANGELOG.md`，运行 `python scripts/version.py --check`。
+- **预期行为**：缺失的登记文件按「无法核对」处理并明确报告，不抛栈。
+- **实际行为**：未捕获异常。
+- **修改范围**：`scripts/version.py`（`exists()` 保护）。
+- **自动化测试**：`tests/test_v07_2_version_consistency.py` 套件内覆盖。
+- **验收证据**：门禁 `version_consistency` 阶段 PASS。
+- **关联提交**：`b64c176`。
+
+## ISSUE-24 — 祖先 Git 仓库的 HEAD 被当作本树的构建提交
+
+- **问题描述**：`git rev-parse` 对**任意祖先仓库**都会成功应答。`chemml_version.git_commit()`
+  不校验「本树是否就是该仓库的顶层」，于是把分发副本解压进用户任意一个 Git 仓库时，平台会把
+  **那个仓库的 HEAD** 当作自己的构建提交——一次教科书式的溯源造假。该缺陷由本轮桌面快照测试
+  暴露：payload 落在仓库内 `output/` 下，`commit_source()` 答 `git` 而非 `BUILD_INFO.json`。
+- **复现步骤**：
+  1. `git init` 一个无关仓库并提交；
+  2. 把 `chemml_version.py`（无 `BUILD_INFO.json`）拷进该仓库的子目录；
+  3. 于该子目录运行 `python -c "import chemml_version; print(chemml_version.git_commit(), chemml_version.commit_source())"`。
+- **预期行为**：只有本树根目录**本身就是** Git 顶层时才采信 Git；否则回退 `BUILD_INFO.json`，
+  再否则 `unknown`。
+- **实际行为**：采信祖先仓库 HEAD，`commit_source()` 答 `git`。
+- **修改范围**：`chemml_version.py`（新增 `_git_repo_is_this_tree()`，以
+  `git rev-parse --show-toplevel` 与 `ROOT` 比对；`git_commit()` / `commit_source()` /
+  `build_stamp()` 全部改为经该守卫；重新打包无 Git 副本时向前继承原印章而非降级为 `unknown`）；
+  `scripts/refresh_desktop_payload.py`（删除一处编辑残留的不可达重复代码）。
+- **自动化测试**：`tests/test_v07_2_version_consistency.py::TestAncestorGitRepoIsNotClaimedAsProvenance`
+  （嵌套副本无印章报 `unknown`、有印章报印章哈希、实时检出仍答 `git`；所有 git 调用以 `-C` 固定
+  ——未固定时该测试曾在主仓库误建 4 个空提交，已随历史清理）。
+- **验收证据**：门禁 `desktop_tests` 25 项与 `version_consistency` 阶段 PASS；
+  全量 397 项测试通过。
+- **关联提交**：`cfec170`。
+
+---
+
 ## 汇总
 
-- 本表共 **17** 条 Issue，全部含八项字段，全部已修复并有自动化测试或阶段级证据。
+- 本表共 **24** 条 Issue。ISSUE-01…17 为 v0.7.2 实施期间发现并修复，均含完整八项字段；
+  ISSUE-18…24 为交付收尾阶段（安装实测、出包、自溯源）新增，同样逐条给出八项字段。
+  全部已修复并有自动化测试或阶段级证据。
 - 其中 **5 条（ISSUE-04、05、14、16、17）属于「证据类」缺陷**：字段或检查看起来存在，实际不承载
   结论，或无法被独立复核。这类缺陷不会让任何测试变红——ISSUE-17 甚至已经**被写进了发布清单**
   却仍未被发现，只能靠「按任务书逐条核对证据是否可复现」才暴露。这正是本任务书的核心要求。

@@ -18,7 +18,9 @@ available, and never silently reported as a pass.
 
 from __future__ import annotations
 
+import fnmatch
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -65,6 +67,31 @@ def _find_python() -> str:
         if candidate:
             return candidate
     return ""
+
+
+def _segment_matches(pattern_segment: str, path_segment: str) -> bool:
+    """minimatch semantics for one segment (see refresh_desktop_payload)."""
+    if path_segment.startswith(".") and not pattern_segment.startswith("."):
+        return False
+    return fnmatch.fnmatch(path_segment, pattern_segment)
+
+
+def _segments_match(pattern_segments: list[str], path_segments: list[str]) -> bool:
+    if not pattern_segments:
+        return not path_segments
+    head, rest = pattern_segments[0], pattern_segments[1:]
+    if head == "**":
+        return any(
+            _segments_match(rest, path_segments[index:])
+            for index in range(len(path_segments) + 1)
+        )
+    if not path_segments or not _segment_matches(head, path_segments[0]):
+        return False
+    return _segments_match(rest, path_segments[1:])
+
+
+def _glob_matches(rel: Path, pattern: str) -> bool:
+    return _segments_match(pattern.split("/"), rel.as_posix().split("/"))
 
 
 # --------------------------------------------------------------------------- #
@@ -153,22 +180,18 @@ def _materialise_payload(destination: Path) -> Path:
     way the shell will -- with ``cwd`` set to ``resources/app`` -- without
     needing the 260 MB built shell.
     """
-    import fnmatch
-
     config = json.loads((DESKTOP / "package.json").read_text(encoding="utf-8"))
     app = destination / "app"
 
     def wanted(rel: Path, filters: list[str]) -> bool:
-        posix = rel.as_posix()
+        # Same semantics as scripts/refresh_desktop_payload.py (and therefore
+        # as electron-builder): globstar matches zero levels, and wildcards do
+        # not match a leading dot.
         positive = [p for p in filters if not p.startswith("!")]
         negative = [p[1:] for p in filters if p.startswith("!")]
-        if positive and not any(
-            fnmatch.fnmatch(posix, p)
-            or (p.startswith("**/") and fnmatch.fnmatch(posix, p[3:]))
-            for p in positive
-        ):
+        if positive and not any(_glob_matches(rel, p) for p in positive):
             return False
-        return not (negative and any(fnmatch.fnmatch(posix, p) for p in negative))
+        return not (negative and any(_glob_matches(rel, p) for p in negative))
 
     for entry in config["build"]["extraResources"]:
         src = (DESKTOP / entry["from"]).resolve()
@@ -271,6 +294,10 @@ class TestPackagedPayloadIsRunnable:
         import chemml_version
 
         app = _materialise_payload(tmp_path)
+        # Simulate a payload built before the stamping hook existed: the
+        # beforeBuild hook (tested separately) now ships the stamp as part of
+        # the build, but this tool must still repair a legacy snapshot.
+        (app / "BUILD_INFO.json").unlink(missing_ok=True)
         assert not (app / "BUILD_INFO.json").exists(), "fixture should start unstamped"
 
         tool = ROOT / "scripts" / "refresh_desktop_payload.py"
@@ -319,6 +346,152 @@ class TestPackagedPayloadIsRunnable:
         commit, source = probe.stdout.split()
         assert commit != "unknown", "the refreshed payload cannot name its build commit"
         assert source == "BUILD_INFO.json"
+
+    def test_refresh_leaves_an_agreeing_stamp_untouched(self, tmp_path):
+        """Re-stamping an agreeing stamp would make every run a diff."""
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+
+        app = _materialise_payload(tmp_path)
+        tool = ROOT / "scripts" / "refresh_desktop_payload.py"
+        assert subprocess.run(
+            [python, str(tool), "--app", str(app)],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=300,
+        ).returncode == 0
+        before = (app / "BUILD_INFO.json").read_bytes()
+
+        result = subprocess.run(
+            [python, str(tool), "--app", str(app)],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=300,
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+        assert "updated : 0 of" in result.stdout, result.stdout[-500:]
+        assert (app / "BUILD_INFO.json").read_bytes() == before
+
+
+class TestPayloadGlobMirrorsElectronBuilder:
+    """The refresh tool must decide what to copy the way the builder does.
+
+    Two minimatch rules are easy to get wrong with fnmatch, and both were:
+    ``**`` matches **zero** directory levels (so ``**/*.py`` covers a bare
+    ``foo.py``), and wildcards never match a leading dot (so ``**/*`` does not
+    ship ``plugins/.gitkeep``).  A tool that copies *more* than the builder
+    reports phantom staleness; one that copies *less* ships a broken payload.
+    """
+
+    def test_globstar_matches_zero_levels(self):
+        assert _glob_matches(Path("app.py"), "**/*.py")
+        assert _glob_matches(Path("a/b/app.py"), "**/*.py")
+
+    def test_wildcards_do_not_match_dotfiles(self):
+        # electron-builder never copied plugins/.gitkeep under a **/* filter;
+        # a refresh tool that "helpfully" copies it then reports the snapshot
+        # as stale against every fresh build.
+        assert not _glob_matches(Path("plugins/.gitkeep"), "**/*")
+        assert _glob_matches(Path("plugins/data.json"), "**/*")
+
+    def test_tool_matcher_agrees_with_the_fixture(self):
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "refresh_tool", ROOT / "scripts" / "refresh_desktop_payload.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for rel, patterns in (
+            (Path("plugins/.gitkeep"), ["**/*"]),
+            (Path("app.py"), ["**/*.py"]),
+            (Path("a/b/app.py"), ["**/*.py"]),
+            (Path("config/ai.json"), ["*.json"]),
+            (Path("registry.json"), ["**/*.py", "**/*.json"]),
+        ):
+            assert module._wanted(rel, patterns) == any(
+                _glob_matches(rel, p) for p in patterns
+            ), f"{rel} under {patterns}"
+
+
+class TestBuildStampIsPartOfTheBuild:
+    """The stamp must ship with the installer, not only with a manual refresh.
+
+    ISSUE-21 fixed extracted *archives*; without a build hook the installed
+    desktop app -- the other way a distributed copy is born -- still reported
+    commit ``unknown``.  ``beforeBuild`` now stamps and ``extraResources``
+    ships the result.
+    """
+
+    def test_before_build_hook_is_wired(self):
+        build = json.loads((DESKTOP / "package.json").read_text(encoding="utf-8"))["build"]
+        hook = build.get("beforeBuild", "")
+        assert hook, "no beforeBuild hook: the packaged payload would ship unstamped"
+        # electron-builder resolves beforeBuild as a MODULE PATH (it requires
+        # it and prefers an export named after the hook), not as a shell
+        # command -- "node scripts/x.js" fails with a require error.
+        assert hook.startswith("./"), f"beforeBuild must be a module path, got {hook!r}"
+        script = DESKTOP / hook[2:]
+        assert script.exists(), f"beforeBuild points at a missing script: {hook}"
+        source = script.read_text(encoding="utf-8")
+        assert "beforeBuild: main" in source, "the hook must export under the hook's own name"
+
+    def test_hook_skips_the_node_modules_rebuild(self):
+        """Returning falsy must be deliberate, not accidental.
+
+        electron-builder reads the hook's return value as "node_modules handled
+        externally"; a silent ``undefined`` would look identical to 0 in the
+        code path but not in intent.
+        """
+        source = (DESKTOP / "scripts" / "stamp-build-info.js").read_text(encoding="utf-8")
+        assert "return 0;" in source
+
+    def test_extra_resources_ships_the_stamp(self):
+        config = json.loads((DESKTOP / "package.json").read_text(encoding="utf-8"))
+        targets = {entry["to"] for entry in config["build"]["extraResources"]}
+        assert "app/BUILD_INFO.json" in targets
+
+    def test_hook_writes_the_same_stamp_the_archive_gets(self, tmp_path):
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+        import chemml_version
+
+        out = tmp_path / "BUILD_INFO.json"
+        script = DESKTOP / "scripts" / "stamp-build-info.js"
+        result = subprocess.run(
+            [NODE, str(script)],
+            cwd=str(DESKTOP),
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env={**os.environ, "CHEMML_PYTHON": python, "CHEMML_BUILD_INFO_PATH": str(out)},
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+        assert out.exists(), "the hook must write the stamp it was asked for"
+        stamp = json.loads(out.read_text(encoding="utf-8"))
+        assert stamp["version"] == chemml_version.VERSION
+        assert stamp["commit"] != "unknown", "the hook must know its own commit"
+        assert stamp["commit"] == chemml_version.git_commit(short=False)
+        assert stamp["produced_by"] == "desktop/scripts/stamp-build-info.js"
+
+    def test_python_missing_is_a_warning_not_a_silent_success(self, tmp_path):
+        """The hook must not fail the build, but it must say what it skipped."""
+        out = tmp_path / "BUILD_INFO.json"
+        script = DESKTOP / "scripts" / "stamp-build-info.js"
+        result = subprocess.run(
+            [NODE, str(script)],
+            cwd=str(DESKTOP),
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env={
+                **os.environ,
+                "CHEMML_PYTHON": str(tmp_path / "definitely-not-python"),
+                "CHEMML_BUILD_INFO_PATH": str(out),
+                "PATH": "",
+            },
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+        assert "no Python interpreter found" in (result.stdout + result.stderr)
+        assert not out.exists()
 
 
 class TestRuntimeProbeContract:

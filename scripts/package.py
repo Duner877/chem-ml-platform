@@ -86,6 +86,13 @@ def should_skip(rel: Path) -> bool:
     if rel_posix in ("docs/RELEASE_MANIFEST.md", "docs/RELEASE_MANIFEST.json"):
         return True
 
+    # The build stamp is injected explicitly by build_info() below.  The
+    # desktop beforeBuild hook also leaves one in the tree (so extraResources
+    # can copy it); walking it in as well would put a second -- possibly older
+    # -- stamp under the same archive name.
+    if rel_posix == "BUILD_INFO.json":
+        return True
+
     # Runtime output: everything except the placeholder that keeps the dir.
     if rel_posix.startswith("output/"):
         return rel_posix != "output/.gitkeep"

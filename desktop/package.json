@@ -25,6 +25,7 @@
     "directories": {
       "output": "dist"
     },
+    "beforeBuild": "./scripts/stamp-build-info.js",
     "files": [
       "src/**/*",
       "resources/**/*"
@@ -148,6 +149,10 @@
       {
         "from": "../chemml_version.py",
         "to": "app/chemml_version.py"
+      },
+      {
+        "from": "../BUILD_INFO.json",
+        "to": "app/BUILD_INFO.json"
       },
       {
         "from": "../requirements.txt",
