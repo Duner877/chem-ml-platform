@@ -285,7 +285,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 
 | 步骤 | 结果 | 证据 |
 | --- | --- | --- |
-| 1. 从指定 Git commit 构建源码归档 | **PASS** | tag `v0.7.2` 指向的发布提交；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**363 文件 · 1,146,265 字节 · SHA-256 `bed083f497bd082d4bed99c0d1074a00cdf491f9596199158ce8dba0affd0de2`**） |
+| 1. 从指定 Git commit 构建源码归档 | **PASS** | tag `v0.7.2` 指向的发布提交；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**364 文件 · 1,149,717 字节 · SHA-256 `ff065ebb104877f57f6fae6104f993777b3235e45d8b91fe7e47893f37a97a2d`**） |
 | 2. 执行测试 | **PASS** | 413 项，见 §5.2 |
 | 3. 构建正式安装包 | **PASS** | §7 场景 A 表格 |
 | 4. 扫描实际依赖与捆绑组件 | **PASS** | 12 py / 153 npm / 9 external；`dependency_licenses` PASS |
@@ -309,7 +309,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 | 5 | 示例工作流能够在**正式安装包**中运行 | ⚠️ **未执行** | 示例工作流已在安装器声明的同一运行时与本机后端上跑通（6/6），但**未在安装后的应用内运行** |
 | 6 | 测试报告与当前提交的测试收集数量一致 | ✅ **通过** | 门禁 JUnit XML 逐阶段计数，合计 413，与测试报告一致 |
 | 7 | 完整质量门禁能在 CI 中结束并输出可复核结果 | ✅ **通过** | `gate: PASSED (pass=26 fail=0 skip=1)`；`output/quality_gate.json` / `.md` + `output/gate_logs/`；CI 12 阶段独立记录 |
-| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向 tag `v0.7.2` 的发布提交（见 `docs/RELEASE_MANIFEST.json` 的 `commit`）；`SHA256SUMS` 覆盖安装包（`77283d2d…`）、源码归档（`bed083f4…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
+| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向 tag `v0.7.2` 的发布提交（见 `docs/RELEASE_MANIFEST.json` 的 `commit`）；`SHA256SUMS` 覆盖安装包（`77283d2d…`）、源码归档（`ff065ebb…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
 | 9 | 科研节点能够明确标识执行模式 | ✅ **通过** | 89/89 节点声明 `execution_mode`（门禁 `node_registry_provenance` PASS） |
 | 10 | 合成科研基准与真实科研验证的结论已分开表述 | ✅ **通过** | §6；`V07_2_SYNTHETIC_BENCHMARK.md`（结论＝实现正确性）vs `V07_2_REAL_DATA_VALIDATION_PLAN.md`（状态＝计划，未执行） |
 | 11 | 关键源码、依赖、数据集及模型的来源与许可已核查 | ✅ **通过** | `docs/PROVENANCE.md`；`sbom.json`；8/8 数据集有 `source` + `license` + 文件 SHA-256 |
