@@ -58,6 +58,10 @@
 - 质量门桌面探针阶段原先在 JSON 解析失败时仍返回 **PASS**（日志尾部的 `# exit=N` 使 `json.loads` 失败），即「未读到结论却报告成功」。现改为 ERROR 并用大括号配对提取载荷。
 - 质量门 pytest 阶段从记录命令中剥离 `--basetemp` 时假设其为独立 argv 项，实际形如 `--basetemp=<path>`，导致 6 个阶段 `ValueError`。
 - `requirements.txt` 只含 `-r` 引用行，许可证报告把它当作包名解析（出现名为 `-r requirements.runtime.txt` 的「依赖」）；现按 `-r` 展开并只对**必需**依赖判失败。
+- `scripts/license_report.py` 的 `main()` 在 `--check` 下**仍然写盘**，即「校验」会悄悄修好它本该发现的问题；且 `docs/THIRD_PARTY_LICENSES.md` 第 5 节按本机 `frontend/dist` 状态分支输出、第 6 节输出清洁度扫描命中条数，导致该文档（其 SHA-256 被发布清单固定）**随本机构建产物变化**，同一次门禁内记录值与重算值必然不等。现改为 `--check` 只比对不写盘、漂移即阻断，并让文档只陈述与发布包和锁定依赖图有关的政策；回归测试 `test_document_does_not_depend_on_the_local_build_output` 锁死该性质。
+- 发布清单先前把门禁自己产出的报告（gate / CI / 复现报告）也按内容哈希固定，导致检查**必然自失败**；现为这类产物标记 `volatile` 并按存在性比对，非易变产物（安装包、SBOM、NOTICE、许可证清单、锁文件）仍逐字节比对。
+- `docs/RELEASE_MANIFEST.json` / `SHA256SUMS` 是**发布构建步骤的输出**：清单无法记录包含它自身的提交哈希，因此流程为「先提交源码 → 再生成清单」，`--check` 会同时比对版本、commit 与逐产物身份/哈希。
+- `.gitignore` 未覆盖 vite 在加载 `vite.config.ts` 时写出的 `frontend/vite.config.ts.timestamp-*.mjs` 临时文件，该文件在无法删除临时文件的受限主机上会残留并被误提交；现加入忽略规则。
 
 ### 新增 Added（续）
 

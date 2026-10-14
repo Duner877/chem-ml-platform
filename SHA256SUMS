@@ -1,5 +1,5 @@
 # SHA256SUMS — Chem ML Platform v0.7.2 (Trusted Delivery Release)
-# commit 2eb6453 · generated 2026-10-14T13:21:57+00:00
+# commit fd5503d · generated 2026-10-14T13:22:34+00:00
 # verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
 7b6c0751a0d09f99041d072f8ee766caa33280306554b00ac193b8008c237f2a  C:/Users/hanku/Desktop/0.5 - 副本/Chem-ML-Platform-v0.7.2.zip
 e556cec96689f4389237f53f69183c94a2e3c8da0ad190da072b9eb15de50f9c  desktop/dist/Chem ML Platform Setup 0.7.2.exe
@@ -18,7 +18,7 @@ a640cde957d121f9bde72cf3070fcfca3c8c23b34443221528cfdce901790ade  frontend/packa
 347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6  desktop/src/runtime-probe.js
 da673516abbb428c318ee9933e8808143f29ae3280555b2b1f15ca0a33cacff3  output/reproducibility.json
 2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a  docs/V07_2_PLUGIN_SPEC.md
-aeec62f8cbf5885392fda9a2aaab805f27a1ba6a2aa34135b035d150339236ae  docs/V07_2_RELEASE_REPORT.md
+d4258e5766f6da0223d0cdf3a1f7e51e1cb6cee4015c8caacd1bcb6f114b88c5  docs/V07_2_RELEASE_REPORT.md
 c7785d1c5605b228bcf374d7d516fdd74bee4e273dade46e35a2db764fbf8531  docs/V07_2_ISSUE_LOG.md
 a5fd18f450c52654251a39d0a320ef620c0eb1cc1b0b5b97273708611d2d2aac  docs/V07_2_CLEAN_ENV_TEST.md
 226e588b50068abd8bebe004d114b5691e36da48411ce6a476167fc8b32e37fd  docs/V07_2_REAL_DATA_VALIDATION_PLAN.md
