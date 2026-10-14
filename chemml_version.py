@@ -66,13 +66,45 @@ def read_build_info() -> Dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+def _git_repo_is_this_tree() -> bool:
+    """True only when ``ROOT`` itself is the top level of a Git checkout.
+
+    ``git rev-parse`` succeeds for *any* ancestor repository, not just this
+    one.  Without this guard a distributed copy extracted inside an unrelated
+    checkout -- or a test fixture parked under the repo's ``output/`` -- would
+    report that repository's HEAD as its own build commit.  That is a
+    fabricated provenance, which is the one thing this module must never do.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    if out.returncode != 0:
+        return False
+    top = (out.stdout or "").strip()
+    if not top:
+        return False
+    try:
+        return Path(top).resolve() == ROOT.resolve()
+    except OSError:
+        return False
+
+
 def git_commit(short: bool = True) -> str:
     """Return the commit this tree came from, or ``"unknown"``.
 
     Resolution order:
 
     1. ``CHEMML_BUILD_COMMIT`` -- an explicit override for hermetic builds;
-    2. ``git rev-parse HEAD`` -- a live checkout is always the best answer;
+    2. ``git rev-parse HEAD`` -- a live checkout is always the best answer,
+       but only when this directory *is* that checkout (see
+       :func:`_git_repo_is_this_tree`);
     3. ``BUILD_INFO.json`` -- the stamp recorded when the archive was packaged;
     4. ``"unknown"``.
 
@@ -84,21 +116,22 @@ def git_commit(short: bool = True) -> str:
     override = os.environ.get("CHEMML_BUILD_COMMIT", "").strip()
     if override:
         return override
-    args = ["git", "rev-parse", "--short", "HEAD"] if short else ["git", "rev-parse", "HEAD"]
-    try:
-        out = subprocess.run(
-            args,
-            cwd=str(ROOT),
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-    except (OSError, subprocess.SubprocessError):
-        out = None
-    if out is not None and out.returncode == 0:
-        found = (out.stdout or "").strip()
-        if found:
-            return found
+    if _git_repo_is_this_tree():
+        args = ["git", "rev-parse", "--short", "HEAD"] if short else ["git", "rev-parse", "HEAD"]
+        try:
+            out = subprocess.run(
+                args,
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except (OSError, subprocess.SubprocessError):
+            out = None
+        if out is not None and out.returncode == 0:
+            found = (out.stdout or "").strip()
+            if found:
+                return found
     info = read_build_info()
     recorded = str(
         info.get("commit_short" if short else "commit", "") or ""
@@ -110,18 +143,8 @@ def commit_source() -> str:
     """Where :func:`git_commit` got its answer -- never a guess."""
     if os.environ.get("CHEMML_BUILD_COMMIT", "").strip():
         return "env:CHEMML_BUILD_COMMIT"
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(ROOT),
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        if out.returncode == 0 and (out.stdout or "").strip():
-            return "git"
-    except (OSError, subprocess.SubprocessError):
-        pass
+    if _git_repo_is_this_tree():
+        return "git"
     if read_build_info().get("commit"):
         return "BUILD_INFO.json"
     return "unknown"
@@ -138,6 +161,8 @@ def build_stamp(produced_by: str) -> Dict[str, Any]:
     from datetime import datetime, timezone
 
     def _git(*args: str) -> str:
+        if not _git_repo_is_this_tree():
+            return ""
         try:
             out = subprocess.run(
                 ["git", *args], cwd=str(ROOT), capture_output=True, text=True, timeout=10
@@ -147,10 +172,15 @@ def build_stamp(produced_by: str) -> Dict[str, Any]:
         return (out.stdout or "").strip() if out.returncode == 0 else ""
 
     commit = _git("rev-parse", "HEAD")
+    if not commit:
+        # Repackaging a distributed copy (no Git of its own): carry the
+        # original stamp forward instead of downgrading it to "unknown".
+        previous = read_build_info()
+        commit = str(previous.get("commit", "") or "").strip() or "unknown"
     return {
         "version": __version__,
         "codename": __codename__,
-        "commit": commit or "unknown",
+        "commit": commit,
         "commit_short": commit[:7] if commit else "unknown",
         "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
         "dirty": bool(_git("status", "--porcelain")),

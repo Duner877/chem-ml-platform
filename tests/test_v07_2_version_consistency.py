@@ -20,6 +20,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -140,6 +143,72 @@ class TestDetectorActuallyFails:
         assert "0.6.0" not in text
         # only the version token is rewritten; the rest of the banner survives
         assert "Scientific Foundation Model Edition" in text
+
+
+class TestAncestorGitRepoIsNotClaimedAsProvenance:
+    """ISSUE-21 follow-up: an ancestor checkout is not this tree's provenance.
+
+    ``git rev-parse`` answers for *any* parent repository.  Before the guard, a
+    distributed copy extracted inside an unrelated checkout reported that
+    repository's HEAD as its own build commit -- a fabricated provenance, the
+    one failure this module exists to prevent.  The guard: only a tree whose
+    root *is* the Git top level may answer from Git.
+    """
+
+    PROBE = "import chemml_version;print(chemml_version.git_commit(), chemml_version.commit_source())"
+
+    def _nested_copy(self, tmp_path):
+        """A copy of the version module inside a *different* Git checkout."""
+        foreign = tmp_path / "someone-elses-repo"
+        nested = foreign / "extracted" / "chemml"
+        nested.mkdir(parents=True)
+        shutil.copy2(ROOT / "chemml_version.py", nested / "chemml_version.py")
+        # Every git call is pinned to the foreign repo with -C: a bare
+        # ``git commit`` would run against whatever cwd the test happens to
+        # have -- which once silently created a stray commit in THIS repo.
+        subprocess.run(
+            ["git", "init", "-q", str(foreign)], capture_output=True, timeout=60
+        )
+        subprocess.run(
+            ["git", "-C", str(foreign),
+             "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false",
+             "commit", "-q", "--allow-empty", "-m", "unrelated"],
+            capture_output=True, timeout=60,
+        )
+        return nested
+
+    def test_live_checkout_still_answers_from_git(self):
+        """The guard must not disable provenance for the real repository."""
+        from chemml_version import commit_source, git_commit
+
+        assert commit_source() == "git"
+        assert git_commit() != "unknown"
+
+    def test_nested_copy_reports_unknown_without_a_stamp(self, tmp_path):
+        nested = self._nested_copy(tmp_path)
+        proc = subprocess.run(
+            [sys.executable, "-c", self.PROBE],
+            cwd=str(nested), capture_output=True, text=True, timeout=120,
+        )
+        assert proc.returncode == 0, proc.stderr[-1000:]
+        commit, source = proc.stdout.split()
+        assert commit == "unknown", "an ancestor repo's HEAD must never be adopted"
+        assert source == "unknown"
+
+    def test_nested_copy_prefers_its_own_build_stamp(self, tmp_path):
+        nested = self._nested_copy(tmp_path)
+        (nested / "BUILD_INFO.json").write_text(
+            json.dumps({"commit": "abcdef1234567890", "commit_short": "abcdef1"}),
+            encoding="utf-8",
+        )
+        proc = subprocess.run(
+            [sys.executable, "-c", self.PROBE],
+            cwd=str(nested), capture_output=True, text=True, timeout=120,
+        )
+        assert proc.returncode == 0, proc.stderr[-1000:]
+        commit, source = proc.stdout.split()
+        assert commit == "abcdef1"
+        assert source == "BUILD_INFO.json"
 
 
 class TestBuildOutputIsRegeneratedNotStamped:

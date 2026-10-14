@@ -180,16 +180,6 @@ def verify(app: Path = DEFAULT_APP) -> int:
     ok = not (missing or differing or stale) and stamp.exists()
     print("AGREES" if ok else "STALE -- run without --verify to refresh")
     return 0 if ok else 1
-    print(f"payload entries expected : {len(pairs)}")
-    print(f"missing from snapshot    : {len(missing)}")
-    print(f"differing from source    : {len(differing)}")
-    print(f"stale (not in plan)      : {len(stale)}")
-    for label, items in (("missing", missing), ("differing", differing), ("stale", stale)):
-        for item in items[:10]:
-            print(f"  {label}: {item}")
-    ok = not (missing or differing or stale)
-    print("AGREES" if ok else "STALE -- run without --verify to refresh")
-    return 0 if ok else 1
 
 
 def main() -> int:
