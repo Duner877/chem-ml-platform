@@ -1,0 +1,17 @@
+{
+  "parser": "nodes.io.read_image_array",
+  "format": "PNG",
+  "color_type": 0,
+  "bit_depth": 8,
+  "interlace": false,
+  "grayscale_conversion": "ITU-R BT.601 luminance (PIL 'L' equivalent)",
+  "decoder_preference": [
+    "PIL",
+    "builtin-png"
+  ],
+  "node": "ImageFileNode",
+  "params": {
+    "pixel_size": 12.0,
+    "pixel_unit": "nm"
+  }
+}

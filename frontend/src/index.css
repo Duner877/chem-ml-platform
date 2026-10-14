@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: #0b1120;
+  color: #e2e8f0;
+  font-family: "Inter", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+/* React Flow theming ------------------------------------------------------ */
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__edge-path {
+  stroke: #38bdf8;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #7dd3fc;
+  stroke-width: 3;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: #38bdf8;
+  border: 2px solid #0b1120;
+}
+
+.react-flow__handle-connecting {
+  background: #fbbf24;
+}
+
+.react-flow__controls button {
+  background: #16213a;
+  border-bottom: 1px solid #23304d;
+  color: #e2e8f0;
+  fill: #e2e8f0;
+}
+
+.react-flow__controls button:hover {
+  background: #23304d;
+}
+
+.react-flow__minimap {
+  background: #111a2e;
+}
+
+.react-flow__background {
+  background: #0b1120;
+}
+
+/* scrollbars -------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #23304d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33456e;
+}

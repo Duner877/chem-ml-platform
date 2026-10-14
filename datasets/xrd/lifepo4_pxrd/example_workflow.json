@@ -1,0 +1,108 @@
+{
+  "name": "XRD 物相分析（LiFePO4 参考谱）",
+  "description": "读取粉末衍射 XY 数据，峰检索并与 LiFePO4 Pnma 参考反射比对。",
+  "metadata": {
+    "family": "xrd",
+    "dataset": "datasets/xrd/lifepo4_pxrd/sample_01.xy"
+  },
+  "nodes": [
+    {
+      "id": "load",
+      "type": "SpectrumFileNode",
+      "label": "SpectrumFileNode",
+      "params": {
+        "path": "datasets/xrd/lifepo4_pxrd/sample_01.xy",
+        "technique": "XRD"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "smooth",
+      "type": "SmoothingNode",
+      "label": "SmoothingNode",
+      "params": {
+        "method": "savitzky_golay",
+        "window": 9,
+        "order": 3
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "peaks",
+      "type": "PeakPickingNode",
+      "label": "PeakPickingNode",
+      "params": {
+        "height": 0.1,
+        "prominence": 0.05,
+        "limit": 30
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "LiFePO4 XRD 物相报告"
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "xrd_report"
+      },
+      "position": {
+        "x": 1040,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "load",
+      "target": "smooth",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "smooth",
+      "target": "peaks",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "table",
+      "target_port": "table"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "text",
+      "target_port": "text"
+    },
+    {
+      "source": "report",
+      "target": "export",
+      "source_port": "report",
+      "target_port": "report"
+    }
+  ]
+}

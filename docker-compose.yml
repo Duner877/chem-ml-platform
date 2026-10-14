@@ -1,0 +1,81 @@
+# Chem ML Platform v0.7.1 -- compose stack.
+#
+#   docker compose up --build        # API + frontend on http://localhost:8000
+#   docker compose --profile db up   # additionally start PostgreSQL and Redis
+#
+# The API is the only required service.  The database profile is optional and
+# only needed once run persistence / caching beyond the local file system is
+# required -- the engine itself never talks to a database.
+#
+# Richer deployment manifests (Nginx reverse proxy, .dockerignore) live in the
+# docker/ directory:  docker compose -f docker/docker-compose.yml up --build
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: chem-ml-platform:0.7.1
+    container_name: chemml-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      CHEMML_HOST: 0.0.0.0
+      CHEMML_PORT: "8000"
+      CHEMML_WORKERS: "2"
+      # Third-party node plugins are picked up from this folder at startup.
+      CHEMML_PLUGINS: /app/plugins
+      # Optional: LLM nodes become "online" providers when keys are provided.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      # Optional: Materials Project connector.
+      MP_API_KEY: ${MP_API_KEY:-}
+    volumes:
+      - ./workflows:/app/workflows:ro
+      - ./datasets:/app/datasets:ro
+      - ./plugins:/app/plugins
+      - chemml-output:/app/output
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- optional
+  postgres:
+    image: postgres:16-alpine
+    container_name: chemml-postgres
+    restart: unless-stopped
+    profiles: ["db"]
+    environment:
+      POSTGRES_USER: chemml
+      POSTGRES_PASSWORD: chemml
+      POSTGRES_DB: chemml
+    ports:
+      - "5432:5432"
+    volumes:
+      - chemml-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: chemml-redis
+    restart: unless-stopped
+    profiles: ["db"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - chemml-redis:/data
+
+volumes:
+  chemml-output:
+  chemml-postgres:
+  chemml-redis:

@@ -1,0 +1,5211 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "Chem ML Platform",
+      "version": "0.7.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    "tools": [
+      {
+        "name": "scripts/license_report.py",
+        "version": "0.7.1"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.143.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/fastapi",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/fastapi/fastapi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/uvicorn",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://uvicorn.dev/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.14.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/pydantic",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/pydantic/pydantic"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "numpy",
+      "version": "2.5.4",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/numpy",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://numpy.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scipy",
+      "version": "1.18.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/scipy",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD License"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://scipy.org/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "networkx",
+      "version": "3.7",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/networkx",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://networkx.org/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "matplotlib",
+      "version": "3.11.2",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/matplotlib",
+      "licenses": [
+        {
+          "license": {
+            "id": "Python Software Foundation License"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://matplotlib.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "torch",
+      "version": "2.14.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/torch",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://pytorch.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-docx",
+      "version": "1.2.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/python-docx",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://python-docx.readthedocs.org/en/latest/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pytest",
+      "version": "9.1.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/pytest",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://docs.pytest.org/en/latest/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx",
+      "version": "0.28.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/httpx",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.python-httpx.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@alloc/quick-lru",
+      "version": "5.3.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40alloc/quick-lru",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/code-frame",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/code-frame",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/compat-data",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/compat-data",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/core",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/core",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/generator",
+      "version": "7.29.8",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/generator",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-compilation-targets",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-compilation-targets",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-globals",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-globals",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-module-imports",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-module-imports",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-module-transforms",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-module-transforms",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-plugin-utils",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-plugin-utils",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-string-parser",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-string-parser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-validator-identifier",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helper-validator-option",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-validator-option",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/helpers",
+      "version": "7.29.10",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helpers",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/parser",
+      "version": "7.29.9",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/parser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/plugin-transform-react-jsx-self",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/plugin-transform-react-jsx-self",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/plugin-transform-react-jsx-source",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/plugin-transform-react-jsx-source",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/template",
+      "version": "7.29.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/template",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/traverse",
+      "version": "7.29.10",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/traverse",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@babel/types",
+      "version": "7.29.8",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40babel/types",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/win32-x64",
+      "version": "0.21.5",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/win32-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/win32-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/gen-mapping",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@jridgewell/remapping",
+      "version": "2.3.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/remapping",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/resolve-uri",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/sourcemap-codec",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/trace-mapping",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@nodelib/fs.scandir",
+      "version": "2.1.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.scandir",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@nodelib/fs.stat",
+      "version": "2.0.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.stat",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@nodelib/fs.walk",
+      "version": "1.2.8",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.walk",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rolldown/pluginutils",
+      "version": "1.0.0-beta.27",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rolldown/pluginutils",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-win32-x64-msvc",
+      "version": "4.64.5",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-win32-x64-msvc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/babel__core",
+      "version": "7.20.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/babel__core",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/babel__generator",
+      "version": "7.27.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/babel__generator",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/babel__template",
+      "version": "7.4.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/babel__template",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/babel__traverse",
+      "version": "7.28.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/babel__traverse",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-color",
+      "version": "3.1.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-color",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-drag",
+      "version": "3.0.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-drag",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-interpolate",
+      "version": "3.0.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-interpolate",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-selection",
+      "version": "3.0.12",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-selection",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-transition",
+      "version": "3.0.9",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-transition",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/d3-zoom",
+      "version": "3.0.9",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/d3-zoom",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/estree",
+      "version": "1.0.9",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/estree",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/prop-types",
+      "version": "15.7.15",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/prop-types",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/react",
+      "version": "18.3.31",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/react",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@types/react-dom",
+      "version": "18.3.7",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40types/react-dom",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@vitejs/plugin-react",
+      "version": "4.7.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40vitejs/plugin-react",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@vitejs/plugin-react"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@xyflow/react",
+      "version": "12.12.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40xyflow/react",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@xyflow/system",
+      "version": "0.0.83",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40xyflow/system",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "any-promise",
+      "version": "1.3.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/any-promise",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anymatch",
+      "version": "3.1.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/anymatch",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "arg",
+      "version": "5.0.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/arg",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "autoprefixer",
+      "version": "10.6.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/autoprefixer",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "baseline-browser-mapping",
+      "version": "2.11.28",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/baseline-browser-mapping",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "binary-extensions",
+      "version": "2.3.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/binary-extensions",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "braces",
+      "version": "3.0.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/braces",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "browserslist",
+      "version": "4.29.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/browserslist",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "camelcase-css",
+      "version": "2.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/camelcase-css",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "caniuse-lite",
+      "version": "1.0.30001815",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/caniuse-lite",
+      "licenses": [
+        {
+          "license": {
+            "id": "CC-BY-4.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chokidar",
+      "version": "3.6.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/chokidar",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chokidar/node_modules/glob-parent",
+      "version": "5.1.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/chokidar/node_modules/glob-parent",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "classcat",
+      "version": "5.0.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/classcat",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "commander",
+      "version": "4.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/commander",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "convert-source-map",
+      "version": "2.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/convert-source-map",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cssesc",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/cssesc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "csstype",
+      "version": "3.2.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/csstype",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-color",
+      "version": "3.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-color",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-dispatch",
+      "version": "3.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-dispatch",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-drag",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-drag",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-ease",
+      "version": "3.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-ease",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-interpolate",
+      "version": "3.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-interpolate",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-selection",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-selection",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-timer",
+      "version": "3.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-timer",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-transition",
+      "version": "3.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-transition",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "d3-zoom",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/d3-zoom",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debug",
+      "version": "4.4.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/debug",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "didyoumean",
+      "version": "1.2.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/didyoumean",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dlv",
+      "version": "1.1.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/dlv",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "electron-to-chromium",
+      "version": "1.5.452",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/electron-to-chromium",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-errors",
+      "version": "1.3.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/es-errors",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esbuild",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/esbuild",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "escalade",
+      "version": "3.2.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/escalade",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-glob",
+      "version": "3.3.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fast-glob",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-glob/node_modules/glob-parent",
+      "version": "5.1.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fast-glob/node_modules/glob-parent",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastq",
+      "version": "1.20.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fastq",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fill-range",
+      "version": "7.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fill-range",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fraction.js",
+      "version": "5.3.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fraction.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "function-bind",
+      "version": "1.1.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/function-bind",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gensync",
+      "version": "1.0.0-beta.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/gensync",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "glob-parent",
+      "version": "6.0.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/glob-parent",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hasown",
+      "version": "2.0.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/hasown",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-binary-path",
+      "version": "2.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/is-binary-path",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-core-module",
+      "version": "2.17.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/is-core-module",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-extglob",
+      "version": "2.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/is-extglob",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-glob",
+      "version": "4.0.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/is-glob",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-number",
+      "version": "7.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/is-number",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jiti",
+      "version": "1.21.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/jiti",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/js-tokens",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsesc",
+      "version": "3.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/jsesc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "json5",
+      "version": "2.2.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/json5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lilconfig",
+      "version": "3.1.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/lilconfig",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lines-and-columns",
+      "version": "1.2.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/lines-and-columns",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/loose-envify",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lru-cache",
+      "version": "5.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/lru-cache",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "merge2",
+      "version": "1.4.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/merge2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "micromatch",
+      "version": "4.0.8",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/micromatch",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ms",
+      "version": "2.1.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/ms",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mz",
+      "version": "2.7.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/mz",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nanoid",
+      "version": "3.3.20",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/nanoid",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "node-releases",
+      "version": "2.0.58",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/node-releases",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "normalize-path",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/normalize-path",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "object-assign",
+      "version": "4.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/object-assign",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "object-hash",
+      "version": "3.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/object-hash",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-parse",
+      "version": "1.0.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/path-parse",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/picocolors",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "picomatch",
+      "version": "2.3.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/picomatch",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pirates",
+      "version": "4.0.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/pirates",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss",
+      "version": "8.5.29",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-import",
+      "version": "15.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-import",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-js",
+      "version": "4.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-load-config",
+      "version": "6.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-load-config",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-nested",
+      "version": "6.2.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-nested",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-selector-parser",
+      "version": "6.1.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-selector-parser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss-value-parser",
+      "version": "4.2.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/postcss-value-parser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "queue-microtask",
+      "version": "1.2.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/queue-microtask",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react",
+      "version": "18.3.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/react",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-dom",
+      "version": "18.3.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/react-dom",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/react-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-refresh",
+      "version": "0.17.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/react-refresh",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "read-cache",
+      "version": "1.0.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/read-cache",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "readdirp",
+      "version": "3.6.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/readdirp",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "resolve",
+      "version": "1.22.13",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/resolve",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "reusify",
+      "version": "1.1.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/reusify",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rollup",
+      "version": "4.64.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/rollup",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "run-parallel",
+      "version": "1.2.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/run-parallel",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scheduler",
+      "version": "0.23.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/scheduler",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "semver",
+      "version": "6.3.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/semver",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "source-map-js",
+      "version": "1.2.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/source-map-js",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sucrase",
+      "version": "3.35.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/sucrase",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "supports-preserve-symlinks-flag",
+      "version": "1.0.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/supports-preserve-symlinks-flag",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tailwindcss",
+      "version": "3.4.19",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/tailwindcss",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "thenify",
+      "version": "3.3.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/thenify",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "thenify-all",
+      "version": "1.6.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/thenify-all",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyglobby",
+      "version": "0.2.17",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/tinyglobby",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyglobby/node_modules/fdir",
+      "version": "6.5.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/tinyglobby/node_modules/fdir",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyglobby/node_modules/picomatch",
+      "version": "4.0.7",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/tinyglobby/node_modules/picomatch",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "to-regex-range",
+      "version": "5.0.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/to-regex-range",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ts-interface-checker",
+      "version": "0.1.13",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/ts-interface-checker",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typescript",
+      "version": "5.9.3",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/typescript",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "update-browserslist-db",
+      "version": "1.3.4",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/update-browserslist-db",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "use-sync-external-store",
+      "version": "1.7.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/use-sync-external-store",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/util-deprecate",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vite",
+      "version": "5.4.21",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/vite",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "yallist",
+      "version": "3.1.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/yallist",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zustand",
+      "version": "4.5.7",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/zustand",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "name": "cp2k",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.cp2k.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "gaussian",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Commercial license; NOT bundled with the platform"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://gaussian.com/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "gromacs",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-2.1"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.gromacs.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "lammps",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.lammps.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "openmm",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT / LGPL"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://openmm.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "orca",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Academic freeware (registration required; not redistributable)"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.orcasoftware.de/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "psi4",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://psicode.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "quantum_espresso",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.quantum-espresso.org/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "vasp",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Commercial license; NOT bundled with the platform"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://www.vasp.at/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
+      "name": "Battery cathode candidates",
+      "version": "Table",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0"
+          }
+        }
+      ],
+      "description": "datasets/demo/battery_candidates.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "Caffeine EI-MS (synthetic)",
+      "version": "MassSpectrum",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0 (generated by the platform)"
+          }
+        }
+      ],
+      "description": "datasets/demo/caffeine_ms.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "Molecule library (10 compounds)",
+      "version": "Table",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0"
+          }
+        }
+      ],
+      "description": "datasets/demo/molecule_library.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "LiFePO4 SEM micrograph",
+      "version": "SEMImage",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0 (generated by the platform)"
+          }
+        }
+      ],
+      "description": "datasets/microscopy/lifepo4_sem/sample_01.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "Polystyrene IR, KBr pellet",
+      "version": "IRSpectrum",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0 (generated by the platform)"
+          }
+        }
+      ],
+      "description": "datasets/spectroscopy/polystyrene_ir/sample_01.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "Shimadzu SPC (FT-IR reference spectrum)",
+      "version": "IRSpectrum",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0 (generated by the platform)"
+          }
+        }
+      ],
+      "description": "datasets/spectroscopy/shimadzu_spc/sample_01.metadata.json · kind=synthetic"
+    },
+    {
+      "type": "data",
+      "name": "LiFePO4 powder XRD, Cu Ka",
+      "version": "XRDPattern",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "dataset"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0 (generated by the platform)"
+          }
+        }
+      ],
+      "description": "datasets/xrd/lifepo4_pxrd/sample_01.metadata.json · kind=synthetic"
+    }
+  ]
+}

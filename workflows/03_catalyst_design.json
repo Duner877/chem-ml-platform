@@ -1,0 +1,267 @@
+{
+  "name": "催化剂设计 / Catalyst Design",
+  "description": "以苯甲酸傅-克酰基化为例：从反应描述出发，经 ORCA 量化计算、LLM 方案设计、化学基础模型嵌入与相似性检索，输出催化剂选择、反应条件与设计报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "catalyst",
+      "quantum",
+      "LLM",
+      "foundation-model",
+      "similarity"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "molecule",
+      "table",
+      "text",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "substrate",
+      "type": "MoleculeInputNode",
+      "label": "底物（乙酰氯）",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": {
+        "smiles": "CC(=O)Cl",
+        "name": "acetyl chloride"
+      }
+    },
+    {
+      "id": "aromatics",
+      "type": "MoleculeInputNode",
+      "label": "芳环底物（苯）",
+      "position": {
+        "x": 0,
+        "y": 180
+      },
+      "params": {
+        "smiles": "c1ccccc1",
+        "name": "benzene"
+      }
+    },
+    {
+      "id": "quantum",
+      "type": "ORCANode",
+      "label": "ORCA 单点能计算",
+      "position": {
+        "x": 280,
+        "y": 0
+      },
+      "params": {
+        "method": "B3LYP",
+        "basis": "def2-SVP",
+        "task": "single_point",
+        "charge": 0,
+        "multiplicity": 1,
+        "online": false
+      }
+    },
+    {
+      "id": "embed",
+      "type": "ChemBERTaNode",
+      "label": "化学基础模型嵌入",
+      "position": {
+        "x": 280,
+        "y": 180
+      },
+      "params": {
+        "dimension": 256,
+        "include_features": true
+      }
+    },
+    {
+      "id": "library",
+      "type": "TableFileNode",
+      "label": "催化剂库",
+      "position": {
+        "x": 0,
+        "y": 360
+      },
+      "params": {
+        "path": "datasets/demo/molecule_library.csv"
+      }
+    },
+    {
+      "id": "similarity",
+      "type": "SimilaritySearchNode",
+      "label": "结构相似性检索",
+      "position": {
+        "x": 280,
+        "y": 360
+      },
+      "params": {
+        "metric": "tanimoto",
+        "top_k": 5,
+        "smiles_column": "smiles"
+      }
+    },
+    {
+      "id": "llm",
+      "type": "LLMNode",
+      "label": "LLM 方案设计",
+      "position": {
+        "x": 560,
+        "y": 200
+      },
+      "params": {
+        "provider": "offline",
+        "prompt": "为苯与乙酰氯的傅-克酰基化反应设计催化剂与反应条件，需给出 Lewis 酸强度、温度、溶剂与产率预期。",
+        "language": "zh"
+      }
+    },
+    {
+      "id": "summary",
+      "type": "SummaryTableNode",
+      "label": "结果汇总表",
+      "position": {
+        "x": 840,
+        "y": 120
+      },
+      "params": {
+        "max_rows": 80,
+        "include_metadata": true
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "催化剂设计报告",
+      "position": {
+        "x": 840,
+        "y": 320
+      },
+      "params": {
+        "title": "催化剂设计与反应方案报告",
+        "abstract": "结合量化电子结构、化学基础模型相似性与 LLM 推理的催化剂筛选结论。",
+        "language": "zh",
+        "include_tables": true
+      }
+    },
+    {
+      "id": "report_md",
+      "type": "ReportExportNode",
+      "label": "报告落盘",
+      "position": {
+        "x": 1110,
+        "y": 320
+      },
+      "params": {
+        "format": "html",
+        "filename": "catalyst_design_report"
+      }
+    },
+    {
+      "id": "export",
+      "type": "ExportNode",
+      "label": "导出催化剂候选",
+      "position": {
+        "x": 1110,
+        "y": 120
+      },
+      "params": {
+        "filename": "catalyst_candidates",
+        "format": "json"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "substrate",
+      "source_port": "molecule",
+      "target": "quantum",
+      "target_port": "molecule"
+    },
+    {
+      "source": "aromatics",
+      "source_port": "molecule",
+      "target": "embed",
+      "target_port": "molecule"
+    },
+    {
+      "source": "library",
+      "source_port": "table",
+      "target": "similarity",
+      "target_port": "library"
+    },
+    {
+      "source": "aromatics",
+      "source_port": "molecule",
+      "target": "similarity",
+      "target_port": "query"
+    },
+    {
+      "source": "quantum",
+      "source_port": "text",
+      "target": "llm",
+      "target_port": "context"
+    },
+    {
+      "source": "embed",
+      "source_port": "table",
+      "target": "llm",
+      "target_port": "context"
+    },
+    {
+      "source": "similarity",
+      "source_port": "table",
+      "target": "llm",
+      "target_port": "context"
+    },
+    {
+      "source": "llm",
+      "source_port": "table",
+      "target": "summary",
+      "target_port": "table"
+    },
+    {
+      "source": "similarity",
+      "source_port": "table",
+      "target": "summary",
+      "target_port": "table"
+    },
+    {
+      "source": "quantum",
+      "source_port": "molecule",
+      "target": "summary",
+      "target_port": "molecule"
+    },
+    {
+      "source": "quantum",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "text"
+    },
+    {
+      "source": "llm",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "similarity",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "report",
+      "source_port": "report",
+      "target": "report_md",
+      "target_port": "report"
+    },
+    {
+      "source": "llm",
+      "source_port": "text",
+      "target": "export",
+      "target_port": "data"
+    }
+  ]
+}

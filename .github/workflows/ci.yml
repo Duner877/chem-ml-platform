@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    name: Python (engine / nodes / workflows / API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ./node_sdk/python
+
+      - name: Node discovery (77 nodes registered)
+        run: python -m nodes.loader --stats
+
+      - name: Unit + integration tests (43)
+        run: pytest -q
+
+      - name: Full node smoke test (77/77)
+        run: python scripts/smoke_nodes.py --quiet
+
+      - name: Demo workflows (3/3)
+        run: python scripts/run_demo_workflows.py
+
+      - name: SDK run_local smoke
+        run: |
+          python - <<'PY'
+          from chemml_sdk import ChemMLClient
+          client = ChemMLClient()
+          result = client.run_local({
+              "name": "ci-inline",
+              "nodes": [{"id": "ms", "type": "SpectrumFileNode",
+                         "params": {"path": "datasets/samples/caffeine_ms.xy",
+                                    "technique": "MS"}}],
+              "edges": [],
+          })
+          assert result["status"] == "completed", result
+          print("run_local OK:", client.summary(result))
+          PY
+
+  node-sdk:
+    name: Node.js SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install and test
+        working-directory: node_sdk/nodejs
+        run: |
+          npm install
+          npm test
+
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install, typecheck and build
+        working-directory: frontend
+        run: |
+          npm install
+          npm run lint
+          npm run build
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t chem-ml-platform:ci .
+      - name: Smoke test container
+        run: |
+          docker run -d --name chemml -p 8000:8000 chem-ml-platform:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/api/health; then break; fi
+            sleep 2
+          done
+          docker logs chemml
+          docker stop chemml

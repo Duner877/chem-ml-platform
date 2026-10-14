@@ -1,0 +1,10 @@
+{
+  "parser": "nodes.instruments.vendor_adapters.shimadzu.read_spc",
+  "format": "Shimadzu SPC",
+  "vendor": "shimadzu",
+  "byte_order": "little",
+  "header_bytes": 512,
+  "y_encoding": "float32",
+  "band_direction": "down",
+  "node": "VendorSpectrumNode"
+}

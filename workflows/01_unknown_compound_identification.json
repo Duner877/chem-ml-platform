@@ -1,0 +1,232 @@
+{
+  "name": "未知化合物鉴定 / Unknown Compound Identification",
+  "description": "读取咖啡因的 EI 质谱、¹H NMR 与红外光谱，融合多通道证据在分子库中检索，输出候选结构、置信度与结构解释报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "identification",
+      "MS",
+      "NMR",
+      "IR",
+      "fusion"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "molecule",
+      "table",
+      "text",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "ms_file",
+      "type": "SpectrumFileNode",
+      "label": "质谱文件",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": {
+        "path": "datasets/demo/caffeine_ms.xy",
+        "technique": "MS",
+        "mode": "EI-MS"
+      }
+    },
+    {
+      "id": "library",
+      "type": "TableFileNode",
+      "label": "分子候选库",
+      "position": {
+        "x": 0,
+        "y": 220
+      },
+      "params": {
+        "path": "datasets/demo/molecule_library.csv"
+      }
+    },
+    {
+      "id": "ms_peaks",
+      "type": "PeakPickingNode",
+      "label": "质谱峰提取",
+      "position": {
+        "x": 260,
+        "y": 0
+      },
+      "params": {
+        "height": 5.0,
+        "prominence": 2.0,
+        "limit": 40
+      }
+    },
+    {
+      "id": "ms_smooth",
+      "type": "SmoothingNode",
+      "label": "质谱平滑",
+      "position": {
+        "x": 520,
+        "y": 0
+      },
+      "params": {
+        "method": "savitzky_golay",
+        "window": 9,
+        "order": 3
+      }
+    },
+    {
+      "id": "nmr",
+      "type": "NMRNode",
+      "label": "¹H NMR 采集",
+      "position": {
+        "x": 520,
+        "y": 220
+      },
+      "params": {
+        "smiles": "CCO",
+        "nucleus": "1H",
+        "frequency_mhz": 400.0,
+        "solvent": "CDCl3"
+      }
+    },
+    {
+      "id": "ir",
+      "type": "IRNode",
+      "label": "红外采集",
+      "position": {
+        "x": 520,
+        "y": 420
+      },
+      "params": {
+        "smiles": "CCO",
+        "resolution_cm": 4.0
+      }
+    },
+    {
+      "id": "identify",
+      "type": "UnknownCompoundIdentificationNode",
+      "label": "未知物鉴定",
+      "position": {
+        "x": 820,
+        "y": 110
+      },
+      "params": {
+        "adduct": "[M+H]+",
+        "mass_tolerance_ppm": 20.0,
+        "top_k": 5,
+        "use_ai": true,
+        "language": "zh"
+      }
+    },
+    {
+      "id": "candidates",
+      "type": "ExportNode",
+      "label": "导出候选表",
+      "position": {
+        "x": 1090,
+        "y": 60
+      },
+      "params": {
+        "filename": "identification_candidates",
+        "format": "csv"
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "结构解释报告",
+      "position": {
+        "x": 1090,
+        "y": 260
+      },
+      "params": {
+        "title": "未知化合物结构鉴定报告",
+        "abstract": "基于 EI-MS / ¹H NMR / IR 三重证据融合的候选结构排序与解释。",
+        "language": "zh",
+        "include_tables": true
+      }
+    },
+    {
+      "id": "report_md",
+      "type": "ReportExportNode",
+      "label": "报告落盘",
+      "position": {
+        "x": 1360,
+        "y": 260
+      },
+      "params": {
+        "format": "html",
+        "filename": "identification_report"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "ms_file",
+      "source_port": "spectrum",
+      "target": "ms_peaks",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "ms_peaks",
+      "source_port": "spectrum",
+      "target": "ms_smooth",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "ms_smooth",
+      "source_port": "spectrum",
+      "target": "identify",
+      "target_port": "ms"
+    },
+    {
+      "source": "nmr",
+      "source_port": "spectrum",
+      "target": "identify",
+      "target_port": "nmr"
+    },
+    {
+      "source": "ir",
+      "source_port": "spectrum",
+      "target": "identify",
+      "target_port": "ir"
+    },
+    {
+      "source": "library",
+      "source_port": "table",
+      "target": "identify",
+      "target_port": "candidates"
+    },
+    {
+      "source": "identify",
+      "source_port": "table",
+      "target": "candidates",
+      "target_port": "data"
+    },
+    {
+      "source": "identify",
+      "source_port": "molecule",
+      "target": "report",
+      "target_port": "molecule"
+    },
+    {
+      "source": "identify",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "identify",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "text"
+    },
+    {
+      "source": "report",
+      "source_port": "report",
+      "target": "report_md",
+      "target_port": "report"
+    }
+  ]
+}

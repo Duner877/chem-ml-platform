@@ -1,0 +1,154 @@
+{
+  "name": "科学基座模型表征 / Scientific Foundation Model Profiling",
+  "description": "对咖啡因依次执行三种科学基座模型——ChemBERTa（SMILES 语言模型嵌入）、Uni-Mol（三维几何嵌入）与理化描述符（Molecular Descriptors）——输出分子嵌入与性质向量，最后交由 Report Agent 汇总为基座模型表征报告。演示 v0.6 统一科学基座模型运行时（foundation）在节点层的调用。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "foundation-model",
+      "chemberta",
+      "uni-mol",
+      "descriptors",
+      "embedding",
+      "report-agent",
+      "v0.6"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "molecule",
+      "table",
+      "text",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "mol_in",
+      "type": "MoleculeInputNode",
+      "label": "咖啡因",
+      "position": {
+        "x": 0,
+        "y": 160
+      },
+      "params": {
+        "smiles": "CN1C=NC2=C1C(=O)N(C)C(=O)N2",
+        "name": "Caffeine"
+      }
+    },
+    {
+      "id": "chemberta",
+      "type": "ChemBERTaNode",
+      "label": "ChemBERTa 嵌入",
+      "position": {
+        "x": 300,
+        "y": 40
+      },
+      "params": {
+        "embedding_dim": 256,
+        "n_grams": 2,
+        "task": "embedding"
+      }
+    },
+    {
+      "id": "unimol",
+      "type": "UniMolNode",
+      "label": "Uni-Mol 三维嵌入",
+      "position": {
+        "x": 600,
+        "y": 40
+      },
+      "params": {
+        "embedding_dim": 256,
+        "with_3d": true
+      }
+    },
+    {
+      "id": "descriptors",
+      "type": "MolecularDescriptorsNode",
+      "label": "理化描述符",
+      "position": {
+        "x": 600,
+        "y": 300
+      },
+      "params": {}
+    },
+    {
+      "id": "report",
+      "type": "ReportAgentNode",
+      "label": "基座模型报告",
+      "position": {
+        "x": 920,
+        "y": 160
+      },
+      "params": {
+        "title": "科学基座模型表征报告：咖啡因",
+        "summary": "本报告汇总 ChemBERTa（SMILES 语言模型）、Uni-Mol（三维几何模型）与理化描述符三种科学基座模型对咖啡因的表征结果，包含分子嵌入向量、理化性质与模型摘要，用于比较不同基座模型的表征能力。",
+        "format": "html",
+        "filename": "demo06_foundation_models_report"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "mol_in",
+      "source_port": "molecule",
+      "target": "chemberta",
+      "target_port": "molecule"
+    },
+    {
+      "source": "chemberta",
+      "source_port": "molecule",
+      "target": "unimol",
+      "target_port": "molecule"
+    },
+    {
+      "source": "unimol",
+      "source_port": "molecule",
+      "target": "descriptors",
+      "target_port": "molecule"
+    },
+    {
+      "source": "chemberta",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "chemberta",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "unimol",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "unimol",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "descriptors",
+      "source_port": "molecule",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "descriptors",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "descriptors",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "data"
+    }
+  ]
+}

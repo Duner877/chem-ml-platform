@@ -1,0 +1,32 @@
+{
+  "name": "Battery cathode candidates",
+  "family": "demo",
+  "data_type": "Table",
+  "columns": {
+    "name": "material",
+    "formula": "chemical formula",
+    "capacity_mah_g": "specific capacity",
+    "voltage_v": "average voltage",
+    "band_gap_ev": "electronic band gap",
+    "density": "density (g/cm3)",
+    "stability": "qualitative stability"
+  },
+  "rows": 10,
+  "notes": "Ranking pool for the material discovery workflow.",
+  "license": "CC0",
+  "schema_version": "1.0",
+  "created_at": "2026-10-14",
+  "source": {
+    "kind": "synthetic",
+    "generator": "chem-ml-platform sample generator",
+    "reference": ""
+  },
+  "files": [
+    {
+      "path": "demo/battery_candidates.csv",
+      "bytes": 454,
+      "sha256": "33ab26fde3ab063f0e1e1f0559d6c8647a0b44bcc3921c85b1d4445f0ca4acad"
+    }
+  ],
+  "format": "CSV"
+}

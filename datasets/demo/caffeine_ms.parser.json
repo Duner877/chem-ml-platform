@@ -1,0 +1,14 @@
+{
+  "parser": "workflow_engine.parsers.xy",
+  "format": "XY",
+  "delimiter": "tab",
+  "comment_prefix": "#",
+  "header_rows": 2,
+  "x_column": 0,
+  "y_column": 1,
+  "node": "SpectrumFileNode",
+  "params": {
+    "technique": "MS",
+    "mode": "EI-MS"
+  }
+}

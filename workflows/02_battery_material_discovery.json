@@ -1,0 +1,245 @@
+{
+  "name": "电池材料发现 / Battery Material Discovery",
+  "description": "从候选材料库出发，经分子描述符与性质预测、XRD 结构表征、EHT 电子结构计算，最终按目标性质排序并输出优化材料与决策报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "battery",
+      "cathode",
+      "discovery",
+      "XRD",
+      "EHT"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "material",
+      "table",
+      "text",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "candidates_file",
+      "type": "TableFileNode",
+      "label": "候选材料库",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": {
+        "path": "datasets/demo/battery_candidates.csv"
+      }
+    },
+    {
+      "id": "lfp",
+      "type": "MaterialInputNode",
+      "label": "正极材料 LiFePO₄",
+      "position": {
+        "x": 0,
+        "y": 200
+      },
+      "params": {
+        "formula": "LiFePO4",
+        "name": "LiFePO4 (LFP)",
+        "a": 10.33,
+        "b": 6.01,
+        "c": 4.69,
+        "spacegroup": "Pnma",
+        "crystal_system": "orthorhombic"
+      }
+    },
+    {
+      "id": "xrd",
+      "type": "XRDNode",
+      "label": "XRD 粉末衍射",
+      "position": {
+        "x": 280,
+        "y": 200
+      },
+      "params": {
+        "two_theta_min": 10.0,
+        "two_theta_max": 80.0,
+        "wavelength": 1.5406,
+        "fwhm": 0.15
+      }
+    },
+    {
+      "id": "xrd_peaks",
+      "type": "PeakPickingNode",
+      "label": "衍射峰检索",
+      "position": {
+        "x": 560,
+        "y": 200
+      },
+      "params": {
+        "height": 5.0,
+        "prominence": 3.0,
+        "limit": 40
+      }
+    },
+    {
+      "id": "property",
+      "type": "PropertyPredictionNode",
+      "label": "分子性质预测",
+      "position": {
+        "x": 560,
+        "y": 0
+      },
+      "params": {
+        "smiles": "CC(=O)Oc1ccccc1C(=O)O"
+      }
+    },
+    {
+      "id": "discover",
+      "type": "MaterialDiscoveryNode",
+      "label": "材料发现",
+      "position": {
+        "x": 840,
+        "y": 100
+      },
+      "params": {
+        "target_property": "capacity_gravimetric",
+        "target_value": 0.0,
+        "top_k": 5,
+        "language": "zh"
+      }
+    },
+    {
+      "id": "summary",
+      "type": "SummaryTableNode",
+      "label": "结果汇总表",
+      "position": {
+        "x": 1120,
+        "y": 60
+      },
+      "params": {
+        "max_rows": 60,
+        "include_metadata": true
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "决策报告",
+      "position": {
+        "x": 1120,
+        "y": 260
+      },
+      "params": {
+        "title": "电池正极材料发现报告",
+        "abstract": "按质量比容量对候选组分排序，并结合 XRD 物相与分子级性质给出决策依据。",
+        "language": "zh",
+        "include_tables": true
+      }
+    },
+    {
+      "id": "report_md",
+      "type": "ReportExportNode",
+      "label": "报告落盘",
+      "position": {
+        "x": 1390,
+        "y": 260
+      },
+      "params": {
+        "format": "markdown",
+        "filename": "battery_discovery_report"
+      }
+    },
+    {
+      "id": "export",
+      "type": "ExportNode",
+      "label": "导出优化材料",
+      "position": {
+        "x": 1390,
+        "y": 60
+      },
+      "params": {
+        "filename": "optimised_material",
+        "format": "json"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "candidates_file",
+      "source_port": "table",
+      "target": "discover",
+      "target_port": "candidates"
+    },
+    {
+      "source": "lfp",
+      "source_port": "material",
+      "target": "xrd",
+      "target_port": "sample"
+    },
+    {
+      "source": "xrd",
+      "source_port": "spectrum",
+      "target": "xrd_peaks",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "xrd_peaks",
+      "source_port": "spectrum",
+      "target": "discover",
+      "target_port": "xrd"
+    },
+    {
+      "source": "property",
+      "source_port": "molecule",
+      "target": "discover",
+      "target_port": "dft"
+    },
+    {
+      "source": "discover",
+      "source_port": "material",
+      "target": "summary",
+      "target_port": "material"
+    },
+    {
+      "source": "discover",
+      "source_port": "table",
+      "target": "summary",
+      "target_port": "table"
+    },
+    {
+      "source": "xrd_peaks",
+      "source_port": "table",
+      "target": "summary",
+      "target_port": "table"
+    },
+    {
+      "source": "discover",
+      "source_port": "material",
+      "target": "report",
+      "target_port": "material"
+    },
+    {
+      "source": "discover",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "xrd_peaks",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "report",
+      "source_port": "report",
+      "target": "report_md",
+      "target_port": "report"
+    },
+    {
+      "source": "discover",
+      "source_port": "material",
+      "target": "export",
+      "target_port": "data"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "name": "NMR 谱图解析（Bruker TopSpin 原始数据）",
+  "description": "从 Bruker 实验文件夹读取处理后的 1H NMR，做峰提取并生成报告。",
+  "metadata": {
+    "family": "nmr",
+    "dataset": "datasets/nmr/bruker_nmr/sample_01.d"
+  },
+  "nodes": [
+    {
+      "id": "load",
+      "type": "VendorSpectrumNode",
+      "label": "VendorSpectrumNode",
+      "params": {
+        "path": "datasets/nmr/bruker_nmr/sample_01.d"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "peaks",
+      "type": "PeakPickingNode",
+      "label": "PeakPickingNode",
+      "params": {
+        "height": 0.05,
+        "prominence": 0.03,
+        "limit": 20
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "1H NMR 谱图解析报告"
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "nmr_report"
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "load",
+      "target": "peaks",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "table",
+      "target_port": "table"
+    },
+    {
+      "source": "report",
+      "target": "export",
+      "source_port": "report",
+      "target_port": "report"
+    }
+  ]
+}

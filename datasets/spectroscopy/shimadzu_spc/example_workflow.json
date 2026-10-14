@@ -1,0 +1,86 @@
+{
+  "name": "厂商光谱导入与峰提取（Shimadzu SPC）",
+  "description": "读取 Galactic SPC 容器，自动反转透过率谱后提取谱带并生成报告。",
+  "metadata": {
+    "family": "spectroscopy",
+    "dataset": "datasets/spectroscopy/shimadzu_spc/sample_01.spc"
+  },
+  "nodes": [
+    {
+      "id": "load",
+      "type": "VendorSpectrumNode",
+      "label": "VendorSpectrumNode",
+      "params": {
+        "path": "datasets/spectroscopy/shimadzu_spc/sample_01.spc"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "centroid",
+      "type": "ProfileCentroidNode",
+      "label": "ProfileCentroidNode",
+      "params": {
+        "merge_width": 20.0,
+        "min_height": 0.05
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "红外谱带分析报告"
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "ir_report"
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "load",
+      "target": "centroid",
+      "source_port": "spectrum",
+      "target_port": "sample"
+    },
+    {
+      "source": "centroid",
+      "target": "report",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "centroid",
+      "target": "report",
+      "source_port": "table",
+      "target_port": "table"
+    },
+    {
+      "source": "report",
+      "target": "export",
+      "source_port": "report",
+      "target_port": "report"
+    }
+  ]
+}

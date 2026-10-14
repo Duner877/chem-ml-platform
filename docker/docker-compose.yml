@@ -1,0 +1,99 @@
+# Chem ML Platform v0.7.1 -- compose stack.
+#
+#   docker compose -f docker/docker-compose.yml up --build
+#       -> API + pre-built frontend on http://localhost:8000
+#   docker compose -f docker/docker-compose.yml --profile db up
+#       -> also start PostgreSQL + Redis (optional persistence/cache)
+#   docker compose -f docker/docker-compose.yml --profile proxy up
+#       -> also start Nginx in front of the API (TLS termination, WS upgrade)
+#
+# The build context is the repository root so the single Dockerfile at the top
+# level is reused; no duplicated image definition is kept here.
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: chem-ml-platform:0.7.1
+    container_name: chemml-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      CHEMML_HOST: 0.0.0.0
+      CHEMML_PORT: "8000"
+      CHEMML_WORKERS: "2"
+      # Third-party node plugins are picked up from this folder at startup.
+      CHEMML_PLUGINS: /app/plugins
+      # Optional: LLM nodes become "online" providers when keys are provided.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      # Optional: Materials Project connector.
+      MP_API_KEY: ${MP_API_KEY:-}
+    volumes:
+      - ../workflows:/app/workflows:ro
+      - ../datasets:/app/datasets:ro
+      - ./plugins:/app/plugins
+      - chemml-output:/app/output
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- optional
+  postgres:
+    image: postgres:16-alpine
+    container_name: chemml-postgres
+    restart: unless-stopped
+    profiles: ["db"]
+    environment:
+      POSTGRES_USER: chemml
+      POSTGRES_PASSWORD: chemml
+      POSTGRES_DB: chemml
+    ports:
+      - "5432:5432"
+    volumes:
+      - chemml-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: chemml-redis
+    restart: unless-stopped
+    profiles: ["db"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - chemml-redis:/data
+
+  # ---------------------------------------------------------- optional proxy
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: chemml-nginx
+    restart: unless-stopped
+    profiles: ["proxy"]
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  chemml-output:
+  chemml-postgres:
+  chemml-redis:

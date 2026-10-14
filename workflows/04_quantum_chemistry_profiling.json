@@ -1,0 +1,133 @@
+{
+  "name": "计算化学驱动的分子性质评估 / Quantum-Chemistry-Guided Molecular Profiling",
+  "description": "以咖啡因为示例，调用量子化学引擎（缺失外部程序时自动回退内置扩展 Hückel）计算电子结构，叠加分子描述符与 AI 性质预测，最终由 Report Agent 汇总为可分享的研究报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "quantum",
+      "eht",
+      "descriptors",
+      "property-prediction",
+      "report-agent",
+      "research-ready"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "molecule",
+      "table",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "mol_in",
+      "type": "MoleculeInputNode",
+      "label": "咖啡因分子",
+      "position": {
+        "x": 0,
+        "y": 140
+      },
+      "params": {
+        "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
+        "name": "Caffeine"
+      }
+    },
+    {
+      "id": "orca",
+      "type": "ORCANode",
+      "label": "量子化学计算",
+      "position": {
+        "x": 300,
+        "y": 140
+      },
+      "params": {
+        "method": "b3lyp",
+        "basis": "def2-SVP",
+        "charge": 0,
+        "multiplicity": 1,
+        "task": "single_point"
+      }
+    },
+    {
+      "id": "descriptors",
+      "type": "MolecularDescriptorsNode",
+      "label": "分子描述符",
+      "position": {
+        "x": 600,
+        "y": 40
+      },
+      "params": {}
+    },
+    {
+      "id": "property",
+      "type": "PropertyPredictionNode",
+      "label": "AI 性质预测",
+      "position": {
+        "x": 600,
+        "y": 240
+      },
+      "params": {}
+    },
+    {
+      "id": "report",
+      "type": "ReportAgentNode",
+      "label": "研究报告",
+      "position": {
+        "x": 900,
+        "y": 140
+      },
+      "params": {
+        "title": "咖啡因计算化学性质评估报告",
+        "summary": "本报告汇总量子化学（扩展 Hückel 回退引擎）计算的电子结构、自动提取的分子描述符，以及 AI 模型预测的类药性质，用于分子层面的快速筛选与解读。",
+        "format": "html",
+        "filename": "demo04_quantum_profiling_report"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "mol_in",
+      "source_port": "molecule",
+      "target": "orca",
+      "target_port": "molecule"
+    },
+    {
+      "source": "orca",
+      "source_port": "molecule",
+      "target": "descriptors",
+      "target_port": "molecule"
+    },
+    {
+      "source": "orca",
+      "source_port": "molecule",
+      "target": "property",
+      "target_port": "molecule"
+    },
+    {
+      "source": "orca",
+      "source_port": "molecule",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "orca",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "descriptors",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "property",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    }
+  ]
+}

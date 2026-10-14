@@ -1,0 +1,147 @@
+{
+  "name": "未知化合物鉴定（示例 EI-MS 数据）",
+  "description": "用 datasets/demo 的咖啡因 EI-MS 与分子库跑完整鉴定链。",
+  "metadata": {
+    "family": "demo",
+    "dataset": "datasets/demo/caffeine_ms.xy"
+  },
+  "nodes": [
+    {
+      "id": "ms_file",
+      "type": "SpectrumFileNode",
+      "label": "SpectrumFileNode",
+      "params": {
+        "path": "datasets/demo/caffeine_ms.xy",
+        "technique": "MS",
+        "mode": "EI-MS"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "library",
+      "type": "TableFileNode",
+      "label": "TableFileNode",
+      "params": {
+        "path": "datasets/demo/molecule_library.csv"
+      },
+      "position": {
+        "x": 80,
+        "y": 260
+      }
+    },
+    {
+      "id": "peaks",
+      "type": "PeakPickingNode",
+      "label": "PeakPickingNode",
+      "params": {
+        "height": 5.0,
+        "prominence": 2.0,
+        "limit": 40
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "smooth",
+      "type": "SmoothingNode",
+      "label": "SmoothingNode",
+      "params": {
+        "method": "savitzky_golay",
+        "window": 9,
+        "order": 3
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "identify",
+      "type": "UnknownCompoundIdentificationNode",
+      "label": "UnknownCompoundIdentificationNode",
+      "params": {
+        "adduct": "[M+H]+",
+        "mass_tolerance_ppm": 20.0,
+        "top_k": 5
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "未知化合物结构鉴定报告"
+      },
+      "position": {
+        "x": 1040,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "identification_report"
+      },
+      "position": {
+        "x": 1280,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "ms_file",
+      "target": "peaks",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "peaks",
+      "target": "smooth",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "smooth",
+      "target": "identify",
+      "source_port": "spectrum",
+      "target_port": "ms"
+    },
+    {
+      "source": "library",
+      "target": "identify",
+      "source_port": "table",
+      "target_port": "candidates"
+    },
+    {
+      "source": "identify",
+      "target": "report",
+      "source_port": "table",
+      "target_port": "table"
+    },
+    {
+      "source": "identify",
+      "target": "report",
+      "source_port": "text",
+      "target_port": "text"
+    },
+    {
+      "source": "report",
+      "target": "export",
+      "source_port": "report",
+      "target_port": "report"
+    }
+  ]
+}

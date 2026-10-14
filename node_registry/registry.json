@@ -1,0 +1,5694 @@
+{
+  "package": "nodes",
+  "modules_scanned": 52,
+  "modules": [
+    "nodes._helpers",
+    "nodes.agent",
+    "nodes.agent.agent",
+    "nodes.agent.planner",
+    "nodes.agent.reasoning",
+    "nodes.agent.tools",
+    "nodes.agent.workflow_generator",
+    "nodes.ai",
+    "nodes.ai.foundation",
+    "nodes.ai.llm",
+    "nodes.ai.prediction",
+    "nodes.ai.vision",
+    "nodes.analysis",
+    "nodes.databases",
+    "nodes.databases.chemical",
+    "nodes.databases.materials_db",
+    "nodes.databases.spectral",
+    "nodes.gpu",
+    "nodes.gpu.gpu_nodes",
+    "nodes.instruments",
+    "nodes.instruments._base",
+    "nodes.instruments.diffraction",
+    "nodes.instruments.electro",
+    "nodes.instruments.electronic",
+    "nodes.instruments.imaging",
+    "nodes.instruments.mass_spectrometry",
+    "nodes.instruments.mass_spectrometry.parsers",
+    "nodes.instruments.microscopy",
+    "nodes.instruments.ms",
+    "nodes.instruments.nmr",
+    "nodes.instruments.particle",
+    "nodes.instruments.surface",
+    "nodes.instruments.thermal",
+    "nodes.instruments.vendor_adapters",
+    "nodes.instruments.vendor_adapters.agilent",
+    "nodes.instruments.vendor_adapters.base",
+    "nodes.instruments.vendor_adapters.bruker",
+    "nodes.instruments.vendor_adapters.shimadzu",
+    "nodes.instruments.vendor_adapters.thermo",
+    "nodes.instruments.vendor_adapters.waters",
+    "nodes.instruments.vibrational",
+    "nodes.io",
+    "nodes.loader",
+    "nodes.question",
+    "nodes.question.discovery",
+    "nodes.question.identification",
+    "nodes.report",
+    "nodes.report_agent",
+    "nodes.simulation",
+    "nodes.simulation.materials_sim",
+    "nodes.simulation.molecular_dynamics",
+    "nodes.simulation.quantum"
+  ],
+  "nodes": [
+    {
+      "node_name": "AFLOW",
+      "type": "AFLOWNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "材料 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 AFLOW 高通量计算材料数据库（热力学与电子结构）。",
+      "category": "Databases/Materials",
+      "tags": [
+        "database",
+        "aflow",
+        "high-throughput"
+      ],
+      "module": "nodes.databases.materials_db",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "AFM",
+      "type": "AFMNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "显微图像",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱 / 剖面",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "形貌统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "分析报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "原子力显微镜：表面形貌与粗糙度分析，输出 Ra / Rq 粗糙度指标。",
+      "category": "Instruments/Microscopy",
+      "tags": [
+        "instrument",
+        "afm",
+        "microscopy",
+        "roughness"
+      ],
+      "module": "nodes.instruments.microscopy",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Agent Planner",
+      "type": "AgentPlanNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "question",
+          "data_type": "Text",
+          "description": "科学问题（自然语言）",
+          "optional": true,
+          "multi": false
+        },
+        {
+          "name": "context",
+          "data_type": "Any",
+          "description": "上游数据 / 上下文",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "workflow",
+          "data_type": "Text",
+          "description": "生成的工作流 JSON",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "规划说明",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "只做规划不执行：把自然语言问题转成工作流 JSON，便于人工审查后再运行。",
+      "category": "Agent",
+      "tags": [
+        "agent",
+        "planner",
+        "dry-run"
+      ],
+      "module": "nodes.agent.agent",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "BET Surface Area",
+      "type": "BETNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "氮气吸附-脱附仪：BET 比表面积与孔容分析，输出 BET 线性拟合结果。",
+      "category": "Instruments/Particle",
+      "tags": [
+        "instrument",
+        "bet",
+        "surface area",
+        "porosity"
+      ],
+      "module": "nodes.instruments.particle",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "BMRB",
+      "type": "BMRBNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 BMRB 生物核磁共振化学位移数据。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "bmrb",
+        "nmr",
+        "chemical shift"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Baseline Correction",
+      "type": "BaselineCorrectionNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "输入谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "基线校正后的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "校正统计信息",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "使用不对称最小二乘 (ALS) 算法扣除谱图基线，适用于拉曼与红外光谱。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "baseline",
+        "raman",
+        "ir"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "COD",
+      "type": "CODNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "材料 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 Crystallography Open Database 晶体学条目。",
+      "category": "Databases/Materials",
+      "tags": [
+        "database",
+        "cod",
+        "crystallography"
+      ],
+      "module": "nodes.databases.materials_db",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "CP2K",
+      "type": "CP2KNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带计算性质的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "预测谱图（频率 / 激发）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "生成 CP2K 输入并运行 DFT；未安装时使用内置扩展 Hückel 引擎。",
+      "category": "Simulation/Quantum",
+      "tags": [
+        "simulation",
+        "quantum",
+        "cp2k",
+        "dft"
+      ],
+      "module": "nodes.simulation.quantum",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "cp2k.psmp"
+      ],
+      "missing_software": [
+        "cp2k.psmp"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "orca >= 5.0",
+        "gaussian (g16/g09)",
+        "psi4 >= 1.8",
+        "cp2k >= 2023.1"
+      ],
+      "input_constraints": "需要一个带元素与坐标的 Molecule；原子数超过 200 时内置引擎会拒绝执行。方法/基组为声明式参数，内置引擎按 MINI/STO-3G 语义近似。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置扩展 Hückel / 紧束缚近似，不作能量或光谱的定量准确度声明。",
+        "未安装 ORCA / Gaussian / Psi4 / CP2K 时结果必须视为近似，不代表真实 DFT 计算。",
+        "对外部软件的输出解析仅覆盖已声明的任务类型（单点 / 优化 / 频率 / 激发）。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "Cyclic Voltammetry",
+      "type": "CVNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "循环伏安工作站：有限差分扩散 + Butler-Volmer 动力学，输出峰电位与峰电流。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "instrument",
+        "cv",
+        "electrochemistry",
+        "butler-volmer"
+      ],
+      "module": "nodes.instruments.electro",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ChEMBL",
+      "type": "ChEMBLNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 ChEMBL 生物活性分子（含靶点与活性标注）。",
+      "category": "Databases/Chemical",
+      "tags": [
+        "database",
+        "chembl",
+        "bioactivity"
+      ],
+      "module": "nodes.databases.chemical",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ChemBERTa",
+      "type": "ChemBERTaNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带嵌入向量的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "嵌入与预测性质",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模型摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "基于 SMILES 子词哈希的化学语言模型编码器，输出分子嵌入与性质预测。",
+      "category": "AI/Foundation Models",
+      "tags": [
+        "ai",
+        "foundation model",
+        "chemberta",
+        "smiles"
+      ],
+      "module": "nodes.ai.foundation",
+      "capabilities": [
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "experimental",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "DLS",
+      "type": "DLSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "动态光散射粒度仪：基于累积量法输出粒径分布、Z-average 与 PDI。",
+      "category": "Instruments/Particle",
+      "tags": [
+        "instrument",
+        "dls",
+        "particle size",
+        "pdi"
+      ],
+      "module": "nodes.instruments.particle",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "DMA",
+      "type": "DMANode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "动态力学分析仪：储能 / 损耗模量与 tan δ 随温度变化曲线。",
+      "category": "Instruments/Thermal",
+      "tags": [
+        "instrument",
+        "dma",
+        "mechanical",
+        "tan delta"
+      ],
+      "module": "nodes.instruments.thermal",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "DSC",
+      "type": "DSCNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "差示扫描量热仪：玻璃化转变、熔融与结晶热分析。",
+      "category": "Instruments/Thermal",
+      "tags": [
+        "instrument",
+        "dsc",
+        "thermal",
+        "glass transition",
+        "melting"
+      ],
+      "module": "nodes.instruments.thermal",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "EIS",
+      "type": "EISNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "电化学阻抗谱：Randles 等效电路 + Warburg 扩散阻抗，输出 Nyquist / Bode 数据。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "instrument",
+        "eis",
+        "impedance",
+        "nyquist"
+      ],
+      "module": "nodes.instruments.electro",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Export Result",
+      "type": "ExportNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "data",
+          "data_type": "Any",
+          "description": "待导出的对象",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "导出文件的路径与摘要",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "data",
+          "data_type": "Any",
+          "description": "透传的输入对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "将任意科学对象导出为 JSON / CSV / PNG / Markdown / TXT 文件。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "export",
+        "artifact"
+      ],
+      "module": "nodes.io",
+      "capabilities": [
+        "writes_files"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "FTIR Imaging",
+      "type": "FTIRImagingNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "化学成像图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "组分统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "成像报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "红外化学成像：基于特征吸收带生成组分分布图与平均红外谱。",
+      "category": "Instruments/Imaging",
+      "tags": [
+        "instrument",
+        "imaging",
+        "ftir",
+        "infrared"
+      ],
+      "module": "nodes.instruments.imaging",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Fluorescence",
+      "type": "FluorescenceNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "荧光光谱仪：基于镜像规则与 Stokes 位移生成激发 / 发射谱。",
+      "category": "Instruments/Electronic",
+      "tags": [
+        "instrument",
+        "fluorescence",
+        "emission",
+        "stokes"
+      ],
+      "module": "nodes.instruments.electronic",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Functional Groups",
+      "type": "FunctionalGroupNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "data",
+          "data_type": "Any",
+          "description": "分子或红外 / 拉曼谱图",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "官能团统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "官能团指认说明",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "从分子结构或红外 / 拉曼谱带指认官能团，输出统计表与文字说明。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "functional group",
+        "ir",
+        "raman"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "GC-MS",
+      "type": "GCMSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "气相色谱-质谱联用：电子轰击电离 (70 eV)，适合挥发性 / 热稳定化合物。",
+      "category": "Instruments/Mass Spectrometry",
+      "tags": [
+        "instrument",
+        "ms",
+        "gcms",
+        "ei"
+      ],
+      "module": "nodes.instruments.ms",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "GNPS",
+      "type": "GNPSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 GNPS 社区质谱库（分子网络 / 分子式匹配）。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "gnps",
+        "ms",
+        "molecular networking"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "GROMACS",
+      "type": "GROMACSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子（需坐标）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "模拟后的分子（终态坐标）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "径向分布函数 g(r)",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "动力学统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模拟报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "调用 GROMACS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "category": "Simulation/MD",
+      "tags": [
+        "simulation",
+        "md",
+        "gromacs"
+      ],
+      "module": "nodes.simulation.molecular_dynamics",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "gmx"
+      ],
+      "missing_software": [
+        "gmx"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "gromacs >= 2022",
+        "lammps >= 2022",
+        "openmm >= 8"
+      ],
+      "input_constraints": "需要一个带坐标的 Molecule；内置 Lennard-Jones 引擎不支持键约束、水模型或恒温器。时间步长与步数为声明式参数，不做单位自动换算声明。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置 Lennard-Jones 引擎仅演示动力学流程，不对热力学量作定量声明。",
+        "未安装 GROMACS / LAMMPS / OpenMM 时结果必须视为近似。",
+        "不模拟溶剂、恒温器与周期性边界的真实实现细节。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "GROVER",
+      "type": "GROVERNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带嵌入向量的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "嵌入与预测性质",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模型摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "基于图消息传递网络的分子表征模型，输出原子级与分子级嵌入。",
+      "category": "AI/Foundation Models",
+      "tags": [
+        "ai",
+        "foundation model",
+        "grover",
+        "gnn",
+        "message passing"
+      ],
+      "module": "nodes.ai.foundation",
+      "capabilities": [
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "experimental",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Gaussian",
+      "type": "GaussianNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带计算性质的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "预测谱图（频率 / 激发）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "生成 Gaussian 输入并运行；未安装时使用内置扩展 Hückel 引擎。",
+      "category": "Simulation/Quantum",
+      "tags": [
+        "simulation",
+        "quantum",
+        "gaussian",
+        "dft"
+      ],
+      "module": "nodes.simulation.quantum",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "g16"
+      ],
+      "missing_software": [
+        "g16"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "orca >= 5.0",
+        "gaussian (g16/g09)",
+        "psi4 >= 1.8",
+        "cp2k >= 2023.1"
+      ],
+      "input_constraints": "需要一个带元素与坐标的 Molecule；原子数超过 200 时内置引擎会拒绝执行。方法/基组为声明式参数，内置引擎按 MINI/STO-3G 语义近似。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置扩展 Hückel / 紧束缚近似，不作能量或光谱的定量准确度声明。",
+        "未安装 ORCA / Gaussian / Psi4 / CP2K 时结果必须视为近似，不代表真实 DFT 计算。",
+        "对外部软件的输出解析仅覆盖已声明的任务类型（单点 / 优化 / 频率 / 激发）。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "GPU Device Info",
+      "type": "GpuDeviceInfoNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "report",
+          "data_type": "Text",
+          "description": "GPU 环境报告（JSON 文本）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "每块 GPU 一行的显存表",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检测 PyTorch 版本、CUDA 可用性、GPU 名称与显存。GPU 不可用时如实报告原因，绝不虚报加速。",
+      "category": "GPU",
+      "tags": [
+        "gpu",
+        "cuda",
+        "pytorch",
+        "diagnostics"
+      ],
+      "module": "nodes.gpu.gpu_nodes",
+      "capabilities": [
+        "requires_gpu"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Graphormer",
+      "type": "GraphormerNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带嵌入向量的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "嵌入与预测性质",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模型摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "图 Transformer 编码器：带度数与最短路径结构编码的自注意力分子表征。",
+      "category": "AI/Foundation Models",
+      "tags": [
+        "ai",
+        "foundation model",
+        "graphormer",
+        "transformer"
+      ],
+      "module": "nodes.ai.foundation",
+      "capabilities": [
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "experimental",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "HMDB",
+      "type": "HMDBNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 HMDB 代谢物质谱 / 核磁记录。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "hmdb",
+        "metabolomics",
+        "nmr"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Hyperspectral Imaging",
+      "type": "HyperspectralNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "化学成像图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "组分统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "成像报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "通用高光谱成像：匹配滤波生成组分丰度图与端元光谱。",
+      "category": "Instruments/Imaging",
+      "tags": [
+        "instrument",
+        "imaging",
+        "hyperspectral",
+        "unmixing"
+      ],
+      "module": "nodes.instruments.imaging",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ICP-MS",
+      "type": "ICPMSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游材料（取其元素组成）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "元素质谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "元素定量结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "分析报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "电感耦合等离子体质谱：元素定性定量分析，按天然同位素丰度给出同位素峰簇。",
+      "category": "Instruments/Mass Spectrometry",
+      "tags": [
+        "instrument",
+        "ms",
+        "icpms",
+        "elemental"
+      ],
+      "module": "nodes.instruments.ms",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ICSD",
+      "type": "ICSDNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "材料 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "ICSD 无机晶体结构数据库（需授权；本节点使用内置晶体参考数据）。",
+      "category": "Databases/Materials",
+      "tags": [
+        "database",
+        "icsd",
+        "inorganic"
+      ],
+      "module": "nodes.databases.materials_db",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "FTIR",
+      "type": "IRNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "傅里叶变换红外光谱仪：由官能团特征频率预测红外吸收谱并完成谱带指认。",
+      "category": "Instruments/Vibrational",
+      "tags": [
+        "instrument",
+        "ir",
+        "ftir",
+        "vibrational"
+      ],
+      "module": "nodes.instruments.vibrational",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Load Image",
+      "type": "ImageFileNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "解码后的图像对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "读取 PNG / TIFF / JPEG 显微图像，转换为带物理像素尺寸的 Image 科学对象。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "image",
+        "sem",
+        "tem",
+        "microscopy",
+        "png"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Inference Benchmark",
+      "type": "InferenceBenchmarkNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "result",
+          "data_type": "Table",
+          "description": "每行一次计时测量的结果表",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "对指定设备进行前向吞吐基准测试（真实计时，不做假数据）。",
+      "category": "GPU",
+      "tags": [
+        "gpu",
+        "benchmark",
+        "pytorch"
+      ],
+      "module": "nodes.gpu.gpu_nodes",
+      "capabilities": [
+        "requires_gpu",
+        "nondeterministic"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": false,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "nondeterministic"
+    },
+    {
+      "node_name": "LAMMPS",
+      "type": "LAMMPSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子（需坐标）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "模拟后的分子（终态坐标）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "径向分布函数 g(r)",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "动力学统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模拟报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "调用 LAMMPS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "category": "Simulation/MD",
+      "tags": [
+        "simulation",
+        "md",
+        "lammps"
+      ],
+      "module": "nodes.simulation.molecular_dynamics",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "lmp"
+      ],
+      "missing_software": [
+        "lmp"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "gromacs >= 2022",
+        "lammps >= 2022",
+        "openmm >= 8"
+      ],
+      "input_constraints": "需要一个带坐标的 Molecule；内置 Lennard-Jones 引擎不支持键约束、水模型或恒温器。时间步长与步数为声明式参数，不做单位自动换算声明。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置 Lennard-Jones 引擎仅演示动力学流程，不对热力学量作定量声明。",
+        "未安装 GROMACS / LAMMPS / OpenMM 时结果必须视为近似。",
+        "不模拟溶剂、恒温器与周期性边界的真实实现细节。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "LC-MS",
+      "type": "LCMSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "液相色谱-质谱联用：电喷雾电离，适合极性 / 热不稳定化合物的一级与二级质谱。",
+      "category": "Instruments/Mass Spectrometry",
+      "tags": [
+        "instrument",
+        "ms",
+        "lcms",
+        "esi"
+      ],
+      "module": "nodes.instruments.ms",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "LLM Reasoner",
+      "type": "LLMNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "prompt",
+          "data_type": "Any",
+          "description": "提示词 / 文本",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "context",
+          "data_type": "Any",
+          "description": "待推理的科学对象",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模型回答",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "结构化字段",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "调用 GPT / Claude / Gemini / Qwen / DeepSeek / Ollama 进行科学推理与解释生成。",
+      "category": "AI/LLM",
+      "tags": [
+        "ai",
+        "llm",
+        "gpt",
+        "claude",
+        "gemini",
+        "reasoning"
+      ],
+      "module": "nodes.ai.llm",
+      "capabilities": [
+        "requires_network",
+        "sensitive_data"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "MALDI-TOF",
+      "type": "MALDINode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "基质辅助激光解吸电离飞行时间质谱，适合多肽 / 聚合物 / 大分子。",
+      "category": "Instruments/Mass Spectrometry",
+      "tags": [
+        "instrument",
+        "ms",
+        "maldi",
+        "tof"
+      ],
+      "module": "nodes.instruments.ms",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "MassBank",
+      "type": "MassBankNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 MassBank 高分辨质谱库（按精确质量 / 分子式匹配）。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "massbank",
+        "ms",
+        "spectral library"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Material Discovery",
+      "type": "MaterialDiscoveryNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "xrd",
+          "data_type": "Spectrum",
+          "description": "X 射线衍射图",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "sem",
+          "data_type": "Image",
+          "description": "显微图像",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "xps",
+          "data_type": "Spectrum",
+          "description": "X 射线光电子能谱",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "dft",
+          "data_type": "Any",
+          "description": "DFT 计算结果",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "candidates",
+          "data_type": "Any",
+          "description": "候选库（可选）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "优化后的材料",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选排序与预测性质",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "决策依据",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "材料发现与优化：融合 XRD / SEM / XPS / DFT 证据，按目标性质对候选组分排序并输出优化材料。",
+      "category": "Questions",
+      "tags": [
+        "question",
+        "materials discovery",
+        "optimisation",
+        "battery",
+        "catalyst"
+      ],
+      "module": "nodes.question.discovery",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Material Input",
+      "type": "MaterialInputNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "材料对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "由化学式与晶胞参数构建材料对象（用于电池 / 催化 / 半导体工作流）。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "material",
+        "crystal"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Materials Project",
+      "type": "MaterialsProjectNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "材料 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "查询 Materials Project 晶体结构摘要（需要 MP_API_KEY，否则回退内置材料库）。",
+      "category": "Databases/Materials",
+      "tags": [
+        "database",
+        "materials project",
+        "dft"
+      ],
+      "module": "nodes.databases.materials_db",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "MoNA",
+      "type": "MoNANode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 MoNA 质谱记录（按质量 / 分子式匹配）。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "mona",
+        "ms"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Model Inference",
+      "type": "ModelInferenceNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "result",
+          "data_type": "Text",
+          "description": "推理结果摘要（JSON）",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "在 CPU/GPU 上执行一个小型 MLP 前向推理，标注实际设备与耗时。",
+      "category": "GPU",
+      "tags": [
+        "gpu",
+        "inference",
+        "mlp",
+        "pytorch"
+      ],
+      "module": "nodes.gpu.gpu_nodes",
+      "capabilities": [
+        "requires_gpu"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Molecular Descriptors",
+      "type": "MolecularDescriptorsNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带描述符的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "描述符表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "描述符摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "计算分子量、LogP、TPSA、氢键供受体、可旋转键、Lipinski 违背数与 QED。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "descriptors",
+        "qed",
+        "lipinski"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Molecule Input",
+      "type": "MoleculeInputNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "分子对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "由 SMILES 构建分子对象，自动计算分子式、精确质量与理化描述符。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "molecule",
+        "smiles"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "verified",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [
+        "tests/test_v07_2_node_known_answers.py::TestMolecularFormulaKnownAnswer::test_ethanol_formula_and_exact_mass",
+        "tests/test_v07_2_node_known_answers.py::TestMolecularFormulaKnownAnswer::test_heavy_atom_count_is_three"
+      ],
+      "limitations": [
+        "仅解析 SMILES；不处理立体化学歧义与互变异构。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "NIST Library",
+      "type": "NISTNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "谱图 / 分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matches",
+          "data_type": "SpectralMatch",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "候选列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "NIST 质谱 / 红外谱库检索（需本地授权库；未授权时回退到内置参考库）。",
+      "category": "Databases/Spectral",
+      "tags": [
+        "database",
+        "nist",
+        "ms",
+        "ir"
+      ],
+      "module": "nodes.databases.spectral",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "NMR Spectrometer",
+      "type": "NMRNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "核磁共振波谱仪：支持 FID / JCAMP-DX / Bruker 数据读取，输出化学位移、峰列表、积分与二维谱。",
+      "category": "Instruments/NMR",
+      "tags": [
+        "instrument",
+        "nmr",
+        "fid",
+        "bruker",
+        "jcamp"
+      ],
+      "module": "nodes.instruments.nmr",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Normalize",
+      "type": "NormalizeNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "输入谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "归一化后的谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "按最大值、面积、min-max 或 SNV 归一化谱图强度。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "normalize"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "verified",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [
+        "tests/test_v07_2_node_known_answers.py::TestNormalizeKnownAnswer::test_max_normalisation_is_exact",
+        "tests/test_v07_2_node_known_answers.py::TestNormalizeKnownAnswer::test_none_is_identity"
+      ],
+      "limitations": [
+        "归一化只改变强度尺度，不改变峰位；跨样本比较仍需一致的预处理链。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ORCA",
+      "type": "ORCANode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带计算性质的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "预测谱图（频率 / 激发）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "调用 ORCA 做单点能 / 几何优化 / 频率计算；未安装时使用内置扩展 Hückel 引擎。",
+      "category": "Simulation/Quantum",
+      "tags": [
+        "simulation",
+        "quantum",
+        "orca",
+        "dft"
+      ],
+      "module": "nodes.simulation.quantum",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "orca"
+      ],
+      "missing_software": [
+        "orca"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "orca >= 5.0",
+        "gaussian (g16/g09)",
+        "psi4 >= 1.8",
+        "cp2k >= 2023.1"
+      ],
+      "input_constraints": "需要一个带元素与坐标的 Molecule；原子数超过 200 时内置引擎会拒绝执行。方法/基组为声明式参数，内置引擎按 MINI/STO-3G 语义近似。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置扩展 Hückel / 紧束缚近似，不作能量或光谱的定量准确度声明。",
+        "未安装 ORCA / Gaussian / Psi4 / CP2K 时结果必须视为近似，不代表真实 DFT 计算。",
+        "对外部软件的输出解析仅覆盖已声明的任务类型（单点 / 优化 / 频率 / 激发）。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "OpenMM",
+      "type": "OpenMMNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子（需坐标）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "模拟后的分子（终态坐标）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "径向分布函数 g(r)",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "动力学统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模拟报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "调用 OpenMM 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "category": "Simulation/MD",
+      "tags": [
+        "simulation",
+        "md",
+        "openmm"
+      ],
+      "module": "nodes.simulation.molecular_dynamics",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "experimental",
+      "deterministic": true,
+      "required_software": [
+        "python"
+      ],
+      "missing_software": [],
+      "capability_status": "experimental",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "gromacs >= 2022",
+        "lammps >= 2022",
+        "openmm >= 8"
+      ],
+      "input_constraints": "需要一个带坐标的 Molecule；内置 Lennard-Jones 引擎不支持键约束、水模型或恒温器。时间步长与步数为声明式参数，不做单位自动换算声明。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置 Lennard-Jones 引擎仅演示动力学流程，不对热力学量作定量声明。",
+        "未安装 GROMACS / LAMMPS / OpenMM 时结果必须视为近似。",
+        "不模拟溶剂、恒温器与周期性边界的真实实现细节。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "PDB",
+      "type": "PDBNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 RCSB PDB 结构条目（大分子 / 配合物）。",
+      "category": "Databases/Chemical",
+      "tags": [
+        "database",
+        "pdb",
+        "protein",
+        "structure"
+      ],
+      "module": "nodes.databases.chemical",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Peak Picking",
+      "type": "PeakPickingNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "输入谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "带峰列表的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "峰表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "峰检测摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "基于局部极大值与峰 prominence 的峰检测，输出峰表与带峰标注的谱图。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "peaks",
+        "centroid"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "verified",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [
+        "tests/test_v07_2_node_known_answers.py::TestPeakPickingKnownAnswer::test_recovers_injected_peak_positions",
+        "tests/test_v07_2_node_known_answers.py::TestPeakPickingKnownAnswer::test_peak_count_is_exact"
+      ],
+      "limitations": [
+        "重叠峰需先做分峰或提高分辨率；prominence 阈值对噪声敏感。",
+        "峰位精度受采样步长限制（步长 0.01 时优于 0.05）。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Profile to Centroid",
+      "type": "ProfileCentroidNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游谱图",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "仅含 centroid 峰的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "峰表（位置 / 强度 / 面积 / 相对%）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "转换摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "把连续谱（profile）转换为峰列表（centroid）：每个峰用半高宽内的强度加权位置表示，并输出峰面积与相对强度。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "ms",
+        "centroid",
+        "profile",
+        "peak"
+      ],
+      "module": "nodes.instruments.mass_spectrometry",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Property Prediction",
+      "type": "PropertyPredictionNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "model",
+          "data_type": "Any",
+          "description": "可选：训练好的模型信息",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带预测性质的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "预测结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "预测 LogP / TPSA / 溶解度 / QED / Lipinski 等分子性质，可加载训练好的模型。",
+      "category": "AI/ML",
+      "tags": [
+        "ai",
+        "ml",
+        "prediction",
+        "admet"
+      ],
+      "module": "nodes.ai.prediction",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Psi4",
+      "type": "Psi4Node",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带计算性质的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "预测谱图（频率 / 激发）",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "生成 Psi4 输入脚本并运行；未安装时使用内置扩展 Hückel 引擎。",
+      "category": "Simulation/Quantum",
+      "tags": [
+        "simulation",
+        "quantum",
+        "psi4"
+      ],
+      "module": "nodes.simulation.quantum",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "psi4"
+      ],
+      "missing_software": [
+        "psi4"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "orca >= 5.0",
+        "gaussian (g16/g09)",
+        "psi4 >= 1.8",
+        "cp2k >= 2023.1"
+      ],
+      "input_constraints": "需要一个带元素与坐标的 Molecule；原子数超过 200 时内置引擎会拒绝执行。方法/基组为声明式参数，内置引擎按 MINI/STO-3G 语义近似。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置扩展 Hückel / 紧束缚近似，不作能量或光谱的定量准确度声明。",
+        "未安装 ORCA / Gaussian / Psi4 / CP2K 时结果必须视为近似，不代表真实 DFT 计算。",
+        "对外部软件的输出解析仅覆盖已声明的任务类型（单点 / 优化 / 频率 / 激发）。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "PubChem",
+      "type": "PubChemNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "通过 PubChem PUG REST 按名称 / SMILES 查询分子结构与性质。",
+      "category": "Databases/Chemical",
+      "tags": [
+        "database",
+        "pubchem",
+        "structure"
+      ],
+      "module": "nodes.databases.chemical",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "PyTorch Tensor Operation",
+      "type": "PyTorchTensorOpNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "result",
+          "data_type": "Text",
+          "description": "运算结果与设备标注（JSON）",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "在指定设备上执行张量运算（matmul / add / sigmoid），输出包含实际执行设备标注。",
+      "category": "GPU",
+      "tags": [
+        "gpu",
+        "tensor",
+        "pytorch"
+      ],
+      "module": "nodes.gpu.gpu_nodes",
+      "capabilities": [
+        "requires_gpu"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Quantum ESPRESSO",
+      "type": "QuantumESPRESSONode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "material",
+          "data_type": "Any",
+          "description": "上游材料（材料 / 分子）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "带计算性质的材料",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "能带 / 态密度 / 衍射图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "生成 Quantum ESPRESSO 输入并运行；未安装时使用内置紧束缚引擎。",
+      "category": "Simulation/Materials",
+      "tags": [
+        "simulation",
+        "materials",
+        "quantum-espresso",
+        "pw"
+      ],
+      "module": "nodes.simulation.materials_sim",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "pw.x"
+      ],
+      "missing_software": [
+        "pw.x"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "vasp (vasp_std)",
+        "quantum_espresso (pw.x)",
+        "cp2k"
+      ],
+      "input_constraints": "需要 Material 或带晶格的 Molecule；仅支持 sc/bcc/fcc 三种晶格语义。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置紧束缚 / 近自由电子模型，能带与态密度只用于流程演示，不作定量声明。",
+        "未安装 VASP / Quantum ESPRESSO / CP2K 时结果必须视为近似。",
+        "不处理自旋极化、强关联与范德华修正。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "Raman Mapping",
+      "type": "RamanMappingNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "化学成像图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "组分统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "成像报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "拉曼面扫成像：生成高光谱数据立方体并输出组分分布图与平均谱。",
+      "category": "Instruments/Imaging",
+      "tags": [
+        "instrument",
+        "imaging",
+        "raman",
+        "hyperspectral"
+      ],
+      "module": "nodes.instruments.imaging",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Raman",
+      "type": "RamanNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "拉曼光谱仪：预测拉曼位移谱（芳香环呼吸振动等强峰）并完成谱带指认。",
+      "category": "Instruments/Vibrational",
+      "tags": [
+        "instrument",
+        "raman",
+        "vibrational"
+      ],
+      "module": "nodes.instruments.vibrational",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Report Agent",
+      "type": "ReportAgentNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "data",
+          "data_type": "Any",
+          "description": "待汇总的科学对象",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "report",
+          "data_type": "ScientificReport",
+          "description": "结构化报告对象",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "渲染后的文档文本 / 路径",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "汇总上游科学对象，自动生成 Markdown / HTML / PDF 研究报告并写入产物目录。",
+      "category": "Agent/Reporting",
+      "tags": [
+        "agent",
+        "report",
+        "markdown",
+        "html",
+        "pdf",
+        "export"
+      ],
+      "module": "nodes.report_agent",
+      "capabilities": [
+        "writes_files"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Report Builder",
+      "type": "ReportBuilderNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "match",
+          "data_type": "SpectralMatch",
+          "description": "",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "report",
+          "data_type": "ScientificReport",
+          "description": "",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "把上游的谱图、分子、材料、表格与文本结果汇总为一份结构化科学报告。",
+      "category": "Report",
+      "tags": [
+        "report",
+        "汇总",
+        "summary",
+        "document"
+      ],
+      "module": "nodes.report",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Report Export",
+      "type": "ReportExportNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "report",
+          "data_type": "ScientificReport",
+          "description": "",
+          "optional": true,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "把结构化报告落盘为 Markdown / HTML / DOCX / JSON 产物文件，返回路径文本。",
+      "category": "Report",
+      "tags": [
+        "report",
+        "export",
+        "导出",
+        "artifact"
+      ],
+      "module": "nodes.report",
+      "capabilities": [
+        "writes_files"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Resample",
+      "type": "ResampleNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "输入谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "重采样后的谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "将谱图重采样到等间距网格，便于多谱图对齐与融合。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "resample",
+        "interpolate"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "SEM",
+      "type": "SEMNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "显微图像",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱 / 剖面",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "形貌统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "分析报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "扫描电子显微镜：形貌衬度成像，输出颗粒形貌统计（等效直径、长径比）。",
+      "category": "Instruments/Microscopy",
+      "tags": [
+        "instrument",
+        "sem",
+        "microscopy",
+        "morphology"
+      ],
+      "module": "nodes.instruments.microscopy",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Scientific Agent",
+      "type": "ScientificAgentNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "question",
+          "data_type": "Text",
+          "description": "科学问题（自然语言）",
+          "optional": true,
+          "multi": false
+        },
+        {
+          "name": "context",
+          "data_type": "Any",
+          "description": "上游数据 / 上下文",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "report",
+          "data_type": "ScientificReport",
+          "description": "结构化结论报告",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "workflow",
+          "data_type": "Text",
+          "description": "生成的工作流 JSON",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "结论叙述",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "逐节点执行结果",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "AI 科学助手节点：理解自然语言科学问题，自动规划并生成工作流，调用节点执行，最后给出带置信度的结论与报告。",
+      "category": "Agent",
+      "tags": [
+        "agent",
+        "ai",
+        "planner",
+        "autonomous"
+      ],
+      "module": "nodes.agent.agent",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Molecular Similarity",
+      "type": "SimilarityNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "a",
+          "data_type": "Molecule",
+          "description": "分子 A",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "b",
+          "data_type": "Molecule",
+          "description": "分子 B",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "相似度表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "相似度摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "计算两个分子的 Morgan 指纹 Tanimoto / Dice 相似度。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "similarity",
+        "tanimoto",
+        "fingerprint"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Similarity Search",
+      "type": "SimilaritySearchNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Molecule",
+          "description": "查询分子",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "library",
+          "data_type": "Table",
+          "description": "候选库（含 SMILES 列）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "排序后的候选",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "以 Morgan 指纹相似度对候选库排序，用于虚拟筛选与结构确认。",
+      "category": "AI/ML",
+      "tags": [
+        "ai",
+        "ml",
+        "screening",
+        "tanimoto"
+      ],
+      "module": "nodes.ai.prediction",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Single Crystal XRD",
+      "type": "SingleCrystalXRDNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "解析得到的晶体结构",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "指标化结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "精修报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "单晶 X 射线衍射：衍射峰指标化、晶胞参数精修并输出晶体结构对象。",
+      "category": "Instruments/Diffraction",
+      "tags": [
+        "instrument",
+        "xrd",
+        "single crystal",
+        "indexing"
+      ],
+      "module": "nodes.instruments.diffraction",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Smoothing",
+      "type": "SmoothingNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "输入谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平滑后的谱图",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "移动平均或 Savitzky-Golay 平滑滤波，降低高频噪声。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "smooth",
+        "denoise"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "verified",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [
+        "tests/test_v07_2_node_known_answers.py::TestSmoothingKnownAnswer::test_linear_ramp_is_invariant"
+      ],
+      "limitations": [
+        "仅对一维等间距谱实现；非均匀采样需先重采样。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Load Spectrum",
+      "type": "SpectrumFileNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "解析后的谱图对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "读取 mzML、mzXML、MGF、MSP、JCAMP-DX、XY 或 Bruker 目录中的谱图，返回统一的 Spectrum 科学对象。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "spectrum",
+        "mzml",
+        "mgf",
+        "jcamp"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Spectrum Math",
+      "type": "SpectrumMathNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "a",
+          "data_type": "Spectrum",
+          "description": "谱图 A",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "b",
+          "data_type": "Spectrum",
+          "description": "谱图 B",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "运算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "运算摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "两个谱图之间的加 / 减 / 乘 / 除运算（按 x 轴线性插值对齐）。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "math",
+        "difference"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Substructure Search",
+      "type": "SubstructureSearchNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "检索结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "使用 VF2 子图同构在分子中检索指定子结构（SMILES 片段）。",
+      "category": "Analysis",
+      "tags": [
+        "analysis",
+        "substructure",
+        "vf2"
+      ],
+      "module": "nodes.analysis",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Summary Table",
+      "type": "SummaryTableNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "将任意上游科学对象压平为一张“指标 / 数值”汇总表，便于直接与报告或导出节点衔接。",
+      "category": "Report",
+      "tags": [
+        "report",
+        "table",
+        "汇总",
+        "summary"
+      ],
+      "module": "nodes.report",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "TEM",
+      "type": "TEMNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "显微图像",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "平均谱 / 剖面",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "形貌统计",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "分析报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "透射电子显微镜：高分辨晶格成像，输出粒径分布与晶面间距统计。",
+      "category": "Instruments/Microscopy",
+      "tags": [
+        "instrument",
+        "tem",
+        "microscopy",
+        "lattice"
+      ],
+      "module": "nodes.instruments.microscopy",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "TGA",
+      "type": "TGANode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "热重分析仪：多步失重过程模拟，输出各步起始温度与残余质量。",
+      "category": "Instruments/Thermal",
+      "tags": [
+        "instrument",
+        "tga",
+        "thermal",
+        "decomposition"
+      ],
+      "module": "nodes.instruments.thermal",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Load Table",
+      "type": "TableFileNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "表格对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "读取 CSV / TSV 表格文件，输出 Table 科学对象。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "table",
+        "csv"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Text Input",
+      "type": "TextInputNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "文本对象",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "输出一段文本对象，可作为 LLM 节点的提示词或报告素材。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "text",
+        "prompt"
+      ],
+      "module": "nodes.io",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Train Model",
+      "type": "TrainModelNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "训练数据（含 SMILES 与目标列）",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "训练报告",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "评估指标",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "由含 SMILES 与目标列的表格训练分子性质预测模型（PyTorch MPNN 或 NumPy 岭回归）。",
+      "category": "AI/ML",
+      "tags": [
+        "ai",
+        "ml",
+        "training",
+        "mpnn",
+        "regression"
+      ],
+      "module": "nodes.ai.prediction",
+      "capabilities": [
+        "nondeterministic"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": false,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "nondeterministic"
+    },
+    {
+      "node_name": "UV-Vis",
+      "type": "UVVisNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "紫外-可见吸收光谱仪：基于 Woodward-Fieser 规则估算最大吸收波长 λmax。",
+      "category": "Instruments/Electronic",
+      "tags": [
+        "instrument",
+        "uvvis",
+        "absorption",
+        "woodward-fieser"
+      ],
+      "module": "nodes.instruments.electronic",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Uni-Mol",
+      "type": "UniMolNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "输入分子",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "带嵌入向量的分子",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "嵌入与预测性质",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "模型摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "三维分子编码器：基于原子间距离矩阵的几何感知注意力表征。",
+      "category": "AI/Foundation Models",
+      "tags": [
+        "ai",
+        "foundation model",
+        "unimol",
+        "3d"
+      ],
+      "module": "nodes.ai.foundation",
+      "capabilities": [
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "experimental",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Unknown Compound Identification",
+      "type": "UnknownCompoundIdentificationNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "ms",
+          "data_type": "Spectrum",
+          "description": "质谱（LC-MS / GC-MS / MALDI）",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "nmr",
+          "data_type": "Spectrum",
+          "description": "核磁共振谱",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "ir",
+          "data_type": "Spectrum",
+          "description": "红外光谱",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "raman",
+          "data_type": "Spectrum",
+          "description": "拉曼光谱",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "uvvis",
+          "data_type": "Spectrum",
+          "description": "紫外可见光谱",
+          "optional": true,
+          "multi": true
+        },
+        {
+          "name": "candidates",
+          "data_type": "Any",
+          "description": "外部候选库（可选）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "最佳候选结构",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "排序后的候选与置信度",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "证据解释",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "未知物结构鉴定：融合质谱分子离子与碎片、核磁化学位移、红外拉曼谱带，输出候选结构、置信度与解释。",
+      "category": "Questions",
+      "tags": [
+        "question",
+        "identification",
+        "structure elucidation",
+        "fusion"
+      ],
+      "module": "nodes.question.identification",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "至少需要一路证据（MS / NMR / IR / Raman / UV-Vis）或一个外部候选库；质谱通道要求候选条目提供碎片 m/z，仅给 SMILES 的候选库无法参与 MS 打分。单通道配置下置信度只在通道内归一化，不具备跨候选概率意义。",
+      "validation_evidence": [
+        "docs/V07_1_BENCHMARK.md",
+        "scripts/benchmark_lcms.py",
+        "tests/test_v07_1_benchmark.py"
+      ],
+      "limitations": [
+        "基准基于平台正向模型生成的合成数据，验证的是检索/排序流水线，不构成真实仪器数据的准确率声明。",
+        "跨来源参考库（经验碎片）下 24 例中 2 例 Top-1 失败（nicotine、histidine）。",
+        "单通道置信度不可解读为概率。"
+      ],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "VASP",
+      "type": "VASPNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "material",
+          "data_type": "Any",
+          "description": "上游材料（材料 / 分子）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "带计算性质的材料",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "能带 / 态密度 / 衍射图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "生成 VASP/POSCAR 输入并运行；未安装时使用内置紧束缚引擎。",
+      "category": "Simulation/Materials",
+      "tags": [
+        "simulation",
+        "materials",
+        "vasp",
+        "dft"
+      ],
+      "module": "nodes.simulation.materials_sim",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "vasp_std"
+      ],
+      "missing_software": [
+        "vasp_std"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [
+        "vasp (vasp_std)",
+        "quantum_espresso (pw.x)",
+        "cp2k"
+      ],
+      "input_constraints": "需要 Material 或带晶格的 Molecule；仅支持 sc/bcc/fcc 三种晶格语义。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置紧束缚 / 近自由电子模型，能带与态密度只用于流程演示，不作定量声明。",
+        "未安装 VASP / Quantum ESPRESSO / CP2K 时结果必须视为近似。",
+        "不处理自旋极化、强关联与范德华修正。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
+      "node_name": "Load Vendor Spectrum",
+      "type": "VendorSpectrumNode",
+      "version": "0.7.1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "厂商适配器解码后的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "特征提取结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "数据来源与 provenance 说明",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "读取厂商原始数据（Bruker .d / 1r、Shimadzu SPC/QGD/LCD、Thermo/Waters/Agilent 文件夹）或开放格式（mzML/mzXML/MGF/MSP/JCAMP-DX/XY），返回统一的 Spectrum 对象。",
+      "category": "IO",
+      "tags": [
+        "io",
+        "vendor",
+        "thermo",
+        "waters",
+        "agilent",
+        "bruker",
+        "shimadzu",
+        "spc",
+        "mzml"
+      ],
+      "module": "nodes.instruments.mass_spectrometry",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Vision Model",
+      "type": "VisionNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "image",
+          "data_type": "Any",
+          "description": "输入图像（无则生成示例图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "data_type": "Image",
+          "description": "输出图像 / 分割掩膜",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "模型输出",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "摘要",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "对显微图像 / 化学成像图运行 ViT / CLIP / SAM / DINO 风格的视觉模型。",
+      "category": "AI/Vision",
+      "tags": [
+        "ai",
+        "vision",
+        "vit",
+        "clip",
+        "sam",
+        "dino"
+      ],
+      "module": "nodes.ai.vision",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "XAS",
+      "type": "XASNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "X 射线吸收谱：吸收边 + 白线 + EXAFS 振荡，可用于价态与配位环境分析。",
+      "category": "Instruments/Surface",
+      "tags": [
+        "instrument",
+        "xas",
+        "xanes",
+        "exafs",
+        "synchrotron"
+      ],
+      "module": "nodes.instruments.surface",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "XPS",
+      "type": "XPSNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "X 射线光电子能谱：按元素特征结合能生成 Survey 全谱，含 Shirley 型本底。",
+      "category": "Instruments/Surface",
+      "tags": [
+        "instrument",
+        "xps",
+        "surface",
+        "oxidation state"
+      ],
+      "module": "nodes.instruments.surface",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "XRD",
+      "type": "XRDNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "sample",
+          "data_type": "Any",
+          "description": "上游样品（分子 / 材料 / 谱图）",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "采集得到的谱图",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "处理结果表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "仪器日志与结论",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "粉末 X 射线衍射仪：由晶胞与原子占位计算衍射峰位与强度（含 Scherrer 展宽）。",
+      "category": "Instruments/Diffraction",
+      "tags": [
+        "instrument",
+        "xrd",
+        "diffraction",
+        "crystal"
+      ],
+      "module": "nodes.instruments.diffraction",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "ZINC",
+      "type": "ZINCNode",
+      "version": "0.7.1",
+      "inputs": [
+        {
+          "name": "query",
+          "data_type": "Any",
+          "description": "分子 / 文本查询",
+          "optional": true,
+          "multi": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "命中记录",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "命中列表",
+          "optional": false,
+          "multi": false
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "检索报告",
+          "optional": false,
+          "multi": false
+        }
+      ],
+      "author": "",
+      "description": "检索 ZINC 可购买化合物库（虚拟筛选常用）。",
+      "category": "Databases/Chemical",
+      "tags": [
+        "database",
+        "zinc",
+        "screening"
+      ],
+      "module": "nodes.databases.chemical",
+      "capabilities": [
+        "requires_network"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    }
+  ],
+  "categories": [
+    {
+      "category": "AI/Foundation Models",
+      "count": 4
+    },
+    {
+      "category": "AI/LLM",
+      "count": 1
+    },
+    {
+      "category": "AI/ML",
+      "count": 3
+    },
+    {
+      "category": "AI/Vision",
+      "count": 1
+    },
+    {
+      "category": "Agent",
+      "count": 2
+    },
+    {
+      "category": "Agent/Reporting",
+      "count": 1
+    },
+    {
+      "category": "Analysis",
+      "count": 11
+    },
+    {
+      "category": "Databases/Chemical",
+      "count": 4
+    },
+    {
+      "category": "Databases/Materials",
+      "count": 4
+    },
+    {
+      "category": "Databases/Spectral",
+      "count": 6
+    },
+    {
+      "category": "GPU",
+      "count": 4
+    },
+    {
+      "category": "IO",
+      "count": 8
+    },
+    {
+      "category": "Instruments/Diffraction",
+      "count": 2
+    },
+    {
+      "category": "Instruments/Electrochemistry",
+      "count": 2
+    },
+    {
+      "category": "Instruments/Electronic",
+      "count": 2
+    },
+    {
+      "category": "Instruments/Imaging",
+      "count": 3
+    },
+    {
+      "category": "Instruments/Mass Spectrometry",
+      "count": 4
+    },
+    {
+      "category": "Instruments/Microscopy",
+      "count": 3
+    },
+    {
+      "category": "Instruments/NMR",
+      "count": 1
+    },
+    {
+      "category": "Instruments/Particle",
+      "count": 2
+    },
+    {
+      "category": "Instruments/Surface",
+      "count": 2
+    },
+    {
+      "category": "Instruments/Thermal",
+      "count": 3
+    },
+    {
+      "category": "Instruments/Vibrational",
+      "count": 2
+    },
+    {
+      "category": "Questions",
+      "count": 2
+    },
+    {
+      "category": "Report",
+      "count": 3
+    },
+    {
+      "category": "Simulation/MD",
+      "count": 3
+    },
+    {
+      "category": "Simulation/Materials",
+      "count": 2
+    },
+    {
+      "category": "Simulation/Quantum",
+      "count": 4
+    }
+  ],
+  "total_nodes": 89,
+  "availability_summary": {
+    "executable": 76,
+    "experimental": 5,
+    "unavailable": 8
+  },
+  "capability_summary": {
+    "experimental": 13,
+    "nondeterministic": 2,
+    "requires_external_software": 9,
+    "requires_gpu": 4,
+    "requires_network": 15,
+    "sensitive_data": 1,
+    "writes_files": 3
+  },
+  "missing_software_summary": {
+    "cp2k.psmp": 1,
+    "g16": 1,
+    "gmx": 1,
+    "lmp": 1,
+    "orca": 1,
+    "psi4": 1,
+    "pw.x": 1,
+    "vasp_std": 1
+  },
+  "capability_status_summary": {
+    "executable": 76,
+    "experimental": 1,
+    "unavailable": 8,
+    "verified": 4
+  },
+  "execution_mode_summary": {
+    "internal_approximation": 89
+  },
+  "reproducibility_summary": {
+    "deterministic": 87,
+    "nondeterministic": 2
+  },
+  "nodes_without_validation_evidence": 84
+}

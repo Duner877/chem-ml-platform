@@ -1,0 +1,13 @@
+{
+  "parser": "workflow_engine.parsers.csv",
+  "format": "CSV",
+  "delimiter": ",",
+  "header": true,
+  "numeric_columns": [
+    "capacity_mah_g",
+    "voltage_v",
+    "band_gap_ev",
+    "density"
+  ],
+  "node": "TableFileNode"
+}

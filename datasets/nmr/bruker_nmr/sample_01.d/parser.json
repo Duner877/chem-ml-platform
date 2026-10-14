@@ -1,0 +1,12 @@
+{
+  "parser": "nodes.instruments.vendor_adapters.bruker.read_bruker_1r",
+  "format": "Bruker 1r",
+  "vendor": "bruker",
+  "processed_path": "pdata/1/1r",
+  "parameter_files": [
+    "acqus",
+    "pdata/1/procs"
+  ],
+  "axis": "ppm (SW and O1 are already ppm in acqus)",
+  "node": "VendorSpectrumNode"
+}

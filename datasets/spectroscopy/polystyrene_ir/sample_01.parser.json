@@ -1,0 +1,15 @@
+{
+  "parser": "workflow_engine.parsers.jcamp.read_jcamp",
+  "format": "JCAMP-DX",
+  "version": "5.01",
+  "data_format": "X++(Y..Y)",
+  "x_factor": 1.0,
+  "y_factor": 1.0,
+  "delta_x": 2.0,
+  "band_direction": "down",
+  "node": "SpectrumFileNode",
+  "params": {
+    "technique": "IR",
+    "mode": "IR"
+  }
+}

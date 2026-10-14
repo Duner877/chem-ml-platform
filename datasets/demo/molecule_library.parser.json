@@ -1,0 +1,12 @@
+{
+  "parser": "workflow_engine.parsers.csv",
+  "format": "CSV",
+  "delimiter": ",",
+  "header": true,
+  "numeric_columns": [
+    "mw",
+    "logp",
+    "tpsa"
+  ],
+  "node": "TableFileNode"
+}

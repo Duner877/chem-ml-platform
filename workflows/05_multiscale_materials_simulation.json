@@ -1,0 +1,147 @@
+{
+  "name": "多尺度材料模拟与动力学研究 / Multi-scale Materials & Dynamics Study",
+  "description": "以水分子演示分子动力学（缺失外部程序时回退内置 Lennard-Jones 引擎，输出径向分布函数），以 LiFePO4 演示固体 DFT（回退内置紧束缚 + XRD），最终由 Report Agent 汇总为跨尺度研究报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "md",
+      "lennard-jones",
+      "materials",
+      "tight-binding",
+      "xrd",
+      "report-agent",
+      "research-ready"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "molecule",
+      "material",
+      "spectrum",
+      "table",
+      "report"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "mol_in",
+      "type": "MoleculeInputNode",
+      "label": "水分子",
+      "position": {
+        "x": 0,
+        "y": 40
+      },
+      "params": {
+        "smiles": "O",
+        "name": "Water"
+      }
+    },
+    {
+      "id": "gromacs",
+      "type": "GROMACSNode",
+      "label": "分子动力学",
+      "position": {
+        "x": 300,
+        "y": 40
+      },
+      "params": {
+        "temperature": 0.7,
+        "steps": 400,
+        "dt": 0.005
+      }
+    },
+    {
+      "id": "mat_in",
+      "type": "MaterialInputNode",
+      "label": "磷酸铁锂",
+      "position": {
+        "x": 0,
+        "y": 300
+      },
+      "params": {
+        "formula": "LiFePO4",
+        "name": "Lithium Iron Phosphate"
+      }
+    },
+    {
+      "id": "vasp",
+      "type": "VASPNode",
+      "label": "固体 DFT",
+      "position": {
+        "x": 300,
+        "y": 300
+      },
+      "params": {
+        "calculation": "dos",
+        "functional": "pbe",
+        "kpoints": 4
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportAgentNode",
+      "label": "研究报告",
+      "position": {
+        "x": 640,
+        "y": 170
+      },
+      "params": {
+        "title": "多尺度材料模拟研究报告",
+        "summary": "本报告汇总分子动力学（Lennard-Jones 回退引擎输出的径向分布函数）、固体 DFT（紧束缚 + XRD 回退引擎输出的态密度 / 衍射图）两条跨尺度计算链路的结果，用于材料与体系的快速计算表征。",
+        "format": "html",
+        "filename": "demo05_multiscale_materials_report"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "mol_in",
+      "source_port": "molecule",
+      "target": "gromacs",
+      "target_port": "molecule"
+    },
+    {
+      "source": "mat_in",
+      "source_port": "material",
+      "target": "vasp",
+      "target_port": "material"
+    },
+    {
+      "source": "gromacs",
+      "source_port": "molecule",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "gromacs",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "gromacs",
+      "source_port": "spectrum",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "vasp",
+      "source_port": "material",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "vasp",
+      "source_port": "spectrum",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "vasp",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    }
+  ]
+}

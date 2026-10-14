@@ -1,0 +1,43 @@
+{
+  "total_nodes": 89,
+  "categories": 28,
+  "modules_scanned": 52,
+  "availability_summary": {
+    "executable": 76,
+    "experimental": 5,
+    "unavailable": 8
+  },
+  "capability_summary": {
+    "experimental": 13,
+    "nondeterministic": 2,
+    "requires_external_software": 9,
+    "requires_gpu": 4,
+    "requires_network": 15,
+    "sensitive_data": 1,
+    "writes_files": 3
+  },
+  "missing_software_summary": {
+    "cp2k.psmp": 1,
+    "g16": 1,
+    "gmx": 1,
+    "lmp": 1,
+    "orca": 1,
+    "psi4": 1,
+    "pw.x": 1,
+    "vasp_std": 1
+  },
+  "capability_status_summary": {
+    "executable": 76,
+    "experimental": 1,
+    "unavailable": 8,
+    "verified": 4
+  },
+  "execution_mode_summary": {
+    "internal_approximation": 89
+  },
+  "reproducibility_summary": {
+    "deterministic": 87,
+    "nondeterministic": 2
+  },
+  "nodes_without_validation_evidence": 84
+}

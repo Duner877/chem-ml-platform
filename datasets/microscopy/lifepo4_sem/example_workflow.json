@@ -1,0 +1,87 @@
+{
+  "name": "SEM 颗粒形貌分析（LiFePO4）",
+  "description": "读取 PNG 显微图像，做阈值分割与颗粒统计，输出粒径分布表。",
+  "metadata": {
+    "family": "microscopy",
+    "dataset": "datasets/microscopy/lifepo4_sem/sample_01.png"
+  },
+  "nodes": [
+    {
+      "id": "load",
+      "type": "ImageFileNode",
+      "label": "ImageFileNode",
+      "params": {
+        "path": "datasets/microscopy/lifepo4_sem/sample_01.png",
+        "pixel_size": 12.0,
+        "pixel_unit": "nm"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "measure",
+      "type": "SEMNode",
+      "label": "SEMNode",
+      "params": {
+        "magnification": 20000
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "SEM 颗粒分析报告"
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "sem_report"
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "load",
+      "source_port": "image",
+      "target": "measure",
+      "target_port": "sample"
+    },
+    {
+      "source": "measure",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "measure",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "text"
+    },
+    {
+      "source": "report",
+      "source_port": "report",
+      "target": "export",
+      "target_port": "report"
+    }
+  ]
+}

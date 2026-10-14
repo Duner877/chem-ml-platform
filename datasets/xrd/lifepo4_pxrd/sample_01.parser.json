@@ -1,0 +1,13 @@
+{
+  "parser": "workflow_engine.parsers.xy",
+  "format": "XY",
+  "delimiter": "tab",
+  "comment_prefix": "#",
+  "x_column": 0,
+  "y_column": 1,
+  "node": "SpectrumFileNode",
+  "params": {
+    "technique": "XRD",
+    "mode": "XRD"
+  }
+}

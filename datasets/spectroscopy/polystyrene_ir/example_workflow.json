@@ -1,0 +1,106 @@
+{
+  "name": "红外谱带归属（JCAMP-DX 聚苯乙烯）",
+  "description": "读取 JCAMP-DX 5.01 文件，基线校正、平滑、峰提取后归属官能团谱带。",
+  "metadata": {
+    "family": "spectroscopy",
+    "dataset": "datasets/spectroscopy/polystyrene_ir/sample_01.jdx"
+  },
+  "nodes": [
+    {
+      "id": "load",
+      "type": "SpectrumFileNode",
+      "label": "SpectrumFileNode",
+      "params": {
+        "path": "datasets/spectroscopy/polystyrene_ir/sample_01.jdx",
+        "technique": "IR"
+      },
+      "position": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "baseline",
+      "type": "BaselineCorrectionNode",
+      "label": "BaselineCorrectionNode",
+      "params": {
+        "method": "asls"
+      },
+      "position": {
+        "x": 320,
+        "y": 80
+      }
+    },
+    {
+      "id": "peaks",
+      "type": "PeakPickingNode",
+      "label": "PeakPickingNode",
+      "params": {
+        "height": 0.05,
+        "prominence": 0.03,
+        "limit": 25
+      },
+      "position": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "ReportBuilderNode",
+      "params": {
+        "title": "聚苯乙烯红外谱带报告"
+      },
+      "position": {
+        "x": 800,
+        "y": 80
+      }
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "ReportExportNode",
+      "params": {
+        "format": "html",
+        "filename": "ir_bands_report"
+      },
+      "position": {
+        "x": 1040,
+        "y": 80
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "load",
+      "target": "baseline",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "baseline",
+      "target": "peaks",
+      "source_port": "spectrum",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "table",
+      "target_port": "table"
+    },
+    {
+      "source": "peaks",
+      "target": "report",
+      "source_port": "text",
+      "target_port": "text"
+    },
+    {
+      "source": "report",
+      "target": "export",
+      "source_port": "report",
+      "target_port": "report"
+    }
+  ]
+}

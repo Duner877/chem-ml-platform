@@ -1,0 +1,4 @@
+Drop third-party node plugins (*.py) here. They are auto-discovered at
+startup when CHEMML_PLUGINS points at this directory (the default).
+
+See ../docs/node-development.md for the authoring guide.
