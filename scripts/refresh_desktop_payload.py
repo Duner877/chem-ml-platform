@@ -71,12 +71,22 @@ def _wanted(rel: Path, filters: list[str]) -> bool:
     return True
 
 
-def _plan() -> list[tuple[Path, Path]]:
-    """(source, destination) pairs the builder would have produced."""
+def _plan(app: Path) -> list[tuple[Path, Path]]:
+    """(source, destination) pairs the builder would have produced.
+
+    Destinations are resolved against ``app`` so the same plan can refresh the
+    snapshot in this repository *or* in a deployed copy elsewhere.
+    """
+    app = app.resolve()
     pairs: list[tuple[Path, Path]] = []
     for entry in _extra_resources():
         src = (DESKTOP / entry["from"]).resolve()
-        dst = DEFAULT_APP / entry["to"].removeprefix("app/")
+        rel_dest = entry["to"]
+        if rel_dest.startswith("app/"):
+            dst = app / rel_dest[len("app/"):]
+        else:
+            # ``python-runtime`` sits beside ``app/`` inside resources/.
+            dst = app.parent / rel_dest
         filters = entry.get("filter") or ["**/*"]
         if src.is_file():
             if _wanted(src.relative_to(src.parent), filters):
@@ -93,6 +103,7 @@ def _plan() -> list[tuple[Path, Path]]:
 
 
 def _snapshot_files(app: Path) -> set[Path]:
+    app = app.resolve()
     return {
         p.relative_to(app)
         for p in app.rglob("*")
@@ -100,8 +111,19 @@ def _snapshot_files(app: Path) -> set[Path]:
     }
 
 
+def _inside(app: Path, pairs: list[tuple[Path, Path]]) -> list[tuple[Path, Path]]:
+    """Pairs whose destination lives inside ``app``.
+
+    ``extraResources`` also copies ``resources/python-runtime``, which sits
+    *beside* ``app/`` rather than inside it -- so it is payload, but not part of
+    the ``app`` snapshot and must not take part in stale-file detection.
+    """
+    return [(src, dst) for src, dst in pairs if dst.is_relative_to(app)]
+
+
 def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
-    pairs = _plan()
+    app = app.resolve()
+    pairs = _plan(app)
     copied = 0
     for src, dst in pairs:
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -109,9 +131,22 @@ def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
             shutil.copy2(src, dst)
             copied += 1
 
+    # Provenance: the shell runs resources/app, which is not a Git checkout, so
+    # without a stamp the desktop build reports commit "unknown" -- the same
+    # defect the source archive fixed.  Same fields, same code, same answer.
+    sys.path.insert(0, str(DESKTOP.parent))
+    from chemml_version import build_stamp
+
+    stamp = app / "BUILD_INFO.json"
+    text = json.dumps(build_stamp("scripts/refresh_desktop_payload.py"), indent=2) + "\n"
+    if not stamp.exists() or stamp.read_text(encoding="utf-8") != text:
+        stamp.write_text(text, encoding="utf-8")
+        copied += 1
+
     # Anything the plan does not name is payload the builder never shipped:
     # drop it, or a deleted module keeps shadowing its replacement.
-    wanted = {dst.relative_to(app) for _, dst in pairs}
+    wanted = {dst.relative_to(app) for _, dst in _inside(app, pairs)}
+    wanted.add(Path("BUILD_INFO.json"))
     stale = sorted(_snapshot_files(app) - wanted)
     for rel in stale:
         (app / rel).unlink(missing_ok=True)
@@ -122,15 +157,29 @@ def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
 
 
 def verify(app: Path = DEFAULT_APP) -> int:
-    pairs = _plan()
+    app = app.resolve()
+    pairs = _plan(app)
     missing, differing = [], []
-    for src, dst in pairs:
+    for src, dst in _inside(app, pairs):
         if not dst.exists():
             missing.append(str(dst.relative_to(app)))
         elif dst.read_bytes() != src.read_bytes():
             differing.append(str(dst.relative_to(app)))
-    wanted = {dst.relative_to(app) for _, dst in pairs}
+    wanted = {dst.relative_to(app) for _, dst in _inside(app, pairs)}
+    wanted.add(Path("BUILD_INFO.json"))
     stale = sorted(_snapshot_files(app) - wanted)
+    stamp = app / "BUILD_INFO.json"
+    print(f"payload entries expected : {len(pairs)}")
+    print(f"missing from snapshot    : {len(missing)}")
+    print(f"differing from source    : {len(differing)}")
+    print(f"stale (not in plan)      : {len(stale)}")
+    print(f"build stamp present      : {stamp.exists()}")
+    for label, items in (("missing", missing), ("differing", differing), ("stale", stale)):
+        for item in items[:10]:
+            print(f"  {label}: {item}")
+    ok = not (missing or differing or stale) and stamp.exists()
+    print("AGREES" if ok else "STALE -- run without --verify to refresh")
+    return 0 if ok else 1
     print(f"payload entries expected : {len(pairs)}")
     print(f"missing from snapshot    : {len(missing)}")
     print(f"differing from source    : {len(differing)}")

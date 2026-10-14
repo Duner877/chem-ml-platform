@@ -141,6 +141,186 @@ class TestElectronWiring:
         assert config["version"] == chemml_version.VERSION
 
 
+# --------------------------------------------------------------------------- #
+# The packaged payload must actually run (spec task P0-02, ISSUE-22)
+# --------------------------------------------------------------------------- #
+
+
+def _materialise_payload(destination: Path) -> Path:
+    """Replay ``extraResources`` into ``destination`` and return the app dir.
+
+    Mirrors what electron-builder copies, so a test can import the backend the
+    way the shell will -- with ``cwd`` set to ``resources/app`` -- without
+    needing the 260 MB built shell.
+    """
+    import fnmatch
+
+    config = json.loads((DESKTOP / "package.json").read_text(encoding="utf-8"))
+    app = destination / "app"
+
+    def wanted(rel: Path, filters: list[str]) -> bool:
+        posix = rel.as_posix()
+        positive = [p for p in filters if not p.startswith("!")]
+        negative = [p[1:] for p in filters if p.startswith("!")]
+        if positive and not any(
+            fnmatch.fnmatch(posix, p)
+            or (p.startswith("**/") and fnmatch.fnmatch(posix, p[3:]))
+            for p in positive
+        ):
+            return False
+        return not (negative and any(fnmatch.fnmatch(posix, p) for p in negative))
+
+    for entry in config["build"]["extraResources"]:
+        src = (DESKTOP / entry["from"]).resolve()
+        rel_to = entry["to"]
+        if rel_to.startswith("app/"):
+            dst = app / rel_to[len("app/"):]
+        else:
+            # ``python-runtime`` is copied beside ``app/`` inside resources/.
+            dst = app.parent / rel_to
+        filters = entry.get("filter") or ["**/*"]
+        if src.is_file():
+            if wanted(src.relative_to(src.parent), filters):
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+            continue
+        if not src.is_dir():
+            continue
+        for path in sorted(src.rglob("*")):
+            if path.is_file() and wanted(path.relative_to(src), filters):
+                target = dst / path.relative_to(src)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+    return app
+
+
+class TestPackagedPayloadIsRunnable:
+    """The desktop app must be able to start, not merely to be built.
+
+    v0.7.2 shipped a ``win-unpacked`` whose backend died on import:
+    ``backend/app.py`` does ``from chemml_version import VERSION``, and
+    ``chemml_version.py`` -- the only root-level module -- was absent from
+    ``extraResources``.  electron-builder copies files without running them, so
+    the build reported success and the app could never start.  21 desktop tests
+    passed throughout, because every one of them read configuration instead of
+    executing the payload.
+    """
+
+    def test_every_root_level_module_is_packaged(self):
+        import chemml_version  # noqa: F401  (proves the module exists at all)
+
+        config = json.loads((DESKTOP / "package.json").read_text(encoding="utf-8"))
+        targets = {entry["to"] for entry in config["build"]["extraResources"]}
+        roots = sorted(p.name for p in ROOT.glob("*.py"))
+        assert roots, "the repository has no root-level Python modules to check"
+        for module in roots:
+            assert f"app/{module}" in targets, (
+                f"{module} is imported by the backend but is not in extraResources; "
+                "the packaged app would fail to start"
+            )
+
+    def test_backend_imports_from_the_packaged_payload(self, tmp_path):
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+        app = _materialise_payload(tmp_path)
+        result = subprocess.run(
+            [python, "-c", "import backend.app; print(len(backend.app.app.routes))"],
+            cwd=str(app),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert result.returncode == 0, (
+            f"the packaged backend failed to import:\n{result.stderr[-2000:]}"
+        )
+        assert result.stdout.strip().isdigit()
+
+    def test_packaged_backend_reports_the_platform_version(self, tmp_path):
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+        import chemml_version
+
+        app = _materialise_payload(tmp_path)
+        result = subprocess.run(
+            [
+                python,
+                "-c",
+                "import backend.app, chemml_version; print(chemml_version.__version__)",
+            ],
+            cwd=str(app),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+        assert result.stdout.strip() == chemml_version.VERSION
+
+    def test_payload_refresh_stamps_the_build_commit(self, tmp_path):
+        """The shell runs a non-Git payload, so it must carry its own stamp.
+
+        electron-builder copies ``extraResources`` and stops there, so a bare
+        payload answers ``git_commit() == "unknown"`` -- the same defect the
+        source archive fixed.  ``scripts/refresh_desktop_payload.py`` closes it,
+        and this test runs that tool against a throwaway payload to prove it.
+        """
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+        import chemml_version
+
+        app = _materialise_payload(tmp_path)
+        assert not (app / "BUILD_INFO.json").exists(), "fixture should start unstamped"
+
+        tool = ROOT / "scripts" / "refresh_desktop_payload.py"
+        result = subprocess.run(
+            [python, str(tool), "--verify", "--app", str(app)],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert result.returncode != 0, "an unstamped payload must not verify as AGREE"
+        assert "build stamp present      : False" in result.stdout
+
+        result = subprocess.run(
+            [python, str(tool), "--app", str(app)],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+
+        result = subprocess.run(
+            [python, str(tool), "--verify", "--app", str(app)],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert result.returncode == 0, result.stdout[-2000:]
+        assert "AGREES" in result.stdout
+
+        probe = subprocess.run(
+            [
+                python,
+                "-c",
+                "import chemml_version;"
+                "print(chemml_version.git_commit(), chemml_version.commit_source())",
+            ],
+            cwd=str(app),
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        assert probe.returncode == 0, probe.stderr[-1000:]
+        commit, source = probe.stdout.split()
+        assert commit != "unknown", "the refreshed payload cannot name its build commit"
+        assert source == "BUILD_INFO.json"
+
+
 class TestRuntimeProbeContract:
     """The probe must be a stable, documented interface."""
 

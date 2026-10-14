@@ -31,6 +31,7 @@ __all__ = [
     "VERSION",
     "__codename__",
     "build_metadata",
+    "build_stamp",
     "git_commit",
     "read_build_info",
 ]
@@ -124,6 +125,43 @@ def commit_source() -> str:
     if read_build_info().get("commit"):
         return "BUILD_INFO.json"
     return "unknown"
+
+
+def build_stamp(produced_by: str) -> Dict[str, Any]:
+    """The ``BUILD_INFO.json`` payload, shared by every packaging step.
+
+    Kept here so the source archive (``scripts/package.py``) and the Electron
+    shell payload (``scripts/refresh_desktop_payload.py``) stamp *the same*
+    fields from the *same* code.  When they diverge, one of them is lying about
+    provenance -- which is the failure mode this module exists to prevent.
+    """
+    from datetime import datetime, timezone
+
+    def _git(*args: str) -> str:
+        try:
+            out = subprocess.run(
+                ["git", *args], cwd=str(ROOT), capture_output=True, text=True, timeout=10
+            )
+        except (OSError, subprocess.SubprocessError):
+            return ""
+        return (out.stdout or "").strip() if out.returncode == 0 else ""
+
+    commit = _git("rev-parse", "HEAD")
+    return {
+        "version": __version__,
+        "codename": __codename__,
+        "commit": commit or "unknown",
+        "commit_short": commit[:7] if commit else "unknown",
+        "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+        "dirty": bool(_git("status", "--porcelain")),
+        "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "produced_by": produced_by,
+        "note": (
+            "Generated at packaging time and injected next to the code it "
+            "describes. `dirty: true` means the tree had uncommitted changes, "
+            "so the commit identifies the base, not the exact content."
+        ),
+    }
 
 
 def build_metadata() -> Dict[str, Any]:

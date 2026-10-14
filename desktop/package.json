@@ -146,6 +146,10 @@
         "filter": ["**/*"]
       },
       {
+        "from": "../chemml_version.py",
+        "to": "app/chemml_version.py"
+      },
+      {
         "from": "../requirements.txt",
         "to": "app/requirements.txt"
       },
