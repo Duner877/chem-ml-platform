@@ -369,6 +369,39 @@ class TestPackagedPayloadIsRunnable:
         assert "updated : 0 of" in result.stdout, result.stdout[-500:]
         assert (app / "BUILD_INFO.json").read_bytes() == before
 
+    def test_refresh_converges_when_the_tree_stamp_is_stale(self, tmp_path):
+        """Regression: the copy loop must not fight the stamp logic.
+
+        The beforeBuild hook leaves its own ``BUILD_INFO.json`` in the tree,
+        usually naming an older commit than ``HEAD``.  When the copy loop
+        copied that file over the payload's stamp and the stamp logic then
+        rewrote it, every run flipped the file between the two versions and
+        reported two spurious updates -- refresh never converged.  Observed
+        in the quality gate the moment ``HEAD`` moved past the last build.
+        """
+        python = _find_python()
+        if not python:
+            pytest.skip("no Python interpreter available")
+
+        app = _materialise_payload(tmp_path)
+        # A payload whose stamp names a commit this tree has never heard of.
+        (app / "BUILD_INFO.json").write_text(
+            json.dumps({"commit": "0" * 40, "commit_short": "0000000"}),
+            encoding="utf-8",
+        )
+
+        tool = ROOT / "scripts" / "refresh_desktop_payload.py"
+        for run in (1, 2):
+            result = subprocess.run(
+                [python, str(tool), "--app", str(app)],
+                cwd=str(ROOT), capture_output=True, text=True, timeout=300,
+            )
+            assert result.returncode == 0, result.stderr[-2000:]
+            if run == 2:
+                assert "updated : 0 of" in result.stdout, result.stdout[-500:]
+        stamp = json.loads((app / "BUILD_INFO.json").read_text(encoding="utf-8"))
+        assert stamp["commit"] != "0" * 40, "the stale stamp must have been replaced"
+
 
 class TestPayloadGlobMirrorsElectronBuilder:
     """The refresh tool must decide what to copy the way the builder does.

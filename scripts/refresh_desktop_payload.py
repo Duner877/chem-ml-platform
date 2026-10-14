@@ -149,6 +149,12 @@ def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
     pairs = _plan(app)
     copied = 0
     for src, dst in pairs:
+        if dst == app / "BUILD_INFO.json":
+            # Generated below, never copied: the beforeBuild hook leaves its own
+            # stamp in the tree, and copying it over the payload's would fight
+            # the stamp logic -- each run would flip the file between the two
+            # versions and report two spurious updates forever.
+            continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         if not dst.exists() or dst.read_bytes() != src.read_bytes():
             shutil.copy2(src, dst)
