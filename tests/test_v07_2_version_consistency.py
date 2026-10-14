@@ -153,3 +153,66 @@ class TestBuildOutputIsRegeneratedNotStamped:
         changed = ver.stamp()
         assert not any("dist/index.html" in c for c in changed), changed
         assert "v0.7.1" in built.read_text(encoding="utf-8")
+
+
+class TestArchiveDoesNotShipItsOwnChecksum:
+    """ISSUE-20: the archive must not contain the manifest that hashes it.
+
+    ``SHA256SUMS`` records the archive's own SHA-256 plus machine-local absolute
+    paths.  Shipped inside the archive it is *always* one generation stale, and
+    it makes the archive hash depend on a file that describes that hash.  The
+    manifest is published beside the archive instead, where it is verifiable.
+    """
+
+    @pytest.fixture(scope="class")
+    def pkg(self):
+        spec = importlib.util.spec_from_file_location(
+            "package_tool", ROOT / "scripts" / "package.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_should_skip_excludes_the_self_referential_manifests(self, pkg):
+        from pathlib import Path as P
+
+        for rel in ("SHA256SUMS", "docs/RELEASE_MANIFEST.md", "docs/RELEASE_MANIFEST.json"):
+            assert pkg.should_skip(P(rel)), f"{rel} must not be shipped inside the archive"
+
+    def test_built_archive_contains_no_manifest_of_itself(self, pkg, tmp_path):
+        import zipfile
+
+        out = tmp_path / "probe.zip"
+        pkg.build(out, "Probe")
+        with zipfile.ZipFile(out) as zf:
+            names = zf.namelist()
+        assert not any(n.endswith("/SHA256SUMS") for n in names), names
+        assert not any("RELEASE_MANIFEST" in n for n in names), names
+
+    def test_build_stamps_provenance_into_the_archive(self, pkg, tmp_path):
+        """A distributed copy must be able to name its own build commit."""
+        import json
+        import zipfile
+
+        from chemml_version import git_commit
+
+        out = tmp_path / "probe.zip"
+        pkg.build(out, "Probe")
+        with zipfile.ZipFile(out) as zf:
+            info = json.loads(zf.read("Probe/BUILD_INFO.json").decode("utf-8"))
+        assert info["version"] == "0.7.2"
+        assert info["commit"] != "unknown", "the build must know its own commit"
+        # both hash widths must agree with what git_commit() reports, so a dev
+        # tree and an extracted copy answer the *same* question identically
+        assert info["commit_short"] == git_commit()
+        assert info["commit"] == git_commit(short=False)
+        assert info["commit"].startswith(info["commit_short"])
+
+    def test_workspace_runtime_state_is_not_shipped(self, pkg, tmp_path):
+        import zipfile
+
+        out = tmp_path / "probe.zip"
+        pkg.build(out, "Probe")
+        with zipfile.ZipFile(out) as zf:
+            shipped = [n for n in zf.namelist() if "/workspace/" in n]
+        assert shipped == ["Probe/workspace/.gitkeep"], shipped

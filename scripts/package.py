@@ -73,6 +73,19 @@ def should_skip(rel: Path) -> bool:
     if rel_posix.startswith("desktop/dist/") or rel_posix.startswith("desktop/out/"):
         return True
 
+    # The checksum manifest must NOT travel inside the archive it checksums.
+    # It records the archive's own SHA-256 (a value that only exists after the
+    # archive is written) alongside machine-local absolute paths, so an in-archive
+    # copy is guaranteed to be one generation stale -- and would make the archive
+    # hash depend on a file that describes that very hash.  It is published beside
+    # the archive instead, where a downloader can actually use it.
+    if rel_posix == "SHA256SUMS":
+        return True
+
+    # Release manifest is derived from the archive too (same reasoning).
+    if rel_posix in ("docs/RELEASE_MANIFEST.md", "docs/RELEASE_MANIFEST.json"):
+        return True
+
     # Runtime output: everything except the placeholder that keeps the dir.
     if rel_posix.startswith("output/"):
         return rel_posix != "output/.gitkeep"
