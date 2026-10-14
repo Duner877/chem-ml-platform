@@ -34,7 +34,7 @@ v0.7.2 把 v0.7.1 的「加固预览版」推进为「**可信交付基线**」�
 
 ```
 gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
-tests collected across stages: 417
+tests collected across stages: 420
 ```
 
 ---
@@ -128,42 +128,44 @@ capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1
 ### 5.2 质量门禁结果（27 阶段，真实回显）
 
 ```
-[ PASS  ] python_compile               (6625 ms) 2663 first-party files compiled
-[ PASS  ] unit_tests                   (35209 ms) 35/35 passed
-[ PASS  ] integration_tests            (463002 ms) 187/187 passed
-[ PASS  ] security_tests               (12026 ms) 135/135 passed
-[ PASS  ] benchmark_tests              (9924 ms) 18/18 passed
-[ PASS  ] desktop_tests                (13601 ms) 35/35 passed
-[ PASS  ] host_dependent_tests         (2177 ms) 7/7 passed
-[ PASS  ] node_registry_schemas        (4924 ms) 89 node types, schemas valid
-[ PASS  ] node_registry_provenance     (158 ms) all 89 nodes declare provenance · capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1} · mode={'internal_approximation': 89} · 无验证证据 84 个（=未声明 verified）
-[ PASS  ] node_catalog_readme_sync     (1277 ms) OK: README / stats agree with the node registry
-[ PASS  ] workflow_json_validation     (19 ms) 6 workflow files valid
-[ PASS  ] demo_workflows_dry_run       (5379 ms) 6/6 workflows executed successfully
-[ PASS  ] reproducibility_verification (2467 ms) 2 workflow(s) x 2 runs · 10 node results reproduced identically
-[ PASS  ] synthetic_benchmark          (7333 ms) [PASS] identification known-answer benchmark (24 cases x 2 reference libraries, 5.49s)
-[ PASS  ] frontend_typescript          (1476 ms) tsc clean
-[ PASS  ] frontend_production_build    (3339 ms) dist built with 3 files
-[ PASS  ] electron_build_config        (1 ms) electron shell configured (win/linux/mac targets declared)
-[ PASS  ] desktop_runtime_probe        (314 ms) classification=ok · required 8/8 from requirements.runtime.txt · optional 1/1
-[ PASS  ] electron_installer_artefact  (1 ms) installer present: Chem ML Platform Setup 0.7.2.exe (75.3 MiB)
-[ PASS  ] version_consistency          (89 ms) OK: every artefact agrees on 0.7.2
-[ PASS  ] release_manifest             (231 ms) OK: manifest matches 0.7.2@<release-commit> (21/21 built)
-[ PASS  ] docs_mojibake_scan           (6 ms) 30 docs clean
-[ PASS  ] credential_scan              (7805 ms) no hardcoded credentials in shipped sources (1 fake keys in redaction fixtures, excluded by design)
-[ PASS  ] dependency_licenses          (102 ms) 11/12 python deps resolved, 153 locked npm deps, 0 strong-copyleft licences distributed
-[ PASS  ] license_sbom_report          (10341 ms) note: optional components not installed: ['faiss-cpu'] (capability degradation, not a failure)
-[ PASS  ] release_cleanliness          (1606 ms) no caches/secrets shipped; single static source (frontend/dist)
+[ PASS  ] python_compile               (1947 ms) 212 first-party files compiled
+[ PASS  ] unit_tests                   (11727 ms) 38/38 passed
+[ PASS  ] integration_tests            (192623 ms) 187/187 passed
+[ PASS  ] security_tests               (8553 ms) 135/135 passed
+[ PASS  ] benchmark_tests              (5289 ms) 18/18 passed
+[ PASS  ] desktop_tests                (12295 ms) 35/35 passed
+[ PASS  ] host_dependent_tests         (2535 ms) 7/7 passed
+[ PASS  ] node_registry_schemas        (1166 ms) 89 node types, schemas valid
+[ PASS  ] node_registry_provenance     (37 ms) all 89 nodes declare provenance · capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1} · mode={'internal_approximation': 89} · 无验证证据 84 个（=未声明 verified）
+[ PASS  ] node_catalog_readme_sync     (1488 ms) OK: README / stats agree with the node registry
+[ PASS  ] workflow_json_validation     (4 ms) 6 workflow files valid
+[ PASS  ] demo_workflows_dry_run       (4317 ms) 6/6 workflows executed successfully
+[ PASS  ] reproducibility_verification (3062 ms) 2 workflow(s) x 2 runs · 10 node results reproduced identically
+[ PASS  ] synthetic_benchmark          (4670 ms) [PASS] identification known-answer benchmark (24 cases x 2 reference libraries, 3.17s)
+[ PASS  ] frontend_typescript          (1540 ms) tsc clean
+[ PASS  ] frontend_production_build    (3913 ms) dist built with 3 files
+[ PASS  ] electron_build_config        (0 ms) electron shell configured (win/linux/mac targets declared)
+[ PASS  ] desktop_runtime_probe        (263 ms) classification=ok · required 8/8 from requirements.runtime.txt · optional 1/1
+[ PASS  ] electron_installer_artefact  (0 ms) installer present: Chem ML Platform Setup 0.7.2.exe (75.3 MiB)
+[ PASS  ] version_consistency          (97 ms) OK: every artefact agrees on 0.7.2
+[ PASS  ] release_manifest             (240 ms) OK: manifest matches 0.7.2@<release-commit> (21/21 built)
+[ PASS  ] docs_mojibake_scan           (2 ms) 30 docs clean
+[ PASS  ] credential_scan              (1509 ms) no hardcoded credentials in shipped sources (1 fake keys in redaction fixtures, excluded by design)
+[ PASS  ] dependency_licenses          (22 ms) 11/12 python deps resolved, 153 locked npm deps, 0 strong-copyleft licences distributed
+[ PASS  ] license_sbom_report          (9764 ms) note: optional components not installed: ['faiss-cpu'] (capability degradation, not a failure)
+[ PASS  ] release_cleanliness          (2164 ms) no caches/secrets shipped; single static source (frontend/dist)
 [ SKIP  ] host_gpu_status              (0 ms) torch 2.14.1+cpu present, CUDA not available on this host
 
 gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
-tests collected across stages: 417
+tests collected across stages: 420
 ```
 
-（以上为**最终交付树**——tag `v0.7.2` 指向的提交加上 §12.1 记录的 ISSUE-18…25 收尾修复全部落地之后——的
+（以上为**最终交付树**——tag `v0.7.2` 指向的提交加上 §12.1 记录的 ISSUE-18…26 收尾修复全部落地之后——的
 门禁真实回显；各阶段毫秒数为当次测量值，逐次运行会波动。`release_manifest` 行的提交号以
 `<release-commit>` 占位：清单无法记录包含它自身的那个提交（自指），实际值以
-`docs/RELEASE_MANIFEST.json` 的 `commit` 字段为准。）
+`docs/RELEASE_MANIFEST.json` 的 `commit` 字段为准。`python_compile` 的「一级源码文件数」
+在 ISSUE-26 修复后只计一级源码——此前的数字把桌面测试留在 `output/` 下的载荷夹具也计了进去，
+同一棵树逐轮虚增，详见 `docs/V07_2_ISSUE_LOG.md`。）
 
 **唯一 SKIP 的原因**：本机安装的是 CPU 版 torch，无 CUDA 设备，GPU 状态检查无法执行——
 按状态词表记为 `SKIP` 并附原因，**不折算为 PASS**。
