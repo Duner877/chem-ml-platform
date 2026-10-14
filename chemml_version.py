@@ -55,9 +55,10 @@ def git_commit(short: bool = True) -> str:
     override = os.environ.get("CHEMML_BUILD_COMMIT", "").strip()
     if override:
         return override
+    args = ["git", "rev-parse", "--short", "HEAD"] if short else ["git", "rev-parse", "HEAD"]
     try:
         out = subprocess.run(
-            ["git", "rev-parse", "--short" if short else "HEAD"],
+            args,
             cwd=str(ROOT),
             capture_output=True,
             text=True,

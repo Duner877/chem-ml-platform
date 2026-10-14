@@ -90,3 +90,9 @@ hf_cache/
 # ---- Archives ----
 *.zip
 *.tar.gz
+
+# ---- Vite config-loader temp files ----
+# vite writes vite.config.ts.timestamp-<ms>-<hash>.mjs next to the config while
+# bundling it; on hosts where unlink is restricted it lingers after the build.
+frontend/vite.config.*.timestamp-*.mjs
+frontend/vite.config.ts.timestamp-*

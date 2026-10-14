@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld("__CHEMML_TOKEN__", readToken());
 contextBridge.exposeInMainWorld("chemmlDesktop", {
   isDesktop: true,
   backendInfo: () => ipcRenderer.invoke("backend-info"),
+  runtimeDiagnosis: () => ipcRenderer.invoke("runtime-diagnosis"),
   readBackendLog: (lines) => ipcRenderer.invoke("read-backend-log", lines),
   restartBackend: () => ipcRenderer.invoke("restart-backend"),
   openLogFolder: () => ipcRenderer.invoke("open-log-folder"),
@@ -28,4 +29,9 @@ contextBridge.exposeInMainWorld("chemmlDesktop", {
   onBackendStatus: (cb) => ipcRenderer.on("backend-status", (_e, data) => cb(data)),
   onBackendReady: (cb) => ipcRenderer.on("backend-ready", (_e, data) => cb(data)),
   onBackendExited: (cb) => ipcRenderer.on("backend-exited", (_e, data) => cb(data)),
+  // v0.7.2 (spec P0-02): classified startup failures and runtime state.
+  onBackendFailure: (cb) => ipcRenderer.on("backend-failure", (_e, data) => cb(data)),
+  onBackendRestarting: (cb) => ipcRenderer.on("backend-restarting", (_e, data) => cb(data)),
+  onRuntimeDiagnosis: (cb) => ipcRenderer.on("runtime-diagnosis", (_e, data) => cb(data)),
+  onPortInfo: (cb) => ipcRenderer.on("port-info", (_e, data) => cb(data)),
 });

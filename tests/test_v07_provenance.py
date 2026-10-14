@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from provenance import (
+    PROVENANCE_SCHEMA_VERSION,
     ProvenanceCollector,
     ProvenanceRecord,
     build_node_record,
@@ -19,7 +20,18 @@ class TestSchema:
     def test_record_defaults_and_summary(self):
         rec = ProvenanceRecord(node_id="n1", node_type="FooNode", status="completed")
         d = rec.to_dict()
-        assert d["schema_version"] == "0.7.0"
+        # v0.7.2 (task P1-06) extended the schema: workflow definition digest,
+        # platform identity, key dependency versions, per-node execution mode,
+        # output digests and run-level resource usage.  The version therefore
+        # moved off 0.7.0.
+        #
+        # Both assertions are deliberate.  The constant check keeps the test
+        # about behaviour; the literal check is the only thing that *pins* the
+        # value -- `scripts/version.py` intentionally does not track the
+        # provenance schema version, because a schema bump is not a product
+        # release.  A future bump must update this line consciously.
+        assert d["schema_version"] == PROVENANCE_SCHEMA_VERSION
+        assert d["schema_version"] == "0.7.2"
         assert "FooNode#n1" in rec.summary()
 
     def test_environment_snapshot(self):

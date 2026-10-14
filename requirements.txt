@@ -1,34 +1,20 @@
 # Chem ML Platform v0.7.2 -- Python dependencies.
 #
-# The platform runs with the packages below; every scientific computation has
-# an internal fallback so that no optional dependency is strictly required.
+# This file is a *manifest of groups*, not a list of packages: each group is
+# declared exactly once, in its own file, so the three audiences cannot drift
+# apart (spec task P0-04).
+#
+#   requirements.runtime.txt    required to run the platform  -> blocks startup
+#   requirements.dev.txt        required to test it           -> dev machines only
+#   requirements.optional.txt   accelerators / connectors     -> degrades capability
+#
+# Install everything (developer machine):
+#     python -m pip install -r requirements.txt
+# Install only what a user needs (small install):
+#     python -m pip install -r requirements.runtime.txt
+#
+# The desktop runtime probe validates requirements.runtime.txt before starting
+# the backend; see docs/V07_2_DESKTOP_RUNTIME.md.
 
-# --- web layer ---------------------------------------------------------------
-fastapi>=0.110,<1.0
-uvicorn[standard]>=0.29,<1.0
-pydantic>=2.6,<3.0
-
-# --- scientific core ---------------------------------------------------------
-numpy>=1.26,<3.0
-scipy>=1.11,<2.0
-networkx>=3.2,<4.0
-
-# --- plotting (PNG artefacts, reports) --------------------------------------
-matplotlib>=3.8,<4.0
-
-# --- optional accelerators ---------------------------------------------------
-# CPU wheel; remove the "+cpu" suffix for a CUDA build.
-torch>=2.2; platform_system != "Windows" or platform_machine != "ARM64"
-
-# --- optional connectors -----------------------------------------------------
-# Vector database backing for the similarity nodes.  When FAISS is absent the
-# nodes fall back to a NumPy brute-force cosine search.
-# faiss-cpu>=1.8
-
-# DOCX report export (ReportExportNode format="docx").  When absent the node
-# raises a clear error instead of writing a fake document.
-python-docx>=1.1,<2.0
-
-# --- development / test ------------------------------------------------------
-pytest>=8.0
-httpx>=0.27
+-r requirements.runtime.txt
+-r requirements.dev.txt

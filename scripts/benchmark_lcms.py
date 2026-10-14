@@ -17,12 +17,17 @@ comparing a model against itself:
     doubles as a determinism test.
 
 ``curated``
-    The reference entries carry the *empirical* diagnostic fragments / IR bands /
-    UV maxima shipped with the library, while the observed "unknown" is still a
-    forward prediction.  This is a **cross-source** check: it measures how well
-    the fusion survives the mismatch between an empirical reference and a
-    modelled measurement - the realistic case where a library was not built from
-    the same model that generated the data.
+    The reference entries carry the *project-authored* diagnostic fragments / IR
+    bands / UV maxima shipped with ``databases.local_library``, while the observed
+    "unknown" is still a forward prediction.  Molecular identity (formula, SMILES,
+    monoisotopic mass) is real and checked against PubChem values; the spectral
+    values are **hand-written illustrative numbers, not extracted from a licensed
+    experimental spectral database**.
+
+    This is therefore a *cross-source* check only in the narrow sense that the
+    reference values were not produced by the same forward models.  It is **not**
+    validation against real instrument data, and the numbers below must never be
+    quoted as a real-world identification accuracy (spec task P0-06).
 
 For each library the metric suite is reported per evidence channel (MS only,
 IR only, NMR only, UV only) and for the full multimodal fusion:
@@ -82,6 +87,58 @@ OUT_OF_LIBRARY = {"name": "vanillin", "smiles": "COc1cc(C=O)ccc1O", "formula": "
 #: candidate search window during benchmarking (unchanged across configs so the
 #: only variable is the evidence channel set)
 _MASS_TOLERANCE_PPM = 15.0
+
+#: Data provenance of this benchmark (spec task P0-06).
+#:
+#: The spec forbids presenting a synthetic benchmark as real-data validation.
+#: Rather than trusting a paragraph of prose to carry that caveat, the claim and
+#: its evidence travel together in the machine-readable output, so a downstream
+#: report cannot quote the numbers without the caveat.
+PROVENANCE: Dict[str, Any] = {
+    "benchmark_kind": "synthetic",
+    "benchmark_title": "Identification known-answer benchmark (synthetic only)",
+    "script": "scripts/benchmark_lcms.py",
+    "dataset_version": "chemml-lcms-synthetic-2026.1",
+    "real_instrument_data": False,
+    "real_data_validation": "not_performed",
+    "real_data_validation_note": (
+        "No licensed experimental spectral dataset is bundled with this release. "
+        "See docs/V07_2_REAL_DATA_VALIDATION_PLAN.md; real-data accuracy is UNVERIFIED."
+    ),
+    "libraries": {
+        "synthetic": {
+            "origin": "generated",
+            "generator": "models.spectra forward models (predict_ms/predict_ir/predict_nmr/predict_uvvis)",
+            "independent_of_model": False,
+            "note": "closed-loop: reference spectra come from the same forward models the "
+                    "node scores against, so this measures ranking correctness and determinism, "
+                    "not real-world accuracy",
+        },
+        "curated": {
+            "origin": "hand-authored",
+            "generator": "databases.local_library diagnostic values maintained in this repository",
+            "independent_of_model": True,
+            "note": "cross-source only in the sense that reference values were NOT produced by "
+                    "the same forward models; they are project-authored illustrative values, "
+                    "NOT extracted from a licensed experimental spectral database. Molecular "
+                    "identity (formula/SMILES/monoisotopic mass) is checked against PubChem.",
+        },
+    },
+    "analyte_source": "databases.local_library.COMPOUND_LIBRARY (24 entries)",
+    "adduct": _ADDUCT,
+    "mass_tolerance_ppm": _MASS_TOLERANCE_PPM,
+    "forbidden_claims": [
+        "不得引用为真实仪器数据上的鉴定准确率",
+        "不得引用为 LC-MS/MS 平台的整体准确率",
+        "不得与外部文献报告的准确率直接比较",
+    ],
+    "permitted_claims": [
+        "在合成数据上，排名管线能复现已知答案（closed-loop）",
+        "参考值不来自同一正向模型时（cross-source）排名仍然稳定",
+        "两次运行结果完全一致（确定性）",
+        "库外分析物的置信度显著低于库内化合物（开放集行为）",
+    ],
+}
 
 #: acceptance thresholds for the primary (closed-loop, multimodal) metrics plus
 #: the negative controls.  Values are set a little below what is measured at
@@ -445,7 +502,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     libraries = {kind: build_reference_library(kind) for kind in ("synthetic", "curated")}
     if not args.quiet:
-        print(f"library: {len(COMPOUND_LIBRARY)} compounds, adduct {_ADDUCT}, "
+        print(
+            "=" * 78
+            + "\nSYNTHETIC BENCHMARK — 合成数据基准，不是真实仪器验证\n"
+            + "  本基准的全部参考谱与观测谱均由平台内部正向模型生成或为仓库内手写值。\n"
+            + "  不得将其引用为真实 LC-MS/MS 数据上的鉴定准确率。\n"
+            + "  真实数据验证状态：NOT PERFORMED（见 docs/V07_2_REAL_DATA_VALIDATION_PLAN.md）\n"
+            + "=" * 78
+        )
+        print(f"dataset: {PROVENANCE['dataset_version']}  "
+              f"library: {len(COMPOUND_LIBRARY)} compounds, adduct {_ADDUCT}, "
               f"tolerance {_MASS_TOLERANCE_PPM:.0f} ppm")
 
     metrics: Dict[str, Dict[str, Dict[str, Any]]] = {}
@@ -464,6 +530,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     summary: Dict[str, Any] = {
         "generated_by": "scripts/benchmark_lcms.py",
+        "provenance": PROVENANCE,
         "adduct": _ADDUCT,
         "mass_tolerance_ppm": _MASS_TOLERANCE_PPM,
         "library_size": len(COMPOUND_LIBRARY),
@@ -485,7 +552,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if not args.quiet:
         for kind in ("synthetic", "curated"):
-            print(f"\nmetrics  [{kind} reference]")
+            label = "generated by this platform's forward models" if kind == "synthetic" else (
+                "hand-authored project values (identity verified vs PubChem)"
+            )
+            print(f"\nmetrics  [{kind} reference library — {label}]")
             print(f"  {'config':<12} {'Top-1':>7} {'Top-3':>7} {'Top-5':>7} {'MRR':>7} {'mean conf':>10}")
             for config_name, _channels in _CONFIGS:
                 cfg = metrics[kind][config_name]
@@ -504,7 +574,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             f"  open-set ({open_set['analyte']}) confidence {open_set['top1_confidence']:.3f} "
             f"vs closed-loop {metrics['synthetic']['multimodal']['mean_confidence']:.3f}"
         )
-        print("\nchecks")
+        print("\nchecks  (regression floors — NOT performance claims; each is set below the")
+        print("         measured value so the gate catches regressions without being brittle)")
         for name, ok, detail in checks:
             print(f"  [{'ok' if ok else 'FAIL'}] {name}  ({detail})")
 

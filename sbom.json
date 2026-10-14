@@ -6,7 +6,7 @@
     "component": {
       "type": "application",
       "name": "Chem ML Platform",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "licenses": [
         {
           "license": {
@@ -18,7 +18,7 @@
     "tools": [
       {
         "name": "scripts/license_report.py",
-        "version": "0.7.1"
+        "version": "0.7.2"
       }
     ]
   },
@@ -263,40 +263,6 @@
     },
     {
       "type": "library",
-      "name": "torch",
-      "version": "2.14.1",
-      "scope": "required",
-      "properties": [
-        {
-          "name": "chemml:ecosystem",
-          "value": "python"
-        },
-        {
-          "name": "chemml:installed",
-          "value": "true"
-        },
-        {
-          "name": "chemml:bundled",
-          "value": "true"
-        }
-      ],
-      "purl": "pkg:pypi/torch",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "website",
-          "url": "https://pytorch.org"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "python-docx",
       "version": "1.2.0",
       "scope": "required",
@@ -394,6 +360,68 @@
         {
           "type": "website",
           "url": "https://www.python-httpx.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "torch",
+      "version": "2.14.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/torch",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://pytorch.org"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "faiss-cpu",
+      "version": "0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "python"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:pypi/faiss-cpu",
+      "licenses": [
+        {
+          "license": {
+            "id": "NOASSERTION"
+          }
         }
       ]
     },

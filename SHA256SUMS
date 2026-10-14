@@ -1,0 +1,24 @@
+# SHA256SUMS — Chem ML Platform v0.7.2 (Trusted Delivery Release)
+# commit 2eb6453 · generated 2026-10-14T13:21:57+00:00
+# verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
+7b6c0751a0d09f99041d072f8ee766caa33280306554b00ac193b8008c237f2a  C:/Users/hanku/Desktop/0.5 - 副本/Chem-ML-Platform-v0.7.2.zip
+e556cec96689f4389237f53f69183c94a2e3c8da0ad190da072b9eb15de50f9c  desktop/dist/Chem ML Platform Setup 0.7.2.exe
+fc5ae79deeb20019a26b5f0584814e9de776595e7ead51a0756db6c8ebc04054  desktop/dist/Chem ML Platform Setup 0.7.2.exe.blockmap
+b37d4658f88cf10b20281765a161cb6781aca732887f50a4b9af392469a5e975  sbom.json
+3fcd1325e8aaa17312de6469a256757d72b88ced026d7816f83ec25e925cd092  output/quality_gate.json
+89bd243f6da7242dade2b0494e895c27e9010b9c2c3662496148c593ea29c537  output/quality_gate.md
+4fd8cd954c2845d49333e001cfaec324fa377de751b540afd674b6c146ae4d77  output/ci_pipeline.json
+e7a0d017ef2a4820eb2dbe676293a153c3bc2a7ed3ca016dbc717068b28c23fe  docs/THIRD_PARTY_LICENSES.md
+eb551da2c6832034ecc937558adb8801d61b8b24715fe128f4193ab08ccb5c75  docs/PROVENANCE.md
+4371c042f414de29903351ef979f063f934928afbe7d400392692e799d825f04  NOTICE
+3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661  docs/V07_2_SYNTHETIC_BENCHMARK.md
+c5e6fd3edbdb3928074a8168deeeeb0b38dcbfc1b60cbe52593a5d20b37841c2  docs/node-catalog.md
+7f010d168c157323eed364bb5c005aab1c8bb7e846e675ddfc3f2a8a6da40da6  requirements.lock
+a640cde957d121f9bde72cf3070fcfca3c8c23b34443221528cfdce901790ade  frontend/package-lock.json
+347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6  desktop/src/runtime-probe.js
+da673516abbb428c318ee9933e8808143f29ae3280555b2b1f15ca0a33cacff3  output/reproducibility.json
+2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a  docs/V07_2_PLUGIN_SPEC.md
+aeec62f8cbf5885392fda9a2aaab805f27a1ba6a2aa34135b035d150339236ae  docs/V07_2_RELEASE_REPORT.md
+c7785d1c5605b228bcf374d7d516fdd74bee4e273dade46e35a2db764fbf8531  docs/V07_2_ISSUE_LOG.md
+a5fd18f450c52654251a39d0a320ef620c0eb1cc1b0b5b97273708611d2d2aac  docs/V07_2_CLEAN_ENV_TEST.md
+226e588b50068abd8bebe004d114b5691e36da48411ce6a476167fc8b32e37fd  docs/V07_2_REAL_DATA_VALIDATION_PLAN.md

@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import sys
+import time
 
 import pytest
 
@@ -19,6 +20,7 @@ from nodes.loader import get_registry
 from simulations.controlled import (
     TOOL_ALLOWLIST,
     ControlledRunner,
+    ExternalToolError,
     ExternalToolNotAllowed,
     ExternalToolUnavailable,
     describe_tools,
@@ -138,3 +140,76 @@ class TestControlledRunner:
         r = ControlledRunner(max_concurrency=3)
         assert r.max_concurrency == 3
         assert r.active == 0
+
+    def test_timeout_terminates_the_child_and_cleans_up(self, tmp_path, monkeypatch):
+        """Spec P1-03: "超时任务会被可靠终止或标记为终止失败".
+
+        Raising an exception is not enough -- the child must actually stop.
+        The probe writes a heartbeat counter until it is killed, so a frozen
+        counter after the timeout proves termination without needing an OS
+        process API.  The scratch directory must also be removed.
+        """
+        from simulations.controlled import ExternalToolSpec
+
+        spec = ExternalToolSpec(key="probe_slow", executable=sys.executable,
+                                description="slow probe", domain="test")
+        monkeypatch.setitem(TOOL_ALLOWLIST, "probe_slow", spec)
+
+        heartbeat = tmp_path / "beats.txt"
+        script = (
+            "import time, pathlib, sys\n"
+            f"p = pathlib.Path({str(heartbeat)!r})\n"
+            "n = 0\n"
+            "while True:\n"
+            "    n += 1\n"
+            "    p.write_text(str(n), encoding='utf-8')\n"
+            "    time.sleep(0.1)\n"
+        )
+        with pytest.raises(ExternalToolError) as excinfo:
+            ControlledRunner().run(
+                "probe_slow", ["-c", script], workdir=tmp_path, timeout=1.5
+            )
+        assert "timed out" in str(excinfo.value).lower()
+
+        # The child updated the counter at least once before the timeout.
+        assert heartbeat.exists(), "probe never started"
+        frozen = int(heartbeat.read_text(encoding="utf-8"))
+        time.sleep(1.0)
+        after = int(heartbeat.read_text(encoding="utf-8"))
+        assert after == frozen, (
+            f"child kept running after the timeout ({frozen} -> {after}): "
+            "the task was abandoned, not terminated"
+        )
+
+    def test_timeout_cleans_the_scratch_directory(self, monkeypatch):
+        """A timed-out task must not leave a half-written scratch directory."""
+        import os
+
+        from simulations.controlled import ExternalToolSpec
+
+        spec = ExternalToolSpec(key="probe_slow2", executable=sys.executable,
+                                description="slow probe", domain="test")
+        monkeypatch.setitem(TOOL_ALLOWLIST, "probe_slow2", spec)
+
+        seen = {}
+
+        import simulations.controlled as controlled
+
+        real_mkdtemp = controlled.tempfile.mkdtemp
+
+        def spy_mkdtemp(*args, **kwargs):
+            path = real_mkdtemp(*args, **kwargs)
+            seen["dir"] = path
+            return path
+
+        monkeypatch.setattr(controlled.tempfile, "mkdtemp", spy_mkdtemp)
+        with pytest.raises(ExternalToolError):
+            ControlledRunner().run(
+                "probe_slow2",
+                ["-c", "import time; time.sleep(30)"],
+                timeout=1.0,
+            )
+        assert seen.get("dir"), "runner did not create a scratch directory"
+        assert not os.path.exists(seen["dir"]), (
+            "timed-out task left its scratch directory behind"
+        )

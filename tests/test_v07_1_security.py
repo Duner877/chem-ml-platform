@@ -6,6 +6,11 @@ Covers the new ``backend/security.py`` boundary:
     reach a write, execute or external route);
   * config loading from the environment (wildcard origins are stripped);
   * the :class:`AuthMiddleware` end to end through the real FastAPI app.
+
+v0.7.2 note: the denial *status code* contract was refined by task P0-01.
+Unauthenticated requests still answer 401; a valid credential that merely lacks
+the required scope now answers 403 (not 401).  Tests that pinned the old
+"insufficient scope is also 401" behaviour were updated accordingly.
 """
 
 from __future__ import annotations
@@ -146,13 +151,25 @@ class TestAuthMiddleware:
         assert resp.status_code == 200
 
     def test_readonly_token_cannot_upload(self, secured_client):
+        # v0.7.2 P0-01 changed this contract deliberately.
+        #
+        # v0.7.1 answered 401 for *both* "no credential" and "credential with
+        # insufficient scope", which makes the two indistinguishable to a
+        # client: a user with a valid read-only token was told their token was
+        # wrong instead of being told it lacked the write scope.
+        #
+        # v0.7.2 splits them: 401 = "we could not establish who you are"
+        # (missing / invalid / expired) and 403 = "we know who you are, and you
+        # still may not do this".  A read-only token *is* a valid credential,
+        # so the honest answer here is 403 + a scope reason, not 401.
         resp = secured_client.post(
             "/api/storage/upload/raw_data",
             files={"file": ("x.csv", io.BytesIO(b"a,b"), "text/csv")},
             headers={"Authorization": "Bearer ro-token"},
         )
-        assert resp.status_code == 401
-        assert resp.json()["code"] == "API_AUTH_ERROR"
+        assert resp.status_code == 403
+        assert resp.json()["code"] == "API_FORBIDDEN"
+        assert resp.json()["reason"] == "insufficient_scope"
 
     def test_full_token_can_upload(self, secured_client):
         resp = secured_client.post(

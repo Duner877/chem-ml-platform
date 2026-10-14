@@ -45,8 +45,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from chemml_version import VERSION as _VERSION  # noqa: E402
+
 PROJECT_NAME = "Chem ML Platform"
-PROJECT_VERSION = "0.7.1"
+#: Single source of truth (spec P0-04).  v0.7.1 hard-coded this and the NOTICE
+#: shipped with the previous version number.
+PROJECT_VERSION = _VERSION
 PROJECT_LICENSE = "Apache-2.0"
 
 #: licences that require a human review before distribution (strong copyleft)
@@ -83,17 +87,81 @@ def _parse_requirement(line: str) -> Optional[str]:
     return match.group(1) if match else None
 
 
+#: A dependency line, as opposed to the prose that surrounds it in a comment.
+#: Requires a version specifier or an environment marker, so
+#: "The platform runs with the packages below" is not mistaken for a package.
+_PIN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*(\[[^\]]*\])?\s*[<>=!~;]")
+
+
+def _expand_requirements(path: Path, seen: Optional[set] = None) -> List[Tuple[str, bool]]:
+    """Expand a requirements file, following ``-r`` includes.
+
+    ``requirements.txt`` is a *manifest of groups* (spec P0-04): it contains only
+    ``-r`` lines.  Reading it literally made the licence report resolve two
+    packages named ``-r requirements.runtime.txt`` and report them as unresolved,
+    so the include syntax has to be followed properly.
+
+    Returns ``(line, optional)`` where ``optional`` marks entries that are
+    declared for information only (the optional accelerator group).
+    """
+    seen = seen if seen is not None else set()
+    resolved = path.resolve()
+    if resolved in seen or not path.exists():
+        return []
+    seen.add(resolved)
+
+    out: List[Tuple[str, bool]] = []
+    # ``requirements.optional.txt`` entries degrade capability rather than gate
+    # startup, so they are reported as not-declared-required.
+    informational = "optional" in path.name
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            # A commented-out pin (e.g. ``# faiss-cpu>=1.8``) is still a real
+            # candidate component worth listing -- but only when it actually
+            # looks like a requirement.
+            candidate = line.lstrip("#").strip()
+            if _PIN_RE.match(candidate):
+                out.append((candidate, True))
+            continue
+        if line.startswith("-r"):
+            out.extend(_expand_requirements(path.parent / line[2:].strip(), seen))
+            continue
+        if line.startswith("-"):
+            continue
+        if not _PIN_RE.match(line):
+            continue
+        out.append((line, informational))
+    return out
+
+
+def declared_requirements() -> List[Tuple[str, bool]]:
+    """Every declared dependency, with the include syntax expanded.
+
+    The optional group is listed explicitly: those components are not required
+    to run and are not redistributed by this project, but a reader auditing the
+    dependency surface still needs to see them (spec P1-08 #4).
+    """
+    groups = ["requirements.txt", "requirements.optional.txt"]
+    out: List[Tuple[str, bool]] = []
+    for group in groups:
+        out.extend(_expand_requirements(ROOT / group))
+    return out
+
+
 def python_components() -> List[Dict[str, Any]]:
     """Resolve the declared Python dependencies against installed metadata."""
     from importlib import metadata
 
-    requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
     components: List[Dict[str, Any]] = []
-    for line in requirements:
+    seen: set = set()
+    for line, optional in declared_requirements():
         name = _parse_requirement(line)
-        if not name:
+        if not name or name in seen:
             continue
-        optional = line.strip().startswith("#")
+        seen.add(name)
         entry: Dict[str, Any] = {
             "ecosystem": "python",
             "name": name,
@@ -101,6 +169,7 @@ def python_components() -> List[Dict[str, Any]]:
             "license": "",
             "homepage": "",
             "declared": not optional,
+            "optional": optional,
             "installed": False,
         }
         try:
@@ -128,10 +197,9 @@ def python_license_texts() -> Dict[str, str]:
     from importlib import metadata
 
     counts: Dict[str, str] = {}
-    for name in dict.fromkeys(
-        _parse_requirement(line) for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
-    ):
-        if not name:
+    for line, _optional in declared_requirements():
+        name = _parse_requirement(line)
+        if not name or name in counts:
             continue
         try:
             dist = metadata.distribution(name)
@@ -502,14 +570,50 @@ def build_markdown(
     lines += ["", "## 4. 样例数据来源与许可", ""]
     lines += table(datasets, ("name", "license", "note"))
     lines += ["", "## 5. 预构建前端资源", ""]
-    for asset in assets:
-        lines.append(f"- `{asset['path']}` — {asset['bytes']} bytes（{asset['generated_from']}）")
+    # v0.7.2 fix: this section used to list each emitted file by name and byte
+    # size, and later to print `len(assets)`.  Vite names bundles by *content
+    # hash* (`index-BexXqvfv.js`) and the emitted file count depends on whether
+    # a local `frontend/dist` happens to exist, so both variants changed on
+    # every frontend build.  That made this document -- and any SHA-256 recorded
+    # for it -- irreproducible, which defeats the point of pinning a licence
+    # inventory (the release manifest flags the difference as "drift" and no
+    # published digest can ever be re-derived).  What matters for licensing is
+    # which *third-party* assets ship, and that is a policy statement, not a
+    # property of the local working tree.
+    lines.append(
+        "- 发布包内的 `frontend/dist/` bundle 由 `frontend/` 本项目源码经 vite 构建"
+        "（`npm run build`）生成，属于**本项目自有**代码与第 2 节所列 npm 依赖的组合产物；"
+        "本项目不向发布包额外引入未在此列出的第三方前端资源。"
+    )
+    lines.append(
+        "- bundle 的文件名含内容哈希、个数与字节数随构建波动，均与本清单的许可结论无关，"
+        "故不逐条列出；如需逐个核对发布包内的实际文件，请以 `docs/RELEASE_MANIFEST.json` "
+        "与 `SHA256SUMS` 为准（这两者随版本整体重新生成）。"
+    )
     lines += ["", "## 6. 发布包清洁度扫描", ""]
+    # v0.7.2 fix: the scan used to enumerate every offending path, then to print
+    # a raw count.  Those paths are transient build/tooling state (`__pycache__`,
+    # `output/runs`), so both variants churned as tests and builds ran, which
+    # again made the document's SHA-256 irreproducible.  Presence still detects
+    # the real problem (a cache accidentally shipped) while keeping the document
+    # stable; and a genuinely dirty tree *should* make the recorded digest drift,
+    # because then the release material and the tree no longer agree.
     for key, values in problems.items():
-        state = "OK" if not values else f"{len(values)} 项"
-        lines.append(f"- **{key}**：{state}")
-        for value in values[:20]:
-            lines.append(f"  - {value}")
+        if key in _INFO_KEYS:
+            # Build/run-time state (`__pycache__`, `*.pyc`).  It is *expected* to
+            # exist in a working tree and is never shipped, so the document must
+            # not record whether it happens to be present right now -- that alone
+            # would make the digest depend on when the report was generated.
+            lines.append(
+                f"- **{key}**：构建/运行期产物，**不进入发布包**，不计入许可结论"
+                "（扫描命中与否仅供参考）。"
+            )
+        elif key == "duplicate_assets":
+            lines.append(
+                f"- **{key}**：{'未发现重复资源' if not values else '存在重复资源（阻断项）'}"
+            )
+        else:
+            lines.append(f"- **{key}**：{'OK' if not values else '存在（阻断项，详见 `--print`）'}")
     review = _license_review(python_deps + npm_deps)
     lines += ["", "## 7. 需要人工复核的许可证（强 copyleft 等）", ""]
     if review:
@@ -553,7 +657,20 @@ def collect() -> Dict[str, Any]:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="exit 1 on a cleanliness/licence problem")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help=(
+            "verify that the on-disk sbom.json / NOTICE / THIRD_PARTY_LICENSES.md are "
+            "identical to what would be generated; exit 1 on drift or a licence problem. "
+            "Never writes."
+        ),
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="(re)generate sbom.json, NOTICE and docs/THIRD_PARTY_LICENSES.md",
+    )
     parser.add_argument("--print", dest="do_print", action="store_true", help="print the summary")
     args = parser.parse_args(argv)
 
@@ -564,13 +681,45 @@ def main(argv: Optional[List[str]] = None) -> int:
         data["python"], data["npm"], data["external"], data["datasets"], data["assets"], data["problems"]
     )
 
-    (ROOT / "sbom.json").write_text(json.dumps(sbom, indent=2, ensure_ascii=False), encoding="utf-8")
-    (ROOT / "NOTICE").write_text(notice, encoding="utf-8")
-    docs_path = ROOT / "docs" / "THIRD_PARTY_LICENSES.md"
-    docs_path.write_text(markdown, encoding="utf-8")
+    sbom_text = json.dumps(sbom, indent=2, ensure_ascii=False)
+    targets = [
+        (ROOT / "sbom.json", sbom_text),
+        (ROOT / "NOTICE", notice),
+        (ROOT / "docs" / "THIRD_PARTY_LICENSES.md", markdown),
+    ]
+
+    # v0.7.2 fix: this function used to write all three files *unconditionally*,
+    # including in --check mode.  A check that rewrites the artefacts it is
+    # supposed to check can never detect a stale or tampered one, and it made
+    # the release manifest's recorded hashes drift on every gate run.  Writing
+    # is now explicit; --check compares and refuses to touch anything.
+    drift: List[str] = []
+    if args.check:
+        for path, expected in targets:
+            if not path.exists():
+                drift.append(f"missing:{path.relative_to(ROOT).as_posix()}")
+                continue
+            if path.read_text(encoding="utf-8") != expected:
+                drift.append(f"stale:{path.relative_to(ROOT).as_posix()}")
+    else:
+        for path, expected in targets:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(expected, encoding="utf-8")
 
     review = _license_review(data["python"] + data["npm"])
-    unresolved = [c["name"] for c in data["python"] if not c["installed"]]
+    # Only a *required* declared dependency being absent is a blocker.  An
+    # absent optional connector (e.g. the commented-out `faiss-cpu`) degrades a
+    # capability by design and must not fail the licence check.
+    unresolved = [
+        c["name"]
+        for c in data["python"]
+        if not c["installed"] and c.get("declared", True)
+    ]
+    optional_absent = [
+        c["name"]
+        for c in data["python"]
+        if not c["installed"] and not c.get("declared", True)
+    ]
     blockers: List[str] = []
     blockers += [
         f"cleanliness:{key}={len(values)}"
@@ -579,9 +728,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     ]
     if unresolved:
         blockers.append(f"python-unresolved={len(unresolved)}")
+    # A stale or missing release artefact is itself a blocker: the whole point of
+    # the check is that the shipped file matches the shipped dependencies.
+    blockers += drift
 
     if args.do_print:
-        print(f"python components : {len(data['python'])} ({len(unresolved)} unresolved)")
+        print(f"python components : {len(data['python'])} ({len(unresolved)} required unresolved)")
+        if optional_absent:
+            print(f"  optional not installed (capability degraded by design): {optional_absent}")
         print(f"npm components    : {len(data['npm'])}")
         print(f"external programs : {len(data['external'])}")
         print(f"datasets          : {len(data['datasets'])}")
@@ -594,6 +748,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     print(f"[{'FAIL' if (args.check and blockers) else 'PASS'}] licence/SBOM report "
           f"({len(data['python'])} py / {len(data['npm'])} npm / {len(data['external'])} external)")
+    if optional_absent:
+        print(f"  note: optional components not installed: {optional_absent} "
+              "(capability degradation, not a failure)")
     if args.check and blockers:
         for blocker in blockers:
             print(f"  ! {blocker}")

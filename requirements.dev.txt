@@ -1,0 +1,8 @@
+# Chem ML Platform v0.7.2 -- development and test dependencies (spec P1-04).
+#
+# Not needed to *run* the platform; needed to run the quality gate and the
+# test corpus.  Kept separate so a user install stays small and so the runtime
+# probe never blocks startup on a missing test runner.
+
+pytest>=8.0
+httpx>=0.27

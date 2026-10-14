@@ -1,0 +1,18 @@
+# Chem ML Platform v0.7.2 -- optional accelerators and connectors (spec P1-04).
+#
+# Every entry here has a working internal fallback.  A missing package
+# downgrades a *capability* and is reported as such; it must never be reported
+# as a successful use of the accelerated path (spec P0-05 #1/#2).
+#
+# The desktop runtime probe reads this file for information only.
+
+# --- ML / GPU accelerators ---------------------------------------------------
+# CPU wheel by default.  For a CUDA build install the matching torch wheel
+# *before* this file, or drop the accelerator entirely -- nothing breaks.
+# `pip install -r requirements.optional.txt` pulls the CPU wheel.
+torch>=2.2; platform_system != "Windows" or platform_machine != "ARM64"
+
+# --- vector search -----------------------------------------------------------
+# Backs the similarity nodes.  Without it the nodes fall back to a NumPy
+# brute-force cosine search (slower, identical results).
+# faiss-cpu>=1.8

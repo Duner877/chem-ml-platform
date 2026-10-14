@@ -1,101 +1,323 @@
 name: CI
 
+# v0.7.2 release pipeline (spec section 9).
+#
+# Every stage runs in its own job with its own exit code, its own log and its
+# own uploaded evidence.  There is deliberately NO single "summary" job that can
+# print success while an earlier stage failed: the `release` job uses `needs:`
+# so a failed stage makes the whole pipeline fail, and each stage's JSON/MD
+# result is archived as an artifact for the release report to cite.
+#
+# The stage implementations live in `scripts/ci_pipeline.py` and are invoked
+# with `--only <n>`, so local runs and CI runs execute exactly the same code.
+
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONUNBUFFERED: "1"
 
 jobs:
-  python:
-    name: Python (engine / nodes / workflows / API)
+  # ------------------------------------------------------------------ 1 ----
+  static:
+    name: "1 · 源码格式与静态检查"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
-
-      - name: Install dependencies
+          cache-dependency-path: requirements.txt
+      - name: Install runtime + dev dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e ./node_sdk/python
+          pip install -e ./node_sdk/python || true
+      - name: "1 · quality gate (static stages)"
+        run: python scripts/quality_gate.py --fast
+      - name: Version consistency
+        run: python scripts/version.py --check
+      - name: Dependency lock consistency
+        run: python scripts/lock_dependencies.py --check
+      - name: Node catalogue matches the live registry
+        run: python scripts/node_catalog.py --check
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-01-static
+          path: |
+            output/quality_gate.json
+            output/quality_gate.md
+            output/gate_logs/
+          if-no-files-found: warn
 
-      - name: Node discovery (77 nodes registered)
-        run: python -m nodes.loader --stats
-
-      - name: Unit + integration tests (43)
-        run: pytest -q
-
-      - name: Full node smoke test (77/77)
-        run: python scripts/smoke_nodes.py --quiet
-
-      - name: Demo workflows (3/3)
-        run: python scripts/run_demo_workflows.py
-
-      - name: SDK run_local smoke
-        run: |
-          python - <<'PY'
-          from chemml_sdk import ChemMLClient
-          client = ChemMLClient()
-          result = client.run_local({
-              "name": "ci-inline",
-              "nodes": [{"id": "ms", "type": "SpectrumFileNode",
-                         "params": {"path": "datasets/samples/caffeine_ms.xy",
-                                    "technique": "MS"}}],
-              "edges": [],
-          })
-          assert result["status"] == "completed", result
-          print("run_local OK:", client.summary(result))
-          PY
-
-  node-sdk:
-    name: Node.js SDK
+  # ------------------------------------------------------------- 3,4,5,6 ---
+  unit:
+    name: "3 · 单元测试"
+    needs: static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: "20"
-      - name: Install and test
-        working-directory: node_sdk/nodejs
-        run: |
-          npm install
-          npm test
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: python scripts/ci_pipeline.py --only 3
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-03-unit
+          path: output/ci_logs/stage03.log
+          if-no-files-found: warn
 
+  integration:
+    name: "4 · 集成测试"
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: python scripts/ci_pipeline.py --only 4
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-04-integration
+          path: output/ci_logs/stage04.log
+          if-no-files-found: warn
+
+  security:
+    name: "5 · 安全测试"
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: python scripts/ci_pipeline.py --only 5
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-05-security
+          path: output/ci_logs/stage05.log
+          if-no-files-found: warn
+
+  benchmark:
+    name: "6 · 科研基准测试（synthetic）"
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: "6 · synthetic benchmark (not real-data validation)"
+        run: python scripts/ci_pipeline.py --only 6
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-06-benchmark
+          path: |
+            output/ci_logs/stage06.log
+            output/benchmark_lcms.json
+          if-no-files-found: warn
+
+  # ------------------------------------------------------------- 7, 8 ------
+  licence-sbom:
+    name: "7,8 · 许可证与来源检查 + SBOM"
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: python scripts/ci_pipeline.py --only 7 8
+      - name: PROVENANCE must be maintained by hand
+        run: test -s docs/PROVENANCE.md
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-07-08-licence
+          path: |
+            sbom.json
+            NOTICE
+            docs/THIRD_PARTY_LICENSES.md
+            output/ci_logs/stage07.log
+            output/ci_logs/stage08.log
+          if-no-files-found: warn
+
+  # --------------------------------------------------------------- 9 -------
   frontend:
-    name: Frontend (lint + build)
+    name: "9 · 前端生产构建"
+    needs: static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install, typecheck and build
+      - name: Deterministic install (npm ci, lockfile is authoritative)
         working-directory: frontend
-        run: |
-          npm install
-          npm run lint
-          npm run build
+        run: npm ci
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run lint
+      - run: python scripts/ci_pipeline.py --only 9
+        env:
+          CHEMML_OFFLINE: "1"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-09-frontend-dist
+          path: |
+            frontend/dist/
+            output/ci_logs/stage09.log
+          if-no-files-found: warn
 
-  docker:
-    name: Docker image
+  # -------------------------------------------------------------- 10 -------
+  desktop:
+    name: "10 · Electron 安装包构建"
+    needs: [static, frontend]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Download the built frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: stage-09-frontend-dist
+          path: frontend/dist
+      - working-directory: desktop
+        run: npm ci
+      - name: "10 · build the NSIS installer"
+        working-directory: desktop
+        run: npm run build
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+      - name: Verify the installer for THIS version exists
+        shell: bash
+        run: |
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('desktop/package.json','utf8')).version")
+          ls -la desktop/dist
+          test -n "$(ls desktop/dist/*"$VERSION"*.exe 2>/dev/null)" \
+            || { echo "::error::no installer matching version $VERSION"; exit 1; }
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-10-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -------------------------------------------------------------- 11 -------
+  e2e:
+    name: "11 · 干净环境安装与端到端测试"
+    needs: [static, unit, integration, security, benchmark]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build image
-        run: docker build -t chem-ml-platform:ci .
-      - name: Smoke test container
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Fresh install from the lock-free declared ranges
         run: |
-          docker run -d --name chemml -p 8000:8000 chem-ml-platform:ci
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8000/api/health; then break; fi
-            sleep 2
-          done
-          docker logs chemml
-          docker stop chemml
+          python -m pip install --upgrade pip
+          pip install -r requirements.runtime.txt
+      - run: python scripts/ci_pipeline.py --only 11
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-11-e2e
+          path: |
+            docs/V07_2_CLEAN_ENV_TEST.md
+            output/ci_logs/stage11.log
+          if-no-files-found: warn
+
+  # -------------------------------------------------------------- 12 -------
+  release:
+    name: "12 · 发布清单、校验哈希与报告"
+    needs: [static, unit, integration, security, benchmark, licence-sbom, frontend, desktop, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Download every earlier stage artefact
+        uses: actions/download-artifact@v4
+        with:
+          path: collected
+      - name: "12 · release manifest, checksums and report"
+        run: python scripts/release_manifest.py
+        env:
+          CHEMML_BUILD_COMMIT: ${{ github.sha }}
+          CHEMML_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+      - name: Fail if the manifest references a stale version
+        run: python scripts/release_manifest.py --check
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-12-release-manifest
+          path: |
+            docs/RELEASE_MANIFEST.json
+            docs/RELEASE_MANIFEST.md
+            SHA256SUMS
+          if-no-files-found: error

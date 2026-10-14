@@ -1,0 +1,28 @@
+# Chem ML Platform v0.7.2 -- required Python runtime dependencies (spec P0-02 #1).
+#
+# This is the set the desktop runtime probe validates before the backend is
+# allowed to start.  A missing or out-of-range entry here is a *hard* failure:
+# the app must not claim to be installed correctly (spec P0-02: "不允许将不兼容
+# 环境误报为安装成功").
+#
+# Optional accelerators and connectors live in requirements.optional.txt and
+# only degrade capability -- they never block startup.
+
+# --- web layer ---------------------------------------------------------------
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29,<1.0
+pydantic>=2.6,<3.0
+
+# --- scientific core ---------------------------------------------------------
+numpy>=1.26,<3.0
+scipy>=1.11,<2.0
+networkx>=3.2,<4.0
+
+# --- plotting (PNG artefacts, report figures) --------------------------------
+matplotlib>=3.8,<4.0
+
+# --- DOCX report export ------------------------------------------------------
+# ReportExportNode(format="docx").  When absent the node raises a clear error
+# rather than writing a fake document, but DOCX export is an advertised feature,
+# so it is a required runtime dependency.
+python-docx>=1.1,<2.0

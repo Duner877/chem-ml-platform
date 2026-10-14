@@ -13,10 +13,15 @@ from .schema import (
     EnvironmentInfo,
     ProvenanceRecord,
     collect_environment,
+    content_digest,
+    key_dependency_versions,
+    platform_identity,
 )
 from .collector import (
     ProvenanceCollector,
     build_node_record,
+    measure_resources,
+    workflow_identity,
 )
 
 __all__ = [
@@ -24,6 +29,11 @@ __all__ = [
     "EnvironmentInfo",
     "ProvenanceRecord",
     "collect_environment",
+    "content_digest",
+    "key_dependency_versions",
+    "platform_identity",
     "ProvenanceCollector",
     "build_node_record",
+    "measure_resources",
+    "workflow_identity",
 ]

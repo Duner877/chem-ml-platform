@@ -1,4 +1,4 @@
-Chem ML Platform 0.7.1
+Chem ML Platform 0.7.2
 Copyright (c) 2026 Chem ML Platform contributors
 
 This product is licensed under the Apache-2.0 License; see LICENSE.
@@ -18,10 +18,10 @@ BUNDLED SOFTWARE (distributed with the application)
   scipy 1.18.1 — BSD License <https://scipy.org/>
   networkx 3.7 — BSD-3-Clause <https://networkx.org/>
   matplotlib 3.11.2 — Python Software Foundation License <https://matplotlib.org>
-  torch 2.14.1 — Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT <https://pytorch.org>
   python-docx 1.2.0 — MIT <https://python-docx.readthedocs.org/en/latest/>
   pytest 9.1.1 — MIT <https://docs.pytest.org/en/latest/>
   httpx 0.28.1 — BSD-3-Clause <https://www.python-httpx.org>
+  torch 2.14.1 — Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT <https://pytorch.org>
 
 -- JavaScript dependency notice (153 components) --
 

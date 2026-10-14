@@ -1,4 +1,4 @@
-# 第三方依赖与许可证清单（Chem ML Platform 0.7.1）
+# 第三方依赖与许可证清单（Chem ML Platform 0.7.2）
 
 > 生成脚本：`scripts/license_report.py`；所有条目均来自**真实**的安装 / 锁定元数据。
 > 本项目自身许可：**Apache-2.0**（见根目录 `LICENSE`）。
@@ -14,10 +14,11 @@
 | scipy | 1.18.1 | BSD License | True | True |
 | networkx | 3.7 | BSD-3-Clause | True | True |
 | matplotlib | 3.11.2 | Python Software Foundation License | True | True |
-| torch | 2.14.1 | Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT | True | True |
 | python-docx | 1.2.0 | MIT | True | True |
 | pytest | 9.1.1 | MIT | True | True |
 | httpx | 0.28.1 | BSD-3-Clause | True | True |
+| torch | 2.14.1 | Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT | False | True |
+| faiss-cpu |  |  | False | False |
 
 ## 2. 前端（npm）依赖
 
@@ -205,59 +206,17 @@
 
 ## 5. 预构建前端资源
 
-- `frontend/dist/assets/index-Cvf8qTv4.js` — 375873 bytes（frontend/ (vite build of the locked npm graph)）
-- `frontend/dist/assets/index-DIyAM1Fg.css` — 32871 bytes（frontend/ (vite build of the locked npm graph)）
-- `frontend/dist/index.html` — 411 bytes（frontend/ (vite build of the locked npm graph)）
+- 发布包内的 `frontend/dist/` bundle 由 `frontend/` 本项目源码经 vite 构建（`npm run build`）生成，属于**本项目自有**代码与第 2 节所列 npm 依赖的组合产物；本项目不向发布包额外引入未在此列出的第三方前端资源。
+- bundle 的文件名含内容哈希、个数与字节数随构建波动，均与本清单的许可结论无关，故不逐条列出；如需逐个核对发布包内的实际文件，请以 `docs/RELEASE_MANIFEST.json` 与 `SHA256SUMS` 为准（这两者随版本整体重新生成）。
 
 ## 6. 发布包清洁度扫描
 
-- **pyc**：359 项
-  - workflow_engine/__pycache__/agent_state.cpython-313.pyc
-  - workflow_engine/__pycache__/cache.cpython-313.pyc
-  - workflow_engine/__pycache__/engine.cpython-313.pyc
-  - workflow_engine/__pycache__/errors.cpython-313.pyc
-  - workflow_engine/__pycache__/error_model.cpython-313.pyc
-  - workflow_engine/__pycache__/events.cpython-313.pyc
-  - workflow_engine/__pycache__/node_base.cpython-313.pyc
-  - workflow_engine/__pycache__/objects.cpython-313.pyc
-  - workflow_engine/__pycache__/ports.cpython-313.pyc
-  - workflow_engine/__pycache__/processing.cpython-313.pyc
-  - workflow_engine/__pycache__/registry.cpython-313.pyc
-  - workflow_engine/__pycache__/utils.cpython-313.pyc
-  - workflow_engine/__pycache__/workflow.cpython-313.pyc
-  - workflow_engine/__pycache__/__init__.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/bruker.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/jcamp.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/mgf.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/msp.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/mzml.cpython-313.pyc
-  - workflow_engine/parsers/__pycache__/xy.cpython-313.pyc
-- **pycache**：68 项
-  - agent_runtime/__pycache__
-  - ai_runtime/__pycache__
-  - backend/__pycache__
-  - databases/__pycache__
-  - database_runtime/__pycache__
-  - data_layer/__pycache__
-  - foundation/__pycache__
-  - memory/__pycache__
-  - models/__pycache__
-  - nodes/__pycache__
-  - node_registry/__pycache__
-  - provenance/__pycache__
-  - report_agent/__pycache__
-  - report_engine/__pycache__
-  - scripts/__pycache__
-  - simulations/__pycache__
-  - simulation_runtime/__pycache__
-  - storage/__pycache__
-  - tests/__pycache__
-  - workflow_engine/__pycache__
+- **pyc**：构建/运行期产物，**不进入发布包**，不计入许可结论（扫描命中与否仅供参考）。
+- **pycache**：构建/运行期产物，**不进入发布包**，不计入许可结论（扫描命中与否仅供参考）。
 - **secrets**：OK
 - **private_data**：OK
-- **duplicate_assets**：OK
-- **runtime_data**：1 项
-  - output/runs (runtime only: gitignored and excluded from release packages)
+- **duplicate_assets**：未发现重复资源
+- **runtime_data**：构建/运行期产物，**不进入发布包**，不计入许可结论（扫描命中与否仅供参考）。
 
 ## 7. 需要人工复核的许可证（强 copyleft 等）
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -88,6 +89,109 @@ class TestCleanliness:
         # the repository's own tests intentionally embed fake keys
         problems = lic.cleanliness_scan()
         assert not any("tests/" in item for item in problems["secrets"])
+
+
+class TestCheckModeDoesNotWrite:
+    """v0.7.2 fix: ``main()`` used to write sbom.json / NOTICE /
+    THIRD_PARTY_LICENSES.md *unconditionally*, including under ``--check``.
+
+    A check that rewrites the artefacts it is supposed to verify can never
+    detect a stale or tampered one -- it silently "repairs" it instead -- and it
+    made the release manifest's recorded hashes drift on every gate run, so no
+    released digest could be reproduced.  These tests pin the corrected
+    contract: ``--check`` never writes, but it does detect drift.
+    """
+
+    FILES = ("sbom.json", "NOTICE", "docs/THIRD_PARTY_LICENSES.md")
+
+    def _rm(self, name: str) -> str:
+        return (ROOT / name).read_text(encoding="utf-8")
+
+    @staticmethod
+    def _rebaseline(lic) -> None:
+        """Regenerate the artefacts so a test starts from a known-good state.
+
+        Without this the tampering tests would silently depend on whatever the
+        working tree happened to contain when the suite started (for example a
+        ``frontend/dist`` left over from an earlier build), which is exactly the
+        kind of hidden coupling the v0.7.2 gate is meant to eliminate.
+        """
+        assert lic.main(["--write"]) == 0
+
+    def test_check_leaves_artifacts_untouched(self, lic):
+        self._rebaseline(lic)
+        before = {name: self._rm(name) for name in self.FILES}
+        assert lic.main(["--check"]) in (0, 1)
+        after = {name: self._rm(name) for name in self.FILES}
+        assert after == before, "--check must never modify the artefacts it verifies"
+
+    def test_check_detects_a_tampered_artifact(self, lic):
+        self._rebaseline(lic)
+        target = ROOT / "NOTICE"
+        original = target.read_text(encoding="utf-8")
+        try:
+            target.write_text(original + "\n# injected\n", encoding="utf-8")
+            assert lic.main(["--check"]) == 1, "--check must fail on a stale artefact"
+        finally:
+            target.write_text(original, encoding="utf-8")
+        assert lic.main(["--check"]) == 0, "--check must pass once the artefact is restored"
+
+    def test_check_does_not_repair_the_tampered_artifact(self, lic):
+        self._rebaseline(lic)
+        target = ROOT / "NOTICE"
+        original = target.read_text(encoding="utf-8")
+        try:
+            target.write_text(original + "\n# injected\n", encoding="utf-8")
+            lic.main(["--check"])
+            assert target.read_text(encoding="utf-8") == original + "\n# injected\n", (
+                "--check silently repaired the file it was asked to verify"
+            )
+        finally:
+            target.write_text(original, encoding="utf-8")
+
+    def test_write_flag_exists_and_is_idempotent(self, lic):
+        """CI stage 8 and the release manifest both document ``--write``."""
+        assert lic.main(["--write"]) == 0
+        first = {name: self._rm(name) for name in self.FILES}
+        assert lic.main(["--write"]) == 0
+        second = {name: self._rm(name) for name in self.FILES}
+        assert first == second, "regeneration must be deterministic"
+
+    def test_document_does_not_depend_on_the_local_build_output(self, lic, tmp_path):
+        """Regression: the licence document must not vary with transient state.
+
+        The document's SHA-256 is pinned in ``docs/RELEASE_MANIFEST.json``, so
+        any content that depends on the *local* working tree -- the emitted
+        ``frontend/dist`` bundle count, ``__pycache__`` presence -- makes the
+        recorded digest impossible to re-derive.  That is exactly how the
+        manifest came to report ``third-party-licences`` as drifted: an earlier
+        gate stage rebuilt the frontend between manifest generation and the
+        manifest check.  Licensing conclusions are a property of the release
+        package and of the locked dependency graph, never of a build artefact
+        that happens to sit in the tree.
+        """
+        self._rebaseline(lic)
+        baseline = {name: self._rm(name) for name in self.FILES}
+
+        dist = ROOT / "frontend" / "dist"
+        stashed = None
+        if dist.exists():
+            stashed = ROOT / "frontend" / "_dist_stashed_for_test"
+            if stashed.exists():
+                shutil.rmtree(stashed)
+            dist.rename(stashed)
+        try:
+            assert lic.main(["--write"]) == 0
+            without_dist = {name: self._rm(name) for name in self.FILES}
+            assert without_dist == baseline, (
+                "the licence document changed because frontend/dist was absent; "
+                "its digest is pinned in the release manifest and must be "
+                "reproducible from the locked dependency graph alone"
+            )
+        finally:
+            if stashed is not None and stashed.exists():
+                stashed.rename(dist)
+        self._rebaseline(lic)
 
 
 class TestPackagingRule:

@@ -15,14 +15,69 @@ __all__ = [
     "ProvenanceRecord",
     "collect_environment",
     "content_digest",
+    "key_dependency_versions",
+    "platform_identity",
 ]
 
-PROVENANCE_SCHEMA_VERSION = "0.7.0"
+#: Bumped by v0.7.2 task P1-06: the schema now records the workflow definition
+#: digest, the platform identity, the key dependency versions, the *actual*
+#: execution mode per node, and run-level resource usage.  A reader can tell
+#: from this string which set of fields to expect.
+PROVENANCE_SCHEMA_VERSION = "0.7.2"
 
 
 def content_digest(data: bytes) -> str:
     """SHA-256 content digest used for input/output references."""
     return f"sha256:{hashlib.sha256(data).hexdigest()}"
+
+
+#: Distributions whose version materially affects numerical results.  A run
+#: record that omits these cannot be reproduced on another machine, so they are
+#: recorded explicitly rather than left to the reader to guess.
+KEY_DISTRIBUTIONS = (
+    "numpy",
+    "scipy",
+    "pandas",
+    "scikit-learn",
+    "pydantic",
+    "fastapi",
+    "torch",
+    "rdkit",
+    "networkx",
+)
+
+
+def key_dependency_versions() -> Dict[str, str]:
+    """Installed versions of the numerics-critical dependencies.
+
+    Absence is recorded as ``"absent"`` rather than omitted: "this machine did
+    not have RDKit" is itself part of the experimental record.
+    """
+    import importlib.metadata as md
+
+    out: Dict[str, str] = {}
+    for name in KEY_DISTRIBUTIONS:
+        try:
+            out[name] = md.version(name)
+        except md.PackageNotFoundError:
+            out[name] = "absent"
+        except Exception:  # noqa: BLE001 - metadata can be corrupt; never fail a run
+            out[name] = "unknown"
+    return out
+
+
+def platform_identity() -> Dict[str, str]:
+    """Version / codename / commit of the platform itself."""
+    out = {"version": "", "codename": "", "commit": ""}
+    try:
+        import chemml_version  # type: ignore
+
+        out["version"] = str(getattr(chemml_version, "__version__", "") or "")
+        out["codename"] = str(getattr(chemml_version, "__codename__", "") or "")
+        out["commit"] = str(chemml_version.git_commit(short=True) or "")
+    except Exception:  # noqa: BLE001 - provenance must never break a run
+        pass
+    return out
 
 
 @dataclass
@@ -37,6 +92,10 @@ class EnvironmentInfo:
     cuda_available: bool = False
     cuda_version: str = ""
     gpu_names: List[str] = field(default_factory=list)
+    #: v0.7.2 (task P1-06): versions of the numerics-critical dependencies.
+    key_dependencies: Dict[str, str] = field(default_factory=dict)
+    #: v0.7.2 (task P1-06): platform version / codename / commit.
+    platform: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -62,6 +121,13 @@ def collect_environment() -> EnvironmentInfo:
             ]
     except Exception:
         pass
+        info.gpu_names = [
+            str(getattr(d, "name", "") or "") for d in (getattr(torch.cuda, "devices", lambda: [])() or [])
+        ]
+    except Exception:  # noqa: BLE001 - torch absent / CUDA broken is recorded, not raised
+        pass
+    info.key_dependencies = key_dependency_versions()
+    info.platform = platform_identity()
     return info
 
 
@@ -89,6 +155,12 @@ class ProvenanceRecord:
 
     random_seed: Optional[int] = None
     deterministic: bool = True
+    #: v0.7.2 (task P1-06): what *actually* ran, as opposed to what the node
+    #: class declares.  ``external`` / ``internal_approximation`` /
+    #: ``synthetic_demo`` -- see ``workflow_engine.node_base``.
+    execution_mode: str = ""
+    #: v0.7.2 (task P1-06): declared capability level of the node class.
+    capability_status: str = ""
     warnings: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
     cache_hit: bool = False

@@ -299,11 +299,28 @@ class WorkflowEngine:
         if event_listener:
             ctx.bus.subscribe(event_listener)
         # v0.7 (spec section 11): every run records provenance via the bus.
+        # v0.7.2 (task P1-06): the record now also carries the workflow
+        # definition digest, the degree of parallelism, and run-level resource
+        # usage -- none of which can be reconstructed from node records alone.
         from provenance import ProvenanceCollector
+        from provenance.collector import path_scrub_variants
 
-        collector = ProvenanceCollector(ctx.run_id)
+        collector = ProvenanceCollector(
+            ctx.run_id,
+            workflow=wf,
+            max_workers=getattr(self, "max_workers", None),
+        )
         ctx.bus.subscribe(collector)
         ctx.provenance = collector
+        # v0.7.2 (task P1-06): normalise run-scoped literals out of the output
+        # digests, so a report body that quotes its own run id -- or the absolute
+        # path of the artefact it just wrote -- still reproduces across runs and
+        # across machines that put the working directory somewhere else.
+        collector.scrub_terms = [
+            term
+            for source in (ctx.run_id, ctx.run_dir, getattr(ctx, "workdir", ""))
+            for term in path_scrub_variants(source)
+        ]
         ctx.workflow_meta = {
             "name": wf.name,
             "version": str(getattr(wf, "version", "") or ""),
@@ -388,6 +405,7 @@ class WorkflowEngine:
         # v0.7: persist provenance.json after the terminal event so the
         # collector has seen the full lifecycle; never break the run.
         try:
+            collector.resource_snapshot()
             prov_file = collector.write(ctx.run_dir)
             result.provenance_path = str(prov_file)
         except Exception as exc:  # noqa: BLE001 - diagnostics only
@@ -470,7 +488,19 @@ class WorkflowEngine:
         )
 
         instance = node_cls(node_id=node.id, params=dict(node.params))
+        # v0.7.2 (task P1-06): hand the live instance to the provenance
+        # collector so the record states what *actually* executed (external vs
+        # internal approximation) rather than only what the class declares.
+        prov = getattr(ctx, "provenance", None)
+        if prov is not None and hasattr(prov, "bind_instance"):
+            try:
+                prov.bind_instance(node.id, instance)
+            except Exception:  # noqa: BLE001 - provenance never breaks a run
+                pass
         started = time.perf_counter()
+        # v0.7.2 (task P1-06): artefacts are accumulated run-wide, so remember
+        # how many existed before this node to attribute the new ones to it.
+        artifact_start = len(ctx.artifacts)
 
         # 3. cache lookup ------------------------------------------------------ #
         cache_key = ""
@@ -526,6 +556,17 @@ class WorkflowEngine:
         record.duration_ms = (time.perf_counter() - started) * 1000.0
         record.finished_at = now_iso()
         record.progress = 1.0
+
+        # v0.7.2 (task P1-06): record what this node produced -- output digests
+        # plus the files it wrote into the run's artefacts directory -- so a
+        # later reader can verify the result rather than trust it.
+        prov = getattr(ctx, "provenance", None)
+        if prov is not None and hasattr(prov, "record_outputs"):
+            try:
+                new_artifacts = ctx.artifacts[artifact_start:]
+                prov.record_outputs(node.id, result_outputs, new_artifacts)
+            except Exception:  # noqa: BLE001 - provenance never breaks a run
+                pass
 
         if cache_key:
             ctx.cache.put(cache_key, result_outputs)

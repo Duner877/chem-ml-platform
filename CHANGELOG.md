@@ -48,13 +48,37 @@
 
 - `POST /api/workflows/run`（内联运行）在 v0.7.1 中**未被归类为 execute 权限**（`.+` 规则只匹配 `/api/workflows/<name>/run`），只读令牌因此可以触发工作流执行。已补显式路由规则。
 - HTTP `GET /api/runs/{run_id}/events` 与 `GET /api/runs/{run_id}` 在 v0.7.1 中**没有任何运行级授权**；若不放行，新增的 WebSocket 运行级检查只是装饰。已改为统一 `may_subscribe()`，越权返回 403，未知运行返回一致的 404（不泄露运行是否存在）。
+- `provenance` 的 `output_digests` / `output_artifacts` 字段自 v0.7 起**声明但从未被填充**（恒为空字典）。字段存在却不承载证据比没有字段更具误导性；现已由引擎逐节点写入。
+- `DependencyMissingError` 的构造签名与 `require_dependencies()` 的调用方式不一致（`NodeExecutionError.__init__() missing 2 required positional arguments`），依赖缺失时抛的是 `TypeError` 而非可读的依赖错误。
+- `chemml_version.git_commit()` 把 `HEAD` 误写为 `"--short" if short else "HEAD"` 的替换目标，导致 commit 恒为 `unknown`。
+- `desktop/src/runtime-probe.js`：`outOfRange()` 用三位版本号与两位边界比较，把 3.13.14 误判为超出「3.10–3.13」范围。
+- `desktop/src/runtime-probe.js`：改用异步 `spawn`（`spawnSync` 在受限主机上以 `EBUSY` 失败，且会阻塞 Electron 主进程）。
+- `scripts/ci_pipeline.py` 以 `importlib` 执行质量门模块时未注册到 `sys.modules`，`@dataclass` 因此抛出 `AttributeError: 'NoneType' object has no attribute '__dict__'`，整个 CI 流水线无法启动。
+- `scripts/quality_gate.py` 漏 `import shutil`，桌面运行时探针阶段以 `NameError` 失败。
+- 质量门桌面探针阶段原先在 JSON 解析失败时仍返回 **PASS**（日志尾部的 `# exit=N` 使 `json.loads` 失败），即「未读到结论却报告成功」。现改为 ERROR 并用大括号配对提取载荷。
+- 质量门 pytest 阶段从记录命令中剥离 `--basetemp` 时假设其为独立 argv 项，实际形如 `--basetemp=<path>`，导致 6 个阶段 `ValueError`。
+- `requirements.txt` 只含 `-r` 引用行，许可证报告把它当作包名解析（出现名为 `-r requirements.runtime.txt` 的「依赖」）；现按 `-r` 展开并只对**必需**依赖判失败。
+
+### 新增 Added（续）
+
+**科研结果溯源与复现（任务 P1-06）**
+- 运行级溯源新增：`platform`（版本 / 代号 / commit）、`workflow`（定义 SHA-256、节点数、边数）、`max_workers`、`resource_usage`、`execution_modes` 普查、`reproducibility` 结论、`environment.key_dependencies`（数值关键依赖版本）。
+- 逐节点新增：`execution_mode` 与 `capability_status`（**实际**执行的模式，而非类声明）、`output_digests`（逐端口科学内容摘要）、`output_artifacts`（产物路径 + 文件字节 SHA-256）。
+- 摘要口径明确定义并写入记录：剔除运行期身份字段（`VOLATILE_DIGEST_KEYS`）与形如 `run_8ef77927` 的自动生成 id（`GENERATED_ID_RE`），并归一化运行 id / 运行目录字面量。判定依据刻意选**值形状**而非 `*_id` 键名，以免连带丢弃 `dataset_id` 这类有科学含义的标识。
+- `scripts/verify_reproducibility.py`（新增）：重复运行同一工作流并逐节点比对输出摘要；**只有事先声明为非确定性或未固定种子的节点才被豁免**，静默不稳定判为失败；退出码 1 表示存在无法解释的差异。
+- `reproducibility()` 明确拒绝绝对承诺，只声明「声明为 deterministic 且已固定随机种子的节点」；`claim` 字段写入拒绝语，`digest_scope` 说明摘要覆盖与排除范围。
+- `docs/V07_2_PLUGIN_SPEC.md`（新增）：插件与外部程序执行边界规范（P1-03 / P2-04），含 `ControlledRunner` 白名单、参数列表与 `shell=False`、超时与清理，以及**明确列为「未实现」**的沙箱能力清单。
+- `tests/test_v07_1_capabilities.py` 补两项超时用例：子进程心跳计数在超时后停止增长（证明进程确被终止，而非仅抛异常）与超时后 scratch 目录被清理。
+- 质量门新增 `reproducibility_verification` 阶段；CI 第 6 阶段支持**多命令独立记录**（每条命令各自退出码与日志），任一失败即否决该阶段。
 
 ### 已知限制 Known Limitations
 
 - 真实仪器数据上的鉴定准确率**尚未验证**；现有基准全部是合成数据，见 `docs/V07_2_SYNTHETIC_BENCHMARK.md`。
-- NSIS 安装包在非提权 Windows 构建机上**未签名**（`winCodeSign` 无法解包 macOS 符号链接），使用 Electron 默认图标；安装包 SHA-256 见 `SHA256SUMS`。
+- NSIS 安装包在非提权 Windows 构建机上**未签名**；本机受限离线构建路径跳过 exe 资源改写，因此使用 Electron 默认图标与元数据；安装包 SHA-256 见 `SHA256SUMS`。
 - 桌面运行时采用**受控安装器（方案 B）**：不捆绑 Python 解释器，安装后首次启动由运行时探针检查系统 Python 与锁定依赖。见 `docs/V07_2_DESKTOP_RUNTIME.md`。
 - 仅 Windows x64 完成构建与验证；Linux / macOS 目标已声明但**未验证**，不得视为正式支持。
+- 本机受限沙箱下 `GetProcessMemoryInfo` 被拒，`resource_usage.peak_rss_bytes` 为 `null` 并附 `peak_rss_note`；墙钟时间与进程 CPU 时间仍可用。缺失指标如实标注为缺失，不以估算值填充。
+- 插件**无操作系统级沙箱**（与后端同进程运行，可访问进程可读的文件与网络）。当前安全模型是「受信任插件 + 受控外部调用」，不是不可信插件沙箱；见 `docs/V07_2_PLUGIN_SPEC.md` §3.4。
 
 ## [0.7.1] — 2026-10
 
