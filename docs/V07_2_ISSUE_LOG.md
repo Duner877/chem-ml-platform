@@ -37,6 +37,7 @@
 | ISSUE-22 | P0-01/P1-02 | 中 | API 与文档声称「启动脚本注入会话令牌」，实际仅桌面壳注入 |
 | ISSUE-23 | P0-03 | 低 | 版本检查在 `CHANGELOG.md` 缺失时抛异常而非报告漂移 |
 | ISSUE-24 | P1-06 | 中 | 祖先 Git 仓库的 HEAD 被当作本树的构建提交（溯源造假） |
+| ISSUE-25 | P0-04 | 中 | 载荷刷新与构建印章互相覆盖，每轮恒定 2 个伪更新、永不收敛 |
 
 ---
 
@@ -418,12 +419,37 @@
   全量 397 项测试通过。
 - **关联提交**：`cfec170`。
 
+## ISSUE-25 — 载荷刷新与构建印章互相覆盖（刷新永不收敛）
+
+- **问题描述**：`scripts/refresh_desktop_payload.py` 的拷贝循环原样重放每一条 `extraResources`
+  配对，其中包含 `BUILD_INFO.json` 条目——它指向**树根**的 `BUILD_INFO.json`，即 beforeBuild
+  钩子留在树里的那一枚，通常记录比 HEAD 旧的提交。拷贝把它盖到载荷印章上之后，印章逻辑又按
+  当前 HEAD 改写回去：两个步骤交替覆盖同一个文件，每次刷新都报告 2 个伪更新，文件在「钩子版」
+  与「工具版」之间来回翻烙饼，刷新**永不收敛**。该缺陷由质量门禁自己在收尾重复运行中暴露：
+  HEAD 越过最后一次 Electron 构建的瞬间，`desktop_tests` 阶段即以 `updated : 2` 失败。
+- **复现步骤**：
+  1. 构建一次 Electron（钩子在树里留下记录旧提交的 `BUILD_INFO.json`）；
+  2. 把载荷内的印章改成本树从未见过的提交；
+  3. 连续运行两次 `python scripts/refresh_desktop_payload.py`。
+- **预期行为**：印章只由印章逻辑生成，拷贝循环不碰它；第二次刷新 `updated : 0`（收敛）。
+- **实际行为**：两次都 `updated : 2`，载荷印章在钩子版与工具版之间震荡，永不收敛。
+- **修改范围**：`scripts/refresh_desktop_payload.py`（拷贝循环跳过 `app/BUILD_INFO.json`
+  ——印章是生成的，不是拷贝的，与 `verify()` 的既有语义一致）。
+- **自动化测试**：`tests/test_v07_2_desktop_runtime.py::TestPayloadRefresh::
+  test_refresh_converges_when_the_tree_stamp_is_stale`（预置陌生 commit 的印章，
+  两次刷新第二次必须 `updated : 0`）；`test_refresh_leaves_an_agreeing_stamp_untouched`
+  锁死反向性质。
+- **验收证据**：桌面测试 35/35；真实载荷（212 条目）连续两次刷新均 `updated : 0 of 212`；
+  门禁 `desktop_tests` 与 `release_manifest` 阶段 PASS；全量 410 项测试通过。
+- **关联提交**：`bd2c5ee`。
+
 ---
 
 ## 汇总
 
-- 本表共 **24** 条 Issue。ISSUE-01…17 为 v0.7.2 实施期间发现并修复，均含完整八项字段；
-  ISSUE-18…24 为交付收尾阶段（安装实测、出包、自溯源）新增，同样逐条给出八项字段。
+- 本表共 **25** 条 Issue。ISSUE-01…17 为 v0.7.2 实施期间发现并修复，均含完整八项字段；
+  ISSUE-18…24 为交付收尾阶段（安装实测、出包、自溯源）新增，同样逐条给出八项字段；
+  ISSUE-25 由质量门禁自己在收尾重复运行中抓到（刷新工具与构建钩子互相覆盖印章）。
   全部已修复并有自动化测试或阶段级证据。
 - 其中 **5 条（ISSUE-04、05、14、16、17）属于「证据类」缺陷**：字段或检查看起来存在，实际不承载
   结论，或无法被独立复核。这类缺陷不会让任何测试变红——ISSUE-17 甚至已经**被写进了发布清单**

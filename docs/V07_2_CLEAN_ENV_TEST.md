@@ -1,12 +1,12 @@
 # Chem ML Platform v0.7.2 — 干净环境安装与端到端测试记录
 
 - **codename**: Trusted Delivery Release
-- **commit**: `2eb6453b2cec39a2c554e888f527cba7ed5c956d`
-- **recorded at**: 2026-10-14T12:01:32+00:00
+- **commit**: `48f158fb0e7649aaf9919340723f78ac79b32e36`
+- **recorded at**: 2026-10-14T18:08:48+00:00
 - **host**: nt · win32 · AMD64
 - **python**: 3.13.14
 - **node**: C:\Users\hanku\.workbuddy\binaries\node\versions\22.22.2-6\node.EXE
-- **结果**: PASS 3 · FAIL 0 · NOT_PERFORMED 0
+- **结果**: PASS 3 · FAIL 0 · NOT_PERFORMED 4（未执行项见下表，均需干净虚拟机或图形桌面）
 
 > 本记录**不把未执行的项目当作通过**。`NOT_PERFORMED` 表示该验证需要本环境不具备的条件，
 > 并给出手工执行步骤；在干净虚拟机上完成后应将结果补录到本文件。
@@ -16,8 +16,8 @@
 | 项目 | 结果 | 证据 |
 | --- | --- | --- |
 | 运行时探针校验完整依赖集合 | PASS | classification=ok required=8/8 source=requirements.runtime.txt |
-| 不依赖构建机绝对路径 | PASS | 扫描 317 个受控文件，未发现构建机绝对路径 |
-| 从非应用目录启动后端（证明不依赖工作目录） | PASS | health ok · 89 个节点 · 示例工作流 04_quantum_chemistry_profiling.json → status=completed run_id=api_58a1cf6aad0a |
+| 不依赖构建机绝对路径 | PASS | 扫描 338 个受控文件，未发现构建机绝对路径 |
+| 从非应用目录启动后端（证明不依赖工作目录） | PASS | health ok · 89 个节点 · 示例工作流 04_quantum_chemistry_profiling.json → status=completed run_id=api_fd90d0ae7b9d |
 
 ## 未执行项目（需要干净虚拟机或图形桌面）
 

@@ -7,7 +7,7 @@
 - **规范依据**：`Chem ML Platform v0.7.2 版本升级任务书.txt`（§一～§十三）
 - **执行环境**：Windows 11（win32 · AMD64）· Python 3.13.14（隔离 venv `chemml`）· Node.js 22.12.0 / 22.22.2 · torch 2.14.1+cpu（本机**无 CUDA GPU**）
 - **报告生成时间**：2026-10-14
-- **配套材料**：`docs/V07_2_ISSUE_LOG.md`（17 条 Issue，八字段齐全）、`docs/RELEASE_MANIFEST.json`、`SHA256SUMS`、`sbom.json`、`docs/V07_2_CLEAN_ENV_TEST.md`
+- **配套材料**：`docs/V07_2_ISSUE_LOG.md`（25 条 Issue，八字段齐全）、`docs/RELEASE_MANIFEST.json`、`SHA256SUMS`、`sbom.json`、`docs/V07_2_CLEAN_ENV_TEST.md`
 
 > ## 诚实性声明（本报告的第一原则）
 >
@@ -23,7 +23,7 @@
 ## 0. 一句话结论
 
 v0.7.2 把 v0.7.1 的「加固预览版」推进为「**可信交付基线**」：安全边界（HTTP + WebSocket 统一鉴权与
-运行级授权）、测试与质量门禁（**409 项测试 / 27 阶段门禁全绿**）、版本与产物一致性（单一版本源 + 发布清单 +
+运行级授权）、测试与质量门禁（**410 项测试 / 27 阶段门禁全绿**）、版本与产物一致性（单一版本源 + 发布清单 +
 校验和）、科研节点执行来源与能力边界、合成基准与真实验证分离，均已落地并有可复核证据。
 
 **仍未完成**：干净虚拟机安装验证（需要目标虚拟机）、安装包代码签名（需证书）、Linux/macOS 实机验证
@@ -34,7 +34,7 @@ v0.7.2 把 v0.7.1 的「加固预览版」推进为「**可信交付基线**」�
 
 ```
 gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
-tests collected across stages: 385
+tests collected across stages: 417
 ```
 
 ---
@@ -121,45 +121,49 @@ capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1
 | `integration` | 187 | 跨层集成、REST、引擎、溯源、报告、数据集 |
 | `security` | 135 | 认证/授权/CORS/上传/WS/凭证脱敏 |
 | `benchmark` | 18 | 已知答案基准（见 §6） |
-| `desktop` | 34 | 运行时探针、安装器配置、打包、payload 可运行性、构建印章 |
+| `desktop` | 35 | 运行时探针、安装器配置、打包、payload 可运行性、构建印章 |
 | `requires_env`（正交） | 7 | 依赖真实环境条件，缺失即诚实跳过 |
-| **合计（去重后全量运行）** | **409** | `pytest tests/ -q` 实测；门禁按阶段收集 416 项次（7 项带多个标记） |
+| **合计（去重后全量运行）** | **410** | `pytest tests/ -q` 实测；门禁按阶段收集 417 项次（7 项带多个标记） |
 
 ### 5.2 质量门禁结果（27 阶段，真实回显）
 
 ```
-[ PASS  ] python_compile               209 first-party files compiled
-[ PASS  ] unit_tests                   17/17 passed
-[ PASS  ] integration_tests            187/187 passed
-[ PASS  ] security_tests               135/135 passed
-[ PASS  ] benchmark_tests              18/18 passed
-[ PASS  ] desktop_tests                21/21 passed
-[ PASS  ] host_dependent_tests         7/7 passed
-[ PASS  ] node_registry_schemas        89 node types, schemas valid
-[ PASS  ] node_registry_provenance     all 89 nodes declare provenance
-[ PASS  ] node_catalog_readme_sync     OK: README / stats agree with the node registry
-[ PASS  ] workflow_json_validation     6 workflow files valid
-[ PASS  ] demo_workflows_dry_run       6/6 workflows executed successfully
-[ PASS  ] reproducibility_verification 2 workflow(s) x 2 runs · 10 node results reproduced identically
-[ PASS  ] synthetic_benchmark          [PASS] identification known-answer benchmark (24 cases x 2 reference libraries, 3.1s)
-[ PASS  ] frontend_typescript          tsc clean
-[ PASS  ] frontend_production_build    dist built with 3 files
-[ PASS  ] electron_build_config        electron shell configured (win/linux/mac targets declared)
-[ PASS  ] desktop_runtime_probe        classification=ok · required 8/8 from requirements.runtime.txt
-[ PASS  ] electron_installer_artefact  installer present: Chem ML Platform Setup 0.7.2.exe (75.3 MiB)
-[ PASS  ] version_consistency          OK: every artefact agrees on 0.7.2
-[ PASS  ] release_manifest             OK: manifest matches 0.7.2@<release-commit> (21/21 built)
-[ PASS  ] docs_mojibake_scan           30 docs clean
-[ PASS  ] credential_scan              no hardcoded credentials in shipped sources
-[ PASS  ] dependency_licenses          11/12 python deps resolved, 153 locked npm deps, 0 strong-copyleft
-[ PASS  ] license_sbom_report          (optional faiss-cpu 未安装，属能力降级而非失败)
-[ PASS  ] release_cleanliness          no caches/secrets shipped; single static source (frontend/dist)
-[ SKIP  ] host_gpu_status              torch 2.14.1+cpu present, CUDA not available on this host
+[ PASS  ] python_compile               (6625 ms) 2663 first-party files compiled
+[ PASS  ] unit_tests                   (35209 ms) 35/35 passed
+[ PASS  ] integration_tests            (463002 ms) 187/187 passed
+[ PASS  ] security_tests               (12026 ms) 135/135 passed
+[ PASS  ] benchmark_tests              (9924 ms) 18/18 passed
+[ PASS  ] desktop_tests                (13601 ms) 35/35 passed
+[ PASS  ] host_dependent_tests         (2177 ms) 7/7 passed
+[ PASS  ] node_registry_schemas        (4924 ms) 89 node types, schemas valid
+[ PASS  ] node_registry_provenance     (158 ms) all 89 nodes declare provenance · capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1} · mode={'internal_approximation': 89} · 无验证证据 84 个（=未声明 verified）
+[ PASS  ] node_catalog_readme_sync     (1277 ms) OK: README / stats agree with the node registry
+[ PASS  ] workflow_json_validation     (19 ms) 6 workflow files valid
+[ PASS  ] demo_workflows_dry_run       (5379 ms) 6/6 workflows executed successfully
+[ PASS  ] reproducibility_verification (2467 ms) 2 workflow(s) x 2 runs · 10 node results reproduced identically
+[ PASS  ] synthetic_benchmark          (7333 ms) [PASS] identification known-answer benchmark (24 cases x 2 reference libraries, 5.49s)
+[ PASS  ] frontend_typescript          (1476 ms) tsc clean
+[ PASS  ] frontend_production_build    (3339 ms) dist built with 3 files
+[ PASS  ] electron_build_config        (1 ms) electron shell configured (win/linux/mac targets declared)
+[ PASS  ] desktop_runtime_probe        (314 ms) classification=ok · required 8/8 from requirements.runtime.txt · optional 1/1
+[ PASS  ] electron_installer_artefact  (1 ms) installer present: Chem ML Platform Setup 0.7.2.exe (75.3 MiB)
+[ PASS  ] version_consistency          (89 ms) OK: every artefact agrees on 0.7.2
+[ PASS  ] release_manifest             (231 ms) OK: manifest matches 0.7.2@<release-commit> (21/21 built)
+[ PASS  ] docs_mojibake_scan           (6 ms) 30 docs clean
+[ PASS  ] credential_scan              (7805 ms) no hardcoded credentials in shipped sources (1 fake keys in redaction fixtures, excluded by design)
+[ PASS  ] dependency_licenses          (102 ms) 11/12 python deps resolved, 153 locked npm deps, 0 strong-copyleft licences distributed
+[ PASS  ] license_sbom_report          (10341 ms) note: optional components not installed: ['faiss-cpu'] (capability degradation, not a failure)
+[ PASS  ] release_cleanliness          (1606 ms) no caches/secrets shipped; single static source (frontend/dist)
+[ SKIP  ] host_gpu_status              (0 ms) torch 2.14.1+cpu present, CUDA not available on this host
 
 gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
+tests collected across stages: 417
 ```
 
-（以上为 tag `v0.7.2` 指向的发布提交上的门禁真实回显；各阶段毫秒数为当次测量值，逐次运行会波动。）
+（以上为**最终交付树**——tag `v0.7.2` 指向的提交加上 §12.1 记录的 ISSUE-18…25 收尾修复全部落地之后——的
+门禁真实回显；各阶段毫秒数为当次测量值，逐次运行会波动。`release_manifest` 行的提交号以
+`<release-commit>` 占位：清单无法记录包含它自身的那个提交（自指），实际值以
+`docs/RELEASE_MANIFEST.json` 的 `commit` 字段为准。）
 
 **唯一 SKIP 的原因**：本机安装的是 CPU 版 torch，无 CUDA 设备，GPU 状态检查无法执行——
 按状态词表记为 `SKIP` 并附原因，**不折算为 PASS**。
@@ -215,7 +219,7 @@ gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
 | 2. 安装正式发布的安装包 | **未执行** | 同上；安装包本身已产出（见下） |
 | 3. 首次启动应用 | **未执行** | 本环境无图形桌面会话 |
 | 4. 验证后端启动和节点加载 | **PASS（本机等价验证）** | 安装器产物内的运行时探针：`classification=ok · required 8/8 from requirements.runtime.txt`；从**非应用目录**启动后端 → `89 个节点` 加载成功 |
-| 5. 执行示例工作流 | **PASS（本机等价验证）** | `04_quantum_chemistry_profiling.json` → `status=completed`，`run_id=api_58a1cf6aad0a`；门禁 `demo_workflows_dry_run` 6/6 |
+| 5. 执行示例工作流 | **PASS（本机等价验证）** | `04_quantum_chemistry_profiling.json` → `status=completed`，`run_id=api_fd90d0ae7b9d`；门禁 `demo_workflows_dry_run` 6/6 |
 | 6. 关闭并重新启动应用 | **未执行** | 需要真实桌面会话 |
 | 7. 检查日志、数据保存和退出行为 | **部分** | 策略已文档化且可静态核查（`deleteAppDataOnUninstall=false`，见 `docs/V07_2_DESKTOP_RUNTIME.md`）；实机行为未观察 |
 
@@ -224,8 +228,8 @@ gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
 | 项 | 值 |
 | --- | --- |
 | 文件 | `desktop/dist/Chem ML Platform Setup 0.7.2.exe` |
-| 大小 | 78,970,068 字节（75.3 MiB） |
-| SHA-256 | `ba511a43187b8606da4f425cd0e8b6f4bf7d12d0fb5bd27ec86c6287b594fd2f` |
+| 大小 | 78,970,073 字节（75.3 MiB） |
+| SHA-256 | `77283d2d426d558a005be8329e37e79ab19aa1f9c64203597611703cdd973ab4` |
 | 格式 | PE（`MZ` 头）· NSIS |
 | **代码签名** | **未签名**（无证书；构建用 `-c.win.signAndEditExecutable=false`） |
 | **图标** | **默认 icon**（未定制） |
@@ -279,8 +283,8 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 
 | 步骤 | 结果 | 证据 |
 | --- | --- | --- |
-| 1. 从指定 Git commit 构建源码归档 | **PASS** | tag `v0.7.2` 指向的发布提交；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**363 文件 · 1,142,707 字节 · SHA-256 `d653edd900f1d1ac28d341421809a7253ee8461994654b545d37e79295f75e06`**） |
-| 2. 执行测试 | **PASS** | 409 项，见 §5.2 |
+| 1. 从指定 Git commit 构建源码归档 | **PASS** | tag `v0.7.2` 指向的发布提交；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**363 文件 · 1,146,265 字节 · SHA-256 `bed083f497bd082d4bed99c0d1074a00cdf491f9596199158ce8dba0affd0de2`**） |
+| 2. 执行测试 | **PASS** | 410 项，见 §5.2 |
 | 3. 构建正式安装包 | **PASS** | §7 场景 A 表格 |
 | 4. 扫描实际依赖与捆绑组件 | **PASS** | 12 py / 153 npm / 9 external；`dependency_licenses` PASS |
 | 5. 生成 SBOM 和校验哈希 | **PASS** | `sbom.json`（CycloneDX 1.5）+ `SHA256SUMS`（**21 项产物全部 built**） |
@@ -301,9 +305,9 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 | 3 | 桌面运行时方案已经确定并实施 | ✅ **通过** | 选定**方案 B 受控安装器**；`docs/V07_2_DESKTOP_RUNTIME.md`；探针 `required 8/8` |
 | 4 | 至少一个声明支持的平台完成**干净环境**安装验证 | ⚠️ **未执行** | 需干净目标虚拟机。本机等价验证见场景 A 第 4/5 步；**不声明为通过** |
 | 5 | 示例工作流能够在**正式安装包**中运行 | ⚠️ **未执行** | 示例工作流已在安装器声明的同一运行时与本机后端上跑通（6/6），但**未在安装后的应用内运行** |
-| 6 | 测试报告与当前提交的测试收集数量一致 | ✅ **通过** | 门禁 JUnit XML 逐阶段计数，合计 409，与测试报告一致 |
+| 6 | 测试报告与当前提交的测试收集数量一致 | ✅ **通过** | 门禁 JUnit XML 逐阶段计数，合计 410，与测试报告一致 |
 | 7 | 完整质量门禁能在 CI 中结束并输出可复核结果 | ✅ **通过** | `gate: PASSED (pass=26 fail=0 skip=1)`；`output/quality_gate.json` / `.md` + `output/gate_logs/`；CI 12 阶段独立记录 |
-| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向 tag `v0.7.2` 的发布提交（见 `docs/RELEASE_MANIFEST.json` 的 `commit`）；`SHA256SUMS` 覆盖安装包（`ba511a43…`）、源码归档（`d653edd9…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
+| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向 tag `v0.7.2` 的发布提交（见 `docs/RELEASE_MANIFEST.json` 的 `commit`）；`SHA256SUMS` 覆盖安装包（`77283d2d…`）、源码归档（`bed083f4…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
 | 9 | 科研节点能够明确标识执行模式 | ✅ **通过** | 89/89 节点声明 `execution_mode`（门禁 `node_registry_provenance` PASS） |
 | 10 | 合成科研基准与真实科研验证的结论已分开表述 | ✅ **通过** | §6；`V07_2_SYNTHETIC_BENCHMARK.md`（结论＝实现正确性）vs `V07_2_REAL_DATA_VALIDATION_PLAN.md`（状态＝计划，未执行） |
 | 11 | 关键源码、依赖、数据集及模型的来源与许可已核查 | ✅ **通过** | `docs/PROVENANCE.md`；`sbom.json`；8/8 数据集有 `source` + `license` + 文件 SHA-256 |
@@ -363,7 +367,7 @@ python -m venv .venv && . .venv/Scripts/activate
 pip install -r requirements.runtime.txt -r requirements.dev.txt
 cd frontend && npm ci && cd ..
 
-# 1) 测试（409 项）
+# 1) 测试（410 项）
 python -m pytest tests/ -q
 
 # 2) 质量门禁（27 阶段，输出 output/quality_gate.json|md 与 output/gate_logs/）
@@ -387,6 +391,7 @@ python scripts/dataset_governance.py --check
 
 # 7) 前端与安装包
 cd frontend && npm run build && cd ..
+cd desktop && npm run build && cd ..          # beforeBuild 钩子同步盖 BUILD_INFO.json
 python scripts/package.py --name Chem-ML-Platform-v0.7.2
 ```
 
@@ -424,11 +429,13 @@ ISSUE-17 的定位过程值得记录：初步症状是每次门禁都在 `releas
 修复方式是让该文档只陈述与**发布包**和**锁定依赖图**有关的政策（与本地构建/缓存状态无关），
 并新增回归测试 `test_document_does_not_depend_on_the_local_build_output` 锁死该性质。
 
-### 12.1 tag 之后的交付收尾修复（ISSUE-18…24）
+### 12.1 tag 之后的交付收尾修复（ISSUE-18…25）
 
 tag `v0.7.2` 指向的提交通过全部门禁之后，按「先在本地安装副本实测、再宣称可交付」的要求做了
-真实安装运行，又暴露出 7 个问题——**全部是门禁通过之后才可见的**，因为这正是门禁与安装实测的
-分工：门禁证明「树是自洽的」，安装实测证明「分发物是可用的」。完整八字段记录见
+真实安装运行，又暴露出 8 个问题。其中前 7 个（ISSUE-18…24）**全部是门禁通过之后才可见的**，
+因为这正是门禁与安装实测的分工：门禁证明「树是自洽的」，安装实测证明「分发物是可用的」；
+第 8 个（ISSUE-25）则由门禁自己在交付收尾的重复运行中抓到——载荷刷新工具与构建钩子互相覆盖
+同一枚印章，每轮恒定 2 个伪更新、永不收敛。完整八字段记录见
 `docs/V07_2_ISSUE_LOG.md`，要点：
 
 | ID | 一句话 | 为什么门禁没抓到 |
@@ -440,6 +447,7 @@ tag `v0.7.2` 指向的提交通过全部门禁之后，按「先在本地安装�
 | ISSUE-22 | 文档声称启动脚本注入令牌，实际仅桌面壳注入 | 注释与实现不一致，无测试覆盖注释 |
 | ISSUE-23 | `CHANGELOG.md` 缺失时版本检查抛异常 | 正常树里该文件存在 |
 | ISSUE-24 | 祖先 Git 仓库的 HEAD 被当作本树构建提交（溯源造假） | 只在「副本位于别的仓库内」时出现 |
+| ISSUE-25 | 载荷刷新与构建印章互相覆盖，每轮 2 个伪更新、永不收敛 | 钩子把旧提交的印章留在树里，拷贝循环又把它盖回载荷 |
 
 其中两项为 **P0**：
 
@@ -447,11 +455,12 @@ tag `v0.7.2` 指向的提交通过全部门禁之后，按「先在本地安装�
    `chemml_version`，而该模块不在 `extraResources` 里，`resources/app/` 缺文件 →
    打包应用一启动就 `ImportError`。electron-builder 只打包不运行，所以构建"成功"。
    修复后安装包已重建，`win-unpacked` 快照经 `refresh_desktop_payload.py --verify`
-   确认 `AGREES`，且新增 25 项桌面测试**真正导入打包布局内的后端**（此前 21 项全部只读配置）。
+   确认 `AGREES`，且新增桌面测试**真正导入打包布局内的后端**（桌面测试由 21 项增至 35 项，
+   此前全部只读配置）。
 2. **发布清单自指**：`SHA256SUMS` 曾被打进它校验的归档内，形成循环依赖；现改为排除出包、
    随包旁发布，并以回归测试锁死。
 
-上述修复使测试总数从 385 增至 **409**，门禁 27 阶段保持 `pass=26 fail=0 skip=1`。
+上述修复使测试总数从 385 增至 **410**，门禁 27 阶段保持 `pass=26 fail=0 skip=1`。
 
 ---
 
@@ -461,7 +470,7 @@ tag `v0.7.2` 指向的提交通过全部门禁之后，按「先在本地安装�
 
 1. **安全**：本地 API 与 WebSocket 具有明确的认证与授权边界（401/403 分离、运行级归属校验、应用私有关闭码）。
 2. **交付**：桌面运行时采用受控安装器方案并已产出 NSIS 安装包；**但干净虚拟机安装验证未执行**。
-3. **工程**：测试、构建与发布材料可由 tag `v0.7.2` 指向的提交重新生成；409 项测试、27 阶段门禁、12 阶段 CI 全绿。
+3. **工程**：测试、构建与发布材料可由 tag `v0.7.2` 指向的提交重新生成；410 项测试、27 阶段门禁、12 阶段 CI 全绿。
 4. **科研**：节点执行模式透明（89/89 标注）；关键结果具备可追溯证据（2×2 复现验证逐节点一致）。
 5. **开源**：源码、依赖、数据与模型的来源管理有明确流程（`PROVENANCE.md` + SBOM + 8/8 数据集元数据）。
 6. **产品**：端到端示例工作流可稳定演示、导出与复核（6/6 Demo + 报告含溯源与局限）。
