@@ -1,7 +1,9 @@
 # Chem ML Platform v0.7.2 — 发布报告（V07_2_RELEASE_REPORT）
 
 - **版本**：`0.7.2` · **codename**：Trusted Delivery Release（可信交付基线）
-- **发布提交**：`fd5503d`（tag `v0.7.2`，带注释）· 首个 v0.7.2 提交 `2eb6453`
+- **发布标签**：`v0.7.2`（带注释标签）· **发布提交**：tag `v0.7.2` 指向的提交
+  （本报告不写死提交哈希——它无法记录包含自身的那个提交；请以 `git describe --tags` 与
+  `docs/RELEASE_MANIFEST.json` 的 `commit` 字段为准）
 - **规范依据**：`Chem ML Platform v0.7.2 版本升级任务书.txt`（§一～§十三）
 - **执行环境**：Windows 11（win32 · AMD64）· Python 3.13.14（隔离 venv `chemml`）· Node.js 22.12.0 / 22.22.2 · torch 2.14.1+cpu（本机**无 CUDA GPU**）
 - **报告生成时间**：2026-10-14
@@ -146,7 +148,7 @@ capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1
 [ PASS  ] desktop_runtime_probe        classification=ok · required 8/8 from requirements.runtime.txt
 [ PASS  ] electron_installer_artefact  installer present: Chem ML Platform Setup 0.7.2.exe (75.3 MiB)
 [ PASS  ] version_consistency          OK: every artefact agrees on 0.7.2
-[ PASS  ] release_manifest             OK: manifest matches 0.7.2@fd5503d (21/21 built)
+[ PASS  ] release_manifest             OK: manifest matches 0.7.2@<release-commit> (21/21 built)
 [ PASS  ] docs_mojibake_scan           30 docs clean
 [ PASS  ] credential_scan              no hardcoded credentials in shipped sources
 [ PASS  ] dependency_licenses          11/12 python deps resolved, 153 locked npm deps, 0 strong-copyleft
@@ -157,7 +159,7 @@ capability={'executable': 76, 'unavailable': 8, 'verified': 4, 'experimental': 1
 gate: PASSED (pass=26 fail=0 skip=1 timeout=0 error=0)
 ```
 
-（以上为发布提交 `fd5503d` 上的门禁真实回显；各阶段毫秒数为当次测量值，逐次运行会波动。）
+（以上为 tag `v0.7.2` 指向的发布提交上的门禁真实回显；各阶段毫秒数为当次测量值，逐次运行会波动。）
 
 **唯一 SKIP 的原因**：本机安装的是 CPU 版 torch，无 CUDA 设备，GPU 状态检查无法执行——
 按状态词表记为 `SKIP` 并附原因，**不折算为 PASS**。
@@ -267,7 +269,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 
 | 步骤 | 结果 | 证据 |
 | --- | --- | --- |
-| 1. 从指定 Git commit 构建源码归档 | **PASS** | 发布提交 `fd5503d`（tag `v0.7.2`）；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**361 文件 · 1,123,543 字节 · SHA-256 `7b6c0751a0d09f99041d072f8ee766caa33280306554b00ac193b8008c237f2a`**） |
+| 1. 从指定 Git commit 构建源码归档 | **PASS** | tag `v0.7.2` 指向的发布提交；`scripts/package.py` → `../Chem-ML-Platform-v0.7.2.zip`（**361 文件 · 1,123,543 字节 · SHA-256 `7b6c0751a0d09f99041d072f8ee766caa33280306554b00ac193b8008c237f2a`**） |
 | 2. 执行测试 | **PASS** | 385 项，见 §5.2 |
 | 3. 构建正式安装包 | **PASS** | §7 场景 A 表格 |
 | 4. 扫描实际依赖与捆绑组件 | **PASS** | 12 py / 153 npm / 9 external；`dependency_licenses` PASS |
@@ -275,7 +277,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 | 6. 检查 LICENSE / NOTICE / 数据集来源 / 第三方组件 | **PASS** | `LICENSE`、`NOTICE`、`docs/THIRD_PARTY_LICENSES.md`、`docs/PROVENANCE.md`；数据集 8/8 有来源与许可证 |
 | 7. 生成最终发布报告 | **PASS** | 本文件 |
 
-**场景 E 结论**：**通过（本机范围内）**。所有发布材料对应同一源码版本 `fd5503d`；未解决的许可证风险
+**场景 E 结论**：**通过（本机范围内）**。所有发布材料对应同一源码版本（tag `v0.7.2`，提交号见 `docs/RELEASE_MANIFEST.json`）；未解决的许可证风险
 已在 `docs/THIRD_PARTY_LICENSES.md` §7 列出（当前：**0 项强 copyleft 被分发**）。
 
 ---
@@ -291,7 +293,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 | 5 | 示例工作流能够在**正式安装包**中运行 | ⚠️ **未执行** | 示例工作流已在安装器声明的同一运行时与本机后端上跑通（6/6），但**未在安装后的应用内运行** |
 | 6 | 测试报告与当前提交的测试收集数量一致 | ✅ **通过** | 门禁 JUnit XML 逐阶段计数，合计 385，与测试报告一致 |
 | 7 | 完整质量门禁能在 CI 中结束并输出可复核结果 | ✅ **通过** | `gate: PASSED (pass=26 fail=0 skip=1)`；`output/quality_gate.json` / `.md` + `output/gate_logs/`；CI 12 阶段独立记录 |
-| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向发布提交 `fd5503d`；`SHA256SUMS` 覆盖安装包（`e556cec9…`）、源码归档（`7b6c0751…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
+| 8 | 安装包、SBOM、源码归档和发布报告可以互相追溯 | ✅ **通过** | 全部指向 tag `v0.7.2` 的发布提交（见 `docs/RELEASE_MANIFEST.json` 的 `commit`）；`SHA256SUMS` 覆盖安装包（`e556cec9…`）、源码归档（`7b6c0751…`）与 SBOM；`docs/RELEASE_MANIFEST.json` 21 项产物**全部 built**，逐项标注 `built/tested/published` 与 SHA-256 |
 | 9 | 科研节点能够明确标识执行模式 | ✅ **通过** | 89/89 节点声明 `execution_mode`（门禁 `node_registry_provenance` PASS） |
 | 10 | 合成科研基准与真实科研验证的结论已分开表述 | ✅ **通过** | §6；`V07_2_SYNTHETIC_BENCHMARK.md`（结论＝实现正确性）vs `V07_2_REAL_DATA_VALIDATION_PLAN.md`（状态＝计划，未执行） |
 | 11 | 关键源码、依赖、数据集及模型的来源与许可已核查 | ✅ **通过** | `docs/PROVENANCE.md`；`sbom.json`；8/8 数据集有 `source` + `license` + 文件 SHA-256 |
@@ -315,7 +317,7 @@ Windows x64 只能声明为「**已构建、本机等价验证通过**」，**�
 | R-04 | 干净环境安装验证缺失 | Windows 安装链路未被端到端证实 | 发布负责人 | 具备 Windows 干净镜像后执行 `docs/V07_2_CLEAN_ENV_TEST.md`「未执行项目」表并补录 |
 | R-05 | 安装包未做代码签名 | 用户会看到系统安全警告 | 发布负责人 | 获取代码签名证书后重签；在此之前安装说明中**明确告知未签名** |
 | R-06 | Linux / macOS 实机未验证 | `electron_build_config` 仅声明目标，未实机运行 | 发布负责人 | 分别在对应平台执行门禁与场景 A |
-| R-07 | 提交历史偏短（`2eb6453` 之前无细粒度历史） | 不利于二分定位早期缺陷 | 平台维护者 | 自 v0.7.2 起按功能提交并保留 `CHANGELOG.md` 条目（本版本已补 `fd5503d`） |
+| R-07 | 提交历史偏短（v0.7.2 之前无细粒度历史） | 不利于二分定位早期缺陷 | 平台维护者 | 自 v0.7.2 起按功能提交并保留 `CHANGELOG.md` 条目 |
 | R-08 | `faiss-cpu` 等可选组件未安装 | 相关能力降级（非失败） | 平台维护者 | 保持可选依赖分组；在 `desktop_runtime_probe` 中已按能力降级处理，不报 FAIL |
 | R-09 | `host_gpu_status` 在本机 SKIP | GPU 相关能力未被验证 | 平台维护者 | 在具备 CUDA 的目标机执行该阶段 |
 
@@ -420,7 +422,7 @@ ISSUE-17 的定位过程值得记录：初步症状是每次门禁都在 `releas
 
 1. **安全**：本地 API 与 WebSocket 具有明确的认证与授权边界（401/403 分离、运行级归属校验、应用私有关闭码）。
 2. **交付**：桌面运行时采用受控安装器方案并已产出 NSIS 安装包；**但干净虚拟机安装验证未执行**。
-3. **工程**：测试、构建与发布材料可由发布提交 `fd5503d` 重新生成；385 项测试、27 阶段门禁、12 阶段 CI 全绿。
+3. **工程**：测试、构建与发布材料可由 tag `v0.7.2` 指向的提交重新生成；385 项测试、27 阶段门禁、12 阶段 CI 全绿。
 4. **科研**：节点执行模式透明（89/89 标注）；关键结果具备可追溯证据（2×2 复现验证逐节点一致）。
 5. **开源**：源码、依赖、数据与模型的来源管理有明确流程（`PROVENANCE.md` + SBOM + 8/8 数据集元数据）。
 6. **产品**：端到端示例工作流可稳定演示、导出与复核（6/6 Demo + 报告含溯源与局限）。
