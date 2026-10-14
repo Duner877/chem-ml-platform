@@ -368,8 +368,46 @@ def _pytest_stage(
 # Individual stages
 # --------------------------------------------------------------------------- #
 
-#: Path segments holding third-party / build output, never first-party source.
-_NON_SOURCE_DIRS = {"node_modules", "__pycache__", ".venv", "venv", "dist", "out", "build"}
+#: Path segments holding third-party / build output / runtime state, never
+#: first-party source.  ``output`` matters most: the desktop payload tests
+#: build full copies of the Python tree under ``output/pytest_gate_tmp/``,
+#: and counting those made this stage report thousands of "first-party"
+#: files that were really leftover test fixtures -- the number grew with
+#: every gate run (2663 -> 3479 -> 4296) while the tree holds ~209
+#: (ISSUE-26).  The set is matched against **any** path segment.
+_NON_SOURCE_DIRS = {
+    "node_modules",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "dist",
+    "out",
+    "build",
+    "output",
+    "workspace",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".tox",
+    "htmlcov",
+    "ui_shots",
+    "scratch",
+}
+
+#: The ``compileall -x`` skip pattern, derived from the same set so the
+#: compiled scope and the counted scope can never drift apart again.
+_COMPILEALL_SKIP = "|".join(
+    rf"[/\\]{re.escape(name)}[/\\]" for name in sorted(_NON_SOURCE_DIRS)
+)
+
+
+def _first_party_python_files(root: Path = ROOT) -> List[Path]:
+    """Every ``*.py`` under *root* that is first-party source.
+
+    Kept separate from the stage so the scope can be tested against a
+    synthetic tree instead of only observed in a full gate run.
+    """
+    return [p for p in root.rglob("*.py") if not _NON_SOURCE_DIRS.intersection(p.parts)]
 
 
 def _dep_versions() -> Dict[str, str]:
@@ -408,7 +446,7 @@ def _node_version() -> str:
 
 
 def stage_python_compile(log_dir: Path) -> Tuple[str, str, dict]:
-    files = [p for p in ROOT.rglob("*.py") if not _NON_SOURCE_DIRS.intersection(p.parts)]
+    files = _first_party_python_files()
     status, code, detail = _run(
         "python_compile",
         [
@@ -417,7 +455,7 @@ def stage_python_compile(log_dir: Path) -> Tuple[str, str, dict]:
             "compileall",
             "-q",
             "-x",
-            "node_modules|__pycache__|\\.venv|[/\\\\]dist[/\\\\]|[/\\\\]out[/\\\\]",
+            _COMPILEALL_SKIP,
             str(ROOT),
         ],
         timeout=300,

@@ -63,9 +63,9 @@
 - `docs/RELEASE_MANIFEST.json` / `SHA256SUMS` 是**发布构建步骤的输出**：清单无法记录包含它自身的提交哈希，因此流程为「先提交源码 → 再生成清单」，`--check` 会同时比对版本、commit 与逐产物身份/哈希。
 - `.gitignore` 未覆盖 vite 在加载 `vite.config.ts` 时写出的 `frontend/vite.config.ts.timestamp-*.mjs` 临时文件，该文件在无法删除临时文件的受限主机上会残留并被误提交；现加入忽略规则。
 
-### 修复 Fixed（tag 后交付收尾，ISSUE-18…25）
+### 修复 Fixed（tag 后交付收尾，ISSUE-18…26）
 
-tag `v0.7.2` 通过全部门禁后，按「先本地安装实测、再宣称可交付」完成真实安装运行，又修复 8 个问题（完整记录见 `docs/V07_2_ISSUE_LOG.md`）：
+tag `v0.7.2` 通过全部门禁后，按「先本地安装实测、再宣称可交付」完成真实安装运行，又修复 9 个问题（完整记录见 `docs/V07_2_ISSUE_LOG.md`）：
 
 - **P0**：桌面安装包**从来无法启动**——`backend/app.py` 导入 `chemml_version`，而该模块不在 `extraResources` 中，`resources/app/` 缺文件即 `ImportError`；electron-builder 只打包不运行，故构建"成功"。已补 `extraResources` 并重建安装包；桌面测试由 21 项增至 35 项，且**真正导入打包布局内的后端**（此前全部只读配置）。
 - **P0**：`SHA256SUMS` 曾被打进它校验的归档内，形成自指循环；现排除出包、随包旁发布，并有回归测试锁死。
@@ -76,7 +76,8 @@ tag `v0.7.2` 通过全部门禁后，按「先本地安装实测、再宣称可�
 - **构建印章进入构建本身**（`desktop/scripts/stamp-build-info.js`，beforeBuild 钩子）：Electron 构建与源码归档现在由同一套 `chemml_version.build_stamp()` 代码盖章，字段一致；钩子以模块路径接入 electron-builder，缺失 Python 解释器时只警告不失败。
 - **CI 与文档化的发布构建对齐**：第 10 阶段补上 `-c.win.signAndEditExecutable=false`（本机无证书，免签名是既定发布路径）；第 3/4/5 阶段改用 per-run `--basetemp`，不再因加固宿主的临时目录回收钩子把「全部通过」渲染成退出码 1。
 - **载荷刷新收敛**（ISSUE-25）：刷新工具的拷贝循环曾把树根钩子印章盖回载荷、印章逻辑再改写，两步互相覆盖——每轮恒定 2 个伪更新、永不收敛；现拷贝循环跳过 `app/BUILD_INFO.json`（印章是生成的，不是拷贝的），回归测试锁死「预置陌生提交的印章也必须第二次收敛」。
-- 测试总数 385 → **410**；门禁 27 阶段保持 `pass=26 fail=0 skip=1`，安装包与源码归档均带构建印章且互相可追溯。
+- **门禁计数口径**（ISSUE-26）：`python_compile` 阶段的「一级源码文件数」把桌面 payload 测试留在 `output/pytest_gate_tmp/` 下的整树夹具也计了进去——同一棵树逐轮报出 2663 → 3479 → 4296，真实值 211。现计数与 `compileall` 跳过范围从同一集合生成（新增 `output` / `workspace` / `.pytest_cache` 等运行期目录），并用 3 项回归测试锁死。
+- 测试总数 385 → **413**；门禁 27 阶段保持 `pass=26 fail=0 skip=1`，安装包与源码归档均带构建印章且互相可追溯。
 
 ### 新增 Added（续）
 
