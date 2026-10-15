@@ -53,6 +53,10 @@ export interface EditorState {
   leftDrawer: "nodes" | "workflows" | null;
   /** Bottom console drawer visibility. */
   consoleOpen: boolean;
+  /** Run/artefact panel visibility (ComfyUI-style bottom drawer). */
+  outputOpen: boolean;
+  /** Right dock visibility -- collapsing it hands the width back to the canvas. */
+  dockOpen: boolean;
   /** About dialog visibility. */
   aboutOpen: boolean;
   /** Canvas interaction lock (ComfyUI-style lock button). */
@@ -73,6 +77,8 @@ export interface EditorState {
   setLeftDrawer: (drawer: "nodes" | "workflows" | null) => void;
   toggleLeftDrawer: (drawer: "nodes" | "workflows") => void;
   setConsoleOpen: (open: boolean) => void;
+  setOutputOpen: (open: boolean) => void;
+  setDockOpen: (open: boolean) => void;
   setAboutOpen: (open: boolean) => void;
   setCanvasLocked: (locked: boolean) => void;
 
@@ -161,6 +167,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   notice: "",
   leftDrawer: "nodes",
   consoleOpen: false,
+  outputOpen: false,
+  dockOpen: true,
   aboutOpen: false,
   canvasLocked: false,
 
@@ -199,6 +207,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   toggleLeftDrawer: (drawer) =>
     set({ leftDrawer: get().leftDrawer === drawer ? null : drawer }),
   setConsoleOpen: (consoleOpen) => set({ consoleOpen }),
+  setOutputOpen: (outputOpen) => set({ outputOpen }),
+  setDockOpen: (dockOpen) => set({ dockOpen }),
   setAboutOpen: (aboutOpen) => set({ aboutOpen }),
   setCanvasLocked: (canvasLocked) => set({ canvasLocked }),
 

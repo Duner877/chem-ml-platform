@@ -24,6 +24,8 @@ import NodePalette from "./panels/NodePalette";
 import WorkflowsDrawer from "./panels/WorkflowsDrawer";
 import Dock from "./panels/Dock";
 import Console from "./panels/Console";
+import OutputPanel from "./panels/OutputPanel";
+import { IconChevron } from "./components/Icons";
 import Marketplace from "./panels/Marketplace";
 import ScientificNodeCard from "./nodes/ScientificNodeCard";
 import TopBar from "./components/TopBar";
@@ -62,6 +64,8 @@ export default function App() {
     setLeftDrawer,
     consoleOpen,
     setConsoleOpen,
+    outputOpen,
+    setOutputOpen,
     canvasLocked,
     addNode,
   } = useEditor();
@@ -179,8 +183,12 @@ export default function App() {
               <MiniMap
                 pannable
                 zoomable
+                position="bottom-right"
                 maskColor={rgb(tokens.minimap)}
                 nodeColor={() => rgb(tokens.panel2)}
+                // The floating run bar owns the bottom-right corner; lift the
+                // minimap above it so zoom controls stay clickable.
+                style={{ marginBottom: 56, marginRight: 8 }}
               />
             </ReactFlow>
 
@@ -216,6 +224,21 @@ export default function App() {
             >
               <WorkflowsDrawer />
             </Drawer>
+          )}
+
+          {/* run output drawer (ComfyUI-style artefacts / progress) --------- */}
+          {outputOpen && (
+            <div className="absolute inset-x-0 bottom-0 z-30 h-64 border-t border-line shadow-[0_-8px_24px_rgba(0,0,0,0.28)]">
+              <OutputPanel />
+              <button
+                type="button"
+                onClick={() => setOutputOpen(false)}
+                title={translate(lang, "close")}
+                className="absolute right-2 top-1.5 rounded p-1 text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+              >
+                <IconChevron size={13} className="rotate-180" />
+              </button>
+            </div>
           )}
 
           {/* console drawer -------------------------------------------------- */}

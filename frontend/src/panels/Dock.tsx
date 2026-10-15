@@ -11,7 +11,15 @@ import AIPanel from "./AIPanel";
 import AgentPanel from "./AgentPanel";
 import DataPanel from "./DataPanel";
 import SimulationPanel from "./SimulationPanel";
-import { IconSparkle, IconStar, IconTerminal, IconGrid, IconCube, IconImage } from "../components/Icons";
+import {
+  IconSparkle,
+  IconStar,
+  IconTerminal,
+  IconGrid,
+  IconCube,
+  IconImage,
+  IconPanelRight,
+} from "../components/Icons";
 
 const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
   { id: "inspector", label: "dockInspector", icon: IconCube },
@@ -23,10 +31,35 @@ const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
 ];
 
 export default function Dock() {
-  const { lang, dockTab, setDockTab } = useEditor();
+  const { lang, dockTab, setDockTab, dockOpen, setDockOpen } = useEditor();
+
+  // Collapsed: a thin handle on the right edge, so the canvas keeps the full
+  // window width.  Expanding restores a responsive 18rem..21rem workbench.
+  if (!dockOpen) {
+    return (
+      <div className="relative flex h-full shrink-0 items-start border-l border-line bg-panel">
+        <button
+          type="button"
+          onClick={() => setDockOpen(true)}
+          title={translate(lang, "showDock")}
+          className="absolute -left-3 top-3 z-20 flex h-8 w-6 items-center justify-center rounded border border-line bg-panel text-[rgb(var(--c-text-dim))] shadow transition hover:text-accent"
+        >
+          <IconPanelRight size={13} />
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-l border-line bg-panel">
+    <aside className="relative flex h-full w-72 shrink-0 flex-col border-l border-line bg-panel xl:w-80">
+      <button
+        type="button"
+        onClick={() => setDockOpen(false)}
+        title={translate(lang, "hideDock")}
+        className="absolute -left-3 top-3 z-20 flex h-8 w-6 items-center justify-center rounded border border-line bg-panel text-[rgb(var(--c-text-dim))] shadow transition hover:text-accent"
+      >
+        <IconPanelRight size={13} className="scale-x-[-1]" />
+      </button>
       <nav className="flex shrink-0 border-b border-line">
         {TABS.map((tab) => {
           const Icon = tab.icon;

@@ -119,12 +119,10 @@ def collect_environment() -> EnvironmentInfo:
             info.gpu_names = [
                 torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())
             ]
-    except Exception:
-        pass
-        info.gpu_names = [
-            str(getattr(d, "name", "") or "") for d in (getattr(torch.cuda, "devices", lambda: [])() or [])
-        ]
     except Exception:  # noqa: BLE001 - torch absent / CUDA broken is recorded, not raised
+        # Must not touch ``torch`` here: when the import above fails the name
+        # never binds, and referencing it raised UnboundLocalError, which
+        # aborted every workflow run on machines without torch.
         pass
     info.key_dependencies = key_dependency_versions()
     info.platform = platform_identity()

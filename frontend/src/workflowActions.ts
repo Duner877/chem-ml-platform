@@ -3,6 +3,7 @@
 import { useEditor } from "./store";
 import { api } from "./api";
 import { extractSpectra } from "./spectra";
+import { formatDuration } from "./panels/OutputPanel";
 
 export function useRunActions() {
   const {
@@ -15,6 +16,7 @@ export function useRunActions() {
     setDockTab,
     pushLog,
     setNotice,
+    setOutputOpen,
   } = useEditor();
 
   function buildPayload() {
@@ -50,6 +52,7 @@ export function useRunActions() {
     resetStatus();
     setBusy(true);
     setRunResult(null);
+    setOutputOpen(true);
     pushLog(`$ run workflow (${nodes.length} nodes / ${edges.length} edges)`);
     try {
       const result = await api.runInline(buildPayload());
@@ -58,15 +61,18 @@ export function useRunActions() {
       if (extractSpectra(result).length > 0) setDockTab("plot");
       for (const [nodeId, record] of Object.entries(result.records ?? {})) {
         pushLog(
-          `[${record.status}] ${nodeId} (${record.duration_ms.toFixed(0)} ms)` +
+          `[${record.status}] ${nodeId} (${formatDuration(record.duration_ms)})` +
             (record.error ? ` — ${record.error}` : "")
         );
         for (const line of record.logs ?? []) pushLog(`    ${line}`);
       }
+      const failures = Object.values(result.records ?? {}).filter(
+        (record) => record.status === "failed"
+      ).length;
       pushLog(
-        result.errors.length
-          ? `! ${result.errors.length} node(s) failed`
-          : `✔ run ${result.run_id} finished in ${result.duration_ms.toFixed(0)} ms`
+        result.errors.length || failures
+          ? `! ${failures} node(s) failed — see the outputs panel`
+          : `✔ run ${result.run_id} finished in ${formatDuration(result.duration_ms)}`
       );
       setNotice(result.status);
     } catch (error) {

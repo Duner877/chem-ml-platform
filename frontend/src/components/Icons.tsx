@@ -189,3 +189,50 @@ export function IconSparkle({ size = 16, className }: IconProps) {
     </svg>
   );
 }
+
+export function IconClock({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 1.8" />
+    </svg>
+  );
+}
+
+export function IconAlert({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M12 4.5l8 14H4l8-14z" />
+      <path d="M12 10v3.5" />
+      <path d="M12 16.4h.01" />
+    </svg>
+  );
+}
+
+export function IconDownload({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M12 4v10" />
+      <path d="M8 10.5l4 4 4-4" />
+      <path d="M5 18.5h14" />
+    </svg>
+  );
+}
+
+export function IconList({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+      <path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" />
+    </svg>
+  );
+}
+
+export function IconPanelRight({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="M14.5 4.5v15" />
+    </svg>
+  );
+}

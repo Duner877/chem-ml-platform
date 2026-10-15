@@ -10,9 +10,11 @@ import { useEffect } from "react";
 import { useEditor } from "../store";
 import { translate } from "../i18n";
 import { useRunActions } from "../workflowActions";
+import { formatDuration } from "../panels/OutputPanel";
 import {
   IconCheck,
   IconExpand,
+  IconList,
   IconLock,
   IconMinus,
   IconPlay,
@@ -31,6 +33,8 @@ export default function BottomBar() {
     status,
     canvasLocked,
     setCanvasLocked,
+    outputOpen,
+    setOutputOpen,
   } = useEditor();
   const { handleRun, handleValidate } = useRunActions();
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -44,6 +48,10 @@ export default function BottomBar() {
     window.addEventListener("chemml:zoom-fit", onZoomFit);
     return () => window.removeEventListener("chemml:zoom-fit", onZoomFit);
   }, [fitView]);
+
+  const records = Object.values(runResult?.records ?? {});
+  const doneNodes = records.filter((r) => r.status === "completed").length;
+  const failedNodes = records.filter((r) => r.status === "failed").length;
 
   const statusText =
     status === "running"
@@ -86,7 +94,7 @@ export default function BottomBar() {
           <>
             <span className="h-3 w-px bg-line" />
             <span>
-              {translate(lang, "lastRun")} {runResult.duration_ms.toFixed(0)} ms
+              {translate(lang, "lastRun")} {formatDuration(runResult.duration_ms)}
             </span>
           </>
         )}
@@ -96,6 +104,31 @@ export default function BottomBar() {
 
       {/* run controls ----------------------------------------------------- */}
       <div className="pointer-events-auto flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOutputOpen(!outputOpen)}
+          title={translate(lang, "outputs")}
+          className={`cml-menu flex h-9 items-center gap-1.5 px-3 text-[11px] transition ${
+            outputOpen
+              ? "text-accent"
+              : "text-[rgb(var(--c-text-dim))] hover:text-[rgb(var(--c-text))]"
+          }`}
+        >
+          <IconList size={14} />
+          <span className="hidden sm:inline">{translate(lang, "outputs")}</span>
+          {runResult && (
+            <span
+              className={`ml-0.5 rounded px-1 font-mono text-[9px] ${
+                failedNodes > 0
+                  ? "bg-bad/20 text-bad"
+                  : "bg-good/20 text-good"
+              }`}
+            >
+              {failedNodes > 0 ? failedNodes : doneNodes}
+            </span>
+          )}
+        </button>
+
         <button
           type="button"
           onClick={() => void handleValidate()}
