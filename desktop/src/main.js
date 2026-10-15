@@ -28,7 +28,7 @@
  * Packaging: see `docs/V07_2_DESKTOP_RUNTIME.md` for the runtime strategy,
  * supported platforms, data-retention policy and the clean-VM test record.
  */
-const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require("electron");
 const { spawn } = require("child_process");
 const crypto = require("crypto");
 const path = require("path");
@@ -381,14 +381,20 @@ function waitForHealth() {
 
 // ----------------------------------------------------------------- window ----- //
 function createWindow() {
+  // v0.7.2 UI merge: the native menu bar (File / Edit / View / Window / Help)
+  // is removed and the web top bar becomes the only window chrome -- one bar,
+  // one brand, themed with the active colour scheme.  The web UI hosts the
+  // min/max/close buttons over the ``window-control`` IPC below.
+  Menu.setApplicationMenu(null);
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    backgroundColor: "#111318",
+    backgroundColor: "#0b0d12",
     title: "Chem ML Platform",
     show: false,
+    titleBarStyle: "hidden",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -655,3 +661,26 @@ ipcMain.handle("open-external", async (_event, url) => {
   }
   return false;
 });
+
+// Custom window chrome: the web top bar hosts min / max / close.
+ipcMain.handle("window-control", (_event, action) => {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+  switch (action) {
+    case "minimize":
+      mainWindow.minimize();
+      return true;
+    case "maximize":
+      if (mainWindow.isMaximized()) mainWindow.unmaximize();
+      else mainWindow.maximize();
+      return mainWindow.isMaximized();
+    case "close":
+      mainWindow.close();
+      return true;
+    default:
+      return false;
+  }
+});
+
+ipcMain.handle("window-state", () => ({
+  maximized: Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isMaximized()),
+}));

@@ -1,0 +1,7 @@
+﻿name,smiles,formula,mass,fragments,role
+"2,5-dihydroxybenzoic acid (DHB)","Oc1cc(O)ccc1C(=O)O","C7H6O4",154.0266,"137.023; 155.034; 177.016","MALDI matrix (positive mode)"
+"alpha-cyano-4-hydroxycinnamic acid (CHCA)","OC(=O)/C=C/c1ccc(O)cc1C#N","C10H7NO3",189.0426,"170.024; 190.050; 212.032","MALDI matrix (peptides)"
+"Sinapinic acid","COc1cc(/C=C/C(O)=O)cc(OC)c1O","C11H12O5",224.0684,"207.029; 225.076; 247.058","MALDI matrix (proteins)"
+"9-aminoacridine (9-AA)","Nc1cccc2nc3ccccc3cc12","C13H11N",193.0891,"176.062; 194.096","MALDI matrix (negative mode)"
+"1,5-diaminonaphthalene (DAN)","Nc1cccc2cccc(N)c12","C10H10N2",158.0844,"141.058; 159.092","MALDI matrix (lipids)"
+"Glycerol (liquid matrix)","OCC(O)CO","C3H8O3",92.0473,"93.055; 101.024","ESI/MALDI co-matrix"

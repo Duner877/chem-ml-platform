@@ -57,6 +57,12 @@ const DICT: Record<Lang, Record<string, string>> = {
     close: "关闭",
     // v0.6 workbench dock
     dockInspector: "检查器",
+    dockPlot: "谱图",
+    plotRunFirst: "运行工作流后，此处绘制输出的谱图（质谱为棒状图）。",
+    plotNoSpectrum: "本次运行没有输出 Spectrum 对象。",
+    plotTopPeaks: "主要峰",
+    plotIntensity: "强度",
+    plotBackToInspector: "返回检查器",
     dockAI: "AI",
     dockAgent: "助手",
     dockData: "数据",
@@ -144,7 +150,6 @@ const DICT: Record<Lang, Record<string, string>> = {
     manager: "管理器",
     artefacts: "产物",
     theme: "主题",
-    themeComfy: "ComfyUI 深色",
     themeWbLight: "WorkBuddy 白",
     themeWbDark: "WorkBuddy 黑",
     // 左侧图标轨
@@ -245,6 +250,12 @@ const DICT: Record<Lang, Record<string, string>> = {
     close: "Close",
     // v0.6 workbench dock
     dockInspector: "Inspector",
+    dockPlot: "Spectra",
+    plotRunFirst: "Run a workflow to plot its spectrum outputs (stick plot for MS).",
+    plotNoSpectrum: "This run produced no Spectrum object.",
+    plotTopPeaks: "Top peaks",
+    plotIntensity: "Intensity",
+    plotBackToInspector: "Back to inspector",
     dockAI: "AI",
     dockAgent: "Agent",
     dockData: "Data",
@@ -332,7 +343,6 @@ const DICT: Record<Lang, Record<string, string>> = {
     manager: "Manager",
     artefacts: "Artefacts",
     theme: "Theme",
-    themeComfy: "ComfyUI dark",
     themeWbLight: "WorkBuddy white",
     themeWbDark: "WorkBuddy black",
     // left icon rail

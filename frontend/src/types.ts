@@ -110,6 +110,8 @@ export interface NodeRecord {
   logs: string[];
   cached: boolean;
   progress: number;
+  /** Serialized port values (``serialize_object`` output) when present. */
+  outputs?: Record<string, unknown>;
 }
 
 export interface RunResult {

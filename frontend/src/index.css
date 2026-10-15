@@ -133,3 +133,19 @@ input.cml-widget[type="number"]::-webkit-inner-spin-button {
   border-radius: 6px;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
 }
+
+/*
+ * Custom window chrome (desktop build).  The native Electron menu bar is
+ * removed; the app top bar drags the window and every interactive child opts
+ * back out of the drag region.
+ */
+.cml-titlebar {
+  -webkit-app-region: drag;
+}
+
+.cml-titlebar button,
+.cml-titlebar input,
+.cml-titlebar select,
+.cml-titlebar label {
+  -webkit-app-region: no-drag;
+}

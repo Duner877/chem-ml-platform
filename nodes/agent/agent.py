@@ -38,7 +38,7 @@ from typing import Any, Dict, List, Optional
 from workflow_engine.engine import WorkflowEngine
 from workflow_engine.errors import NodeExecutionError
 from workflow_engine.node_base import ParameterSpec, ScientificNode
-from workflow_engine.objects import ScientificReport, Table, Text
+from workflow_engine.objects import ScientificObject, ScientificReport, Table, Text
 from workflow_engine.ports import Port
 from workflow_engine.registry import register_node
 from workflow_engine.workflow import Workflow
@@ -106,10 +106,31 @@ class _AgentBase(ScientificNode):
         return str(self.get_param("question", "") or "").strip()
 
     def _context_data(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Turn upstream objects into parameter hints for the planner."""
+        """Turn upstream objects into planner data hints.
+
+        v0.7.2 fix: the planner consumes *data-key* hints (``{"path": ...,
+        "smiles": ..., "formula": ...}``, see ``Planner.plan`` /
+        ``RECIPES[*].data_key``), not node-type keyed parameter maps.  The old
+        node-type keyed dict was silently ignored, so a connected spectrum
+        file never reached the generated sub-workflow and the plan failed on
+        an empty ``path``.
+        """
         data: Dict[str, Any] = {}
-        for item in inputs.get("context") or []:
-            if isinstance(item, list):
+        # v0.7.2 fix: a single edge into the ``multi`` port arrives as *one*
+        # object, not a list.  Pydantic models are iterable (field pairs), so
+        # the old ``for item in context`` silently walked metadata instead of
+        # the actual objects and every hint was lost.
+        context = inputs.get("context")
+        if context is None:
+            branches: List[Any] = []
+        elif isinstance(context, ScientificObject) or isinstance(context, (str, bytes)):
+            branches = [context]
+        elif isinstance(context, dict):
+            branches = [context]
+        else:
+            branches = list(context)
+        for item in branches:
+            if isinstance(item, (list, tuple)):
                 items = item
             else:
                 items = [item]
@@ -117,12 +138,18 @@ class _AgentBase(ScientificNode):
                 smiles = getattr(entry, "smiles", "")
                 formula = getattr(entry, "formula", "")
                 if smiles:
-                    data.setdefault("MoleculeInputNode", {"smiles": str(smiles)})
+                    data.setdefault("smiles", str(smiles))
                 if formula:
-                    data.setdefault("MaterialInputNode", {"formula": str(formula)})
+                    data.setdefault("formula", str(formula))
                 pointer = getattr(entry, "data_pointer", "")
+                if not pointer:
+                    # Spectra loaded by SpectrumFileNode carry their origin in
+                    # ``metadata["source_file"]`` -- reuse it so the planned
+                    # sub-workflow reads the *same* measurement.
+                    metadata = getattr(entry, "metadata", None) or {}
+                    pointer = str(metadata.get("source_file", "") or "")
                 if pointer:
-                    data.setdefault("SpectrumFileNode", {"path": str(pointer)})
+                    data.setdefault("path", str(pointer))
         return data
 
     # -- pipeline ----------------------------------------------------------- #

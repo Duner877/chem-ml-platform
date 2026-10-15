@@ -22,6 +22,14 @@ import {
   IconCheck,
 } from "./Icons";
 
+/** Minimal shape of the Electron preload bridge (absent in browser mode). */
+interface DesktopBridge {
+  windowControl: (action: "minimize" | "maximize" | "close") => void;
+}
+
+const desktopApi = (globalThis as { chemmlDesktop?: DesktopBridge }).chemmlDesktop;
+const isDesktop = Boolean(desktopApi);
+
 function Menu({
   label,
   items,
@@ -112,11 +120,7 @@ export default function TopBar() {
   }, []);
 
   const themeLabel = (id: ThemeId) =>
-    id === "comfy"
-      ? translate(lang, "themeComfy")
-      : id === "wb-light"
-        ? translate(lang, "themeWbLight")
-        : translate(lang, "themeWbDark");
+    id === "wb-light" ? translate(lang, "themeWbLight") : translate(lang, "themeWbDark");
 
   async function saveWorkflow() {
     const payload = buildPayload();
@@ -151,7 +155,7 @@ export default function TopBar() {
   }
 
   return (
-    <header className="flex h-9 shrink-0 items-center gap-1 border-b border-line bg-panel px-2 text-xs">
+    <header className="cml-titlebar flex h-9 shrink-0 items-center gap-1 border-b border-line bg-panel px-2 text-xs">
       {/* brand ----------------------------------------------------------- */}
       <div className="flex items-center gap-2 px-1">
         <span className="flex h-6 w-6 items-center justify-center rounded bg-accent text-onAccent">
@@ -349,6 +353,57 @@ export default function TopBar() {
             ? translate(lang, "offline")
             : translate(lang, "connecting")}
       </span>
+
+      {/* window controls (desktop shell only) -------------------------------
+       * The native Electron menu bar was removed: this top bar *is* the window
+       * chrome now -- it drags the window and hosts the min/max/close buttons,
+       * themed exactly like the rest of the UI. */}
+      {isDesktop && (
+        <div className="ml-1 flex items-center gap-0.5">
+          <button
+            type="button"
+            title={lang === "zh" ? "最小化" : "Minimize"}
+            onClick={() => desktopApi?.windowControl("minimize")}
+            className="flex h-7 w-8 items-center justify-center rounded text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <rect x="1" y="4.5" width="8" height="1" fill="currentColor" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            title={lang === "zh" ? "最大化 / 还原" : "Maximize / restore"}
+            onClick={() => desktopApi?.windowControl("maximize")}
+            className="flex h-7 w-8 items-center justify-center rounded text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <rect
+                x="1.5"
+                y="1.5"
+                width="7"
+                height="7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            title={lang === "zh" ? "关闭" : "Close"}
+            onClick={() => desktopApi?.windowControl("close")}
+            className="flex h-7 w-8 items-center justify-center rounded text-[rgb(var(--c-text-dim))] transition hover:bg-bad hover:text-white"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <path
+                d="M1.5 1.5 L8.5 8.5 M8.5 1.5 L1.5 8.5"
+                stroke="currentColor"
+                strokeWidth="1.1"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <input
         ref={fileRef}

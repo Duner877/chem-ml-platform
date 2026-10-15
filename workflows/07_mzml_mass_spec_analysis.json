@@ -1,0 +1,162 @@
+{
+  "name": "mzML 质谱分析 / mzML Mass Spectrum Analysis",
+  "description": "完整质谱工作流：读取 mzML 文件（MALDI DHB 基质单次扫描）、峰检测、AI 科学助手辅助谱图解析与未知物鉴定（候选库检索 + 多证据打分），最后由报告代理汇总生成 HTML 鉴定报告。",
+  "version": "0.7.2",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "mzML",
+      "MALDI",
+      "mass spectrometry",
+      "AI agent",
+      "identification",
+      "report"
+    ],
+    "language": "zh",
+    "expected_outputs": [
+      "spectrum",
+      "table",
+      "molecule",
+      "report",
+      "text"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "ms_file",
+      "type": "SpectrumFileNode",
+      "label": "mzML 质谱文件",
+      "label_en": "mzML spectrum file",
+      "position": { "x": 0, "y": 0 },
+      "params": {
+        "path": "datasets/mass_spectrometry/scan_018081.mzml",
+        "mode": "MS",
+        "index": 0,
+        "name": "scan_018081 (DHB MALDI)"
+      }
+    },
+    {
+      "id": "ms_peaks",
+      "type": "PeakPickingNode",
+      "label": "峰检测",
+      "label_en": "Peak picking",
+      "position": { "x": 280, "y": 0 },
+      "params": {
+        "prominence": 0.02,
+        "distance": 0.0,
+        "max_peaks": 60
+      }
+    },
+    {
+      "id": "library",
+      "type": "TableFileNode",
+      "label": "MALDI 基质候选库",
+      "label_en": "MALDI matrix candidate library",
+      "position": { "x": 0, "y": 240 },
+      "params": {
+        "path": "datasets/demo/maldi_matrix_library.csv",
+        "delimiter": "auto",
+        "header": true,
+        "name": "maldi_matrix_library"
+      }
+    },
+    {
+      "id": "identify",
+      "type": "UnknownCompoundIdentificationNode",
+      "label": "未知物鉴定",
+      "label_en": "Unknown compound identification",
+      "position": { "x": 560, "y": 120 },
+      "params": {
+        "query": "",
+        "adduct": "[M+H]+",
+        "mass_tolerance_ppm": 20.0,
+        "top_k": 5,
+        "use_ai": true,
+        "language": "zh"
+      }
+    },
+    {
+      "id": "agent",
+      "type": "ScientificAgentNode",
+      "label": "AI 质谱分析助手",
+      "label_en": "AI MS analysis agent",
+      "position": { "x": 560, "y": -160 },
+      "params": {
+        "question": "分析这张 MALDI 质谱图：提取主要碎片峰并总结峰分布，判断基质化合物并给出未知物鉴定的证据链总结",
+        "remember": true
+      }
+    },
+    {
+      "id": "report",
+      "type": "ReportAgentNode",
+      "label": "鉴定报告生成",
+      "label_en": "Identification report agent",
+      "position": { "x": 860, "y": 40 },
+      "params": {
+        "title": "未知物质谱鉴定报告 / Unknown Compound MS Identification Report",
+        "summary": "基于 mzML 单次扫描（scan=18081, DHB 基质 MALDI 正离子模式）的峰检测、AI 辅助解析与候选库检索鉴定结果。",
+        "format": "html",
+        "filename": "mzml_identification_report",
+        "include_provenance": true,
+        "limitations": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "ms_file",
+      "source_port": "spectrum",
+      "target": "ms_peaks",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "ms_file",
+      "source_port": "spectrum",
+      "target": "identify",
+      "target_port": "ms"
+    },
+    {
+      "source": "ms_file",
+      "source_port": "spectrum",
+      "target": "agent",
+      "target_port": "context"
+    },
+    {
+      "source": "library",
+      "source_port": "table",
+      "target": "identify",
+      "target_port": "candidates"
+    },
+    {
+      "source": "identify",
+      "source_port": "molecule",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "identify",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "identify",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "agent",
+      "source_port": "report",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "ms_peaks",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    }
+  ]
+}

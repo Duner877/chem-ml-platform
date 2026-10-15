@@ -1,0 +1,38 @@
+{
+  "name": "MALDI-MS single scan (DHB matrix, imzML export)",
+  "family": "mass_spectrometry",
+  "data_type": "MassSpectrum",
+  "sample": "DHB matrix MALDI spot (source: DZ 1-1-_150um_DHB+_205_185.imzml)",
+  "vendor": "generic",
+  "format": "mzML",
+  "technique": "MALDI-MS",
+  "instrument": "MALDI imaging, 150 um raster, positive mode",
+  "x_unit": "m/z",
+  "y_unit": "number of counts",
+  "points": 836,
+  "x_range": [
+    82.4727,
+    1129.0181
+  ],
+  "known_peaks": [
+    137.0231,
+    155.0337,
+    310.9945
+  ],
+  "notes": "Single MS1 centroid spectrum (scan=18081) exported from an imzML imaging run. 2,5-dihydroxybenzoic acid (DHB) matrix in positive mode: dehydrated matrix ion [M+H-H2O]+ at m/z 137.023 (base region) and protonated matrix [M+H]+ at m/z 155.034 (-2.0 ppm) confirm the matrix; the dominant high-mass peaks (m/z 311.0, 366.96, 350.99) carry the analyte/matrix-cluster information used by the identification demo.",
+  "license": "CC0 (user-provided measurement)",
+  "schema_version": "1.0",
+  "created_at": "2026-10-15",
+  "source": {
+    "kind": "measured",
+    "generator": "imzML -> mzML single-scan export",
+    "reference": "DZ 1-1-_150um_DHB+_205_185.imzml"
+  },
+  "files": [
+    {
+      "path": "mass_spectrometry/scan_018081.mzml",
+      "bytes": 16091,
+      "sha256": "8a296706fb92b38b1456f29a1e0244643cc1d1482302ed58053551e1d05a6e37"
+    }
+  ]
+}

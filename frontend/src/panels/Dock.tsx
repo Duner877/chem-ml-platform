@@ -6,14 +6,16 @@
 import { useEditor, type DockTab } from "../store";
 import { translate } from "../i18n";
 import Inspector from "./Inspector";
+import PlotPanel from "./PlotPanel";
 import AIPanel from "./AIPanel";
 import AgentPanel from "./AgentPanel";
 import DataPanel from "./DataPanel";
 import SimulationPanel from "./SimulationPanel";
-import { IconSparkle, IconStar, IconTerminal, IconGrid, IconCube } from "../components/Icons";
+import { IconSparkle, IconStar, IconTerminal, IconGrid, IconCube, IconImage } from "../components/Icons";
 
 const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
   { id: "inspector", label: "dockInspector", icon: IconCube },
+  { id: "plot", label: "dockPlot", icon: IconImage },
   { id: "ai", label: "dockAI", icon: IconStar },
   { id: "agent", label: "dockAgent", icon: IconSparkle },
   { id: "data", label: "dockData", icon: IconGrid },
@@ -49,6 +51,7 @@ export default function Dock() {
 
       <div className="min-h-0 flex-1">
         {dockTab === "inspector" && <Inspector />}
+        {dockTab === "plot" && <PlotPanel />}
         {dockTab === "ai" && <AIPanel />}
         {dockTab === "agent" && <AgentPanel />}
         {dockTab === "data" && <DataPanel />}

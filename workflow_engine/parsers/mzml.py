@@ -62,20 +62,25 @@ def _has_cv(element: ET.Element, accession: str) -> bool:
     return False
 
 
+#: accession -> single ``struct`` format character.  mzML integer arrays are
+#: signed; ``<f``/``<d`` cover the two float encodings.
+_STRUCT_CODE = {
+    _FLOAT32: "f",
+    _FLOAT64: "d",
+    _INT16: "h",
+    _INT32: "i",
+    _INT64: "q",
+}
+
 def _decode_binary(binary: str, precision: str, compressed: bool) -> List[float]:
     """Decode an mzML ``<binary>`` payload into a list of floats."""
     raw = base64.b64decode("".join(binary.split()))
     if compressed:
         raw = zlib.decompress(raw)
-    fmt = {
-        _FLOAT32: "<f4",
-        _FLOAT64: "<f8",
-        _INT16: "<i2",
-        _INT32: "<i4",
-        _INT64: "<i8",
-    }.get(precision, "<f8")
-    count = len(raw) // struct.calcsize(fmt)
-    values = struct.unpack(f"{fmt[0]}{count}{fmt[1:]}", raw[: count * struct.calcsize(fmt)])
+    code = _STRUCT_CODE.get(precision, "d")
+    size = struct.calcsize("<" + code)
+    count = len(raw) // size
+    values = struct.unpack(f"<{count}{code}", raw[: count * size])
     return [float(v) for v in values]
 
 
@@ -86,11 +91,21 @@ def read_mzml(path: str | Path, max_spectra: int = 200, **kwargs: Any) -> List[S
     ns = _namespace(root.tag)
     prefix = f"{{{ns}}}" if ns else ""
 
+    # Collect referenceable param groups: id -> {"accessions": [...]}.
+    param_groups: Dict[str, Dict[str, str]] = {}
+    for group_element in root.iter(f"{prefix}referenceableParamGroup"):
+        group_id = group_element.attrib.get("id", "")
+        accessions = [
+            cv.attrib.get("accession", "")
+            for cv in group_element.findall(f"{prefix}cvParam")
+        ]
+        param_groups[group_id] = {"accessions": accessions}
+
     spectra: List[Spectrum] = []
     for spectrum_element in root.iter(f"{prefix}spectrum"):
         if len(spectra) >= max_spectra:
             break
-        spectra.append(_parse_spectrum(spectrum_element, prefix))
+        spectra.append(_parse_spectrum(spectrum_element, prefix, param_groups))
 
     if not spectra:
         # Some vendors write chromatograms only: still return an empty list.
@@ -98,27 +113,44 @@ def read_mzml(path: str | Path, max_spectra: int = 200, **kwargs: Any) -> List[S
     return spectra
 
 
-def _parse_spectrum(element: ET.Element, prefix: str) -> Spectrum:
+def _parse_spectrum(
+    element: ET.Element,
+    prefix: str,
+    param_groups: Optional[Dict[str, Dict[str, str]]] = None,
+) -> Spectrum:
     index = int(element.attrib.get("index", len(element.attrib)) or 0)
     spectrum_id = element.attrib.get("id", f"scan={index}")
 
     metadata: Dict[str, Any] = {"id": spectrum_id}
     arrays: Dict[str, List[float]] = {}
+    param_groups = param_groups or {}
 
     for binary_array in element.iter(f"{prefix}binaryDataArray"):
+        # v0.7.2 fix: many writers (e.g. imzML converters) put the precision /
+        # compression cvParams into ``referenceableParamGroup`` definitions and
+        # only place a ``<referenceableParamGroupRef>`` on the array itself, so
+        # the group's params must be merged in before the direct children.
+        accessions: List[str] = []
+        for child in binary_array:
+            if child.tag.endswith("cvParam"):
+                accessions.append(child.attrib.get("accession", ""))
+        ref = binary_array.find(f"{prefix}referenceableParamGroupRef")
+        if ref is not None:
+            group = param_groups.get(ref.attrib.get("ref", ""), {})
+            accessions.extend(group.get("accessions", []))
         precision = _FLOAT64
-        for cv in binary_array.findall(f"{prefix}cvParam"):
-            accession = cv.attrib.get("accession", "")
-            if accession in {_FLOAT32, _FLOAT64, _INT16, _INT32, _INT64}:
+        for accession in accessions:
+            if accession in _STRUCT_CODE:
                 precision = accession
-        compressed = _has_cv(binary_array, _ZLIB)
+                break
+        compressed = _ZLIB in accessions
         binary_node = binary_array.find(f"{prefix}binary")
         if binary_node is None or not binary_node.text:
             continue
         values = _decode_binary(binary_node.text, precision, compressed)
-        if _has_cv(binary_array, _MZ_ARRAY):
+        if _MZ_ARRAY in accessions:
             arrays["x"] = values
-        elif _has_cv(binary_array, _INTENSITY_ARRAY):
+        elif _INTENSITY_ARRAY in accessions:
             arrays["y"] = values
 
     level_raw = _cv_value(element, _MS_LEVEL)

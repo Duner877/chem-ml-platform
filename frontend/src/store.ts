@@ -17,12 +17,20 @@ import {
 
 import type { NodeSpec, RunResult } from "./types";
 import type { Lang } from "./i18n";
-import { applyTheme, initialTheme, portColor, THEMES, type ThemeId, type ThemeTokens } from "./theme";
+import {
+  DEFAULT_THEME,
+  applyTheme,
+  initialTheme,
+  portColor,
+  THEMES,
+  type ThemeId,
+  type ThemeTokens,
+} from "./theme";
 
 export type NodeStatus = "idle" | "running" | "completed" | "failed" | "skipped";
 
 /** Tabs of the right hand workbench dock. */
-export type DockTab = "inspector" | "ai" | "agent" | "data" | "simulation";
+export type DockTab = "inspector" | "plot" | "ai" | "agent" | "data" | "simulation";
 
 export interface EditorState {
   lang: Lang;
@@ -98,11 +106,11 @@ function nextId(prefix: string): string {
 
 /** Active theme tokens (kept in sync with the CSS variables by ``applyTheme``). */
 export function useThemeTokens(): ThemeTokens {
-  return THEMES[useEditor((state) => state.theme)] ?? THEMES.comfy;
+  return THEMES[useEditor((state) => state.theme)] ?? THEMES[DEFAULT_THEME];
 }
 
 /** Order used by the theme cycler (top bar button / keyboard shortcut). */
-const THEME_CYCLE: ThemeId[] = ["comfy", "wb-light", "wb-dark"];
+const THEME_CYCLE: ThemeId[] = ["wb-dark", "wb-light"];
 
 /** Colour a connector by the data type of its *source* port (ComfyUI style). */
 function edgeStyleFor(
@@ -118,7 +126,7 @@ function edgeStyleFor(
 
 /** Re-stamp every edge after a theme switch (edge colours are theme tokens). */
 function recolourEdges(state: EditorState, theme: ThemeId): Edge[] {
-  const tokens = THEMES[theme] ?? THEMES.comfy;
+  const tokens = THEMES[theme] ?? THEMES[DEFAULT_THEME];
   return state.edges.map((edge) => {
     const source = state.nodes.find((node) => node.id === edge.source);
     const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
@@ -203,7 +211,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   onConnect: (connection: Connection) => {
     const source = get().nodes.find((node) => node.id === connection.source);
     const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
-    const tokens = THEMES[get().theme] ?? THEMES.comfy;
+    const tokens = THEMES[get().theme] ?? THEMES[DEFAULT_THEME];
     set({
       edges: addEdge(
         {
@@ -362,7 +370,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       if (!source || !target) continue;
       const sourceNode = nodes.find((node) => node.id === source);
       const sourceType = (sourceNode?.data as unknown as { type?: string } | undefined)?.type;
-      const tokens = THEMES[get().theme] ?? THEMES.comfy;
+      const tokens = THEMES[get().theme] ?? THEMES[DEFAULT_THEME];
       edges.push({
         id: nextId("e"),
         source,

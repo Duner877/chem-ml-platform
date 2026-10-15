@@ -1,11 +1,12 @@
 /** Theme tokens: the single source of truth for every colour in the GUI.
  *
- * Three themes ship with the platform (task: at least three colour schemes):
+ * Two themes ship with the platform:
  *
- * 1. ``comfy``     -- the dark node-editor look of the reference screenshot
- *                     (deep blue-black canvas, slate node bodies, blue accent);
- * 2. ``wb-light``  -- the WorkBuddy white theme (light surfaces, dark text);
- * 3. ``wb-dark``   -- the WorkBuddy black theme (near-black surfaces).
+ * 1. ``wb-light``  -- the WorkBuddy white theme (light surfaces, dark text);
+ * 2. ``wb-dark``   -- the WorkBuddy black theme (near-black surfaces).
+ *
+ * The first launch starts in ``wb-dark``; the user's choice is persisted in
+ * ``localStorage`` and restored on every subsequent start.
  *
  * The tokens are *injected* as CSS custom properties (``--c-*``) at runtime and
  * ``tailwind.config.js`` maps its semantic colours onto those variables, so a
@@ -14,7 +15,7 @@
  * modifiers (``bg-good/15``) keep working.
  */
 
-export type ThemeId = "comfy" | "wb-light" | "wb-dark";
+export type ThemeId = "wb-light" | "wb-dark";
 
 export interface ThemeTokens {
   /** App background (canvas). */
@@ -55,53 +56,6 @@ export interface ThemeTokens {
   /** Port / edge colour per scientific data type. */
   port: Record<string, string>;
 }
-
-/** ComfyUI-style dark theme (colours sampled from the reference screenshot). */
-const COMFY: ThemeTokens = {
-  canvas: "21 27 43", // #151b2b
-  panel: "32 40 59", // #20283b
-  panel2: "44 56 82", // #2c3852
-  line: "58 70 101", // #3a4665
-  text: "214 218 228", // #d6dae4
-  textDim: "139 147 167", // #8b93a7
-  textFaint: "92 100 120", // #5c6478
-  accent: "102 151 246", // #6697f6
-  onAccent: "255 255 255",
-  good: "76 175 125", // #4caf7d
-  warn: "224 164 88", // #e0a458
-  bad: "224 108 117", // #e06c75
-  nodeBody: "44 56 82", // #2c3852
-  nodeHeader: "35 44 66", // #232c42
-  widget: "23 24 30", // #17181e
-  nodeBorder: "58 70 101",
-  edge: "125 138 163", // #7d8aa3
-  grid: "35 44 66",
-  minimap: "23 29 43",
-  port: {
-    MODEL: "196 92 92", // #c45c5c
-    CONDITIONING: "209 154 102", // #d19a66
-    VAE: "182 120 221", // #b678dd
-    LATENT: "224 122 184", // #e07ab8
-    IMAGE: "86 182 194", // #56b6c2
-    CLIP: "152 195 121", // #98c379
-    NOISE: "107 114 128", // #6b7280
-    SAMPLER: "86 182 194",
-    SIGMAS: "229 192 123", // #e5c07b
-    Spectrum: "97 175 239", // #61afef
-    Molecule: "152 195 121",
-    Material: "229 192 123",
-    Table: "182 120 221",
-    Text: "171 178 191", // #abb2bf
-    Number: "209 154 102",
-    Any: "139 147 167",
-    ScientificObject: "139 147 167",
-    SpectralMatch: "224 122 184",
-    Reaction: "209 154 102",
-    ScientificReport: "182 120 221",
-    Boolean: "224 108 117",
-    File: "107 114 128",
-  },
-};
 
 /** WorkBuddy white theme. */
 const WB_LIGHT: ThemeTokens = {
@@ -198,12 +152,14 @@ const WB_DARK: ThemeTokens = {
 };
 
 export const THEMES: Record<ThemeId, ThemeTokens> = {
-  comfy: COMFY,
   "wb-light": WB_LIGHT,
   "wb-dark": WB_DARK,
 };
 
-export const THEME_IDS: ThemeId[] = ["comfy", "wb-light", "wb-dark"];
+export const THEME_IDS: ThemeId[] = ["wb-dark", "wb-light"];
+
+/** Theme used on the very first launch (before the user picks one). */
+export const DEFAULT_THEME: ThemeId = "wb-dark";
 
 /** localStorage key remembering the chosen theme across sessions. */
 const STORAGE_KEY = "chemml-theme";
@@ -218,7 +174,7 @@ function channel(value: string): string {
 /** Write every token of ``themeId`` onto ``<html>`` as ``--c-*`` channels. */
 export function applyTheme(themeId: ThemeId): void {
   if (typeof document === "undefined") return;
-  const tokens = THEMES[themeId] ?? THEMES.comfy;
+  const tokens = THEMES[themeId] ?? THEMES[DEFAULT_THEME];
   const root = document.documentElement;
   const simple: Array<[string, string]> = [
     ["canvas", tokens.canvas],
@@ -252,7 +208,10 @@ export function applyTheme(themeId: ThemeId): void {
   }
 }
 
-/** Theme id persisted by a previous session (``comfy`` when absent). */
+/**
+ * Theme id persisted by a previous session.  First launch (no stored choice)
+ * starts in the WorkBuddy black theme; later launches restore the user's pick.
+ */
 export function storedTheme(): ThemeId {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
@@ -262,7 +221,7 @@ export function storedTheme(): ThemeId {
   } catch {
     /* ignore */
   }
-  return "comfy";
+  return DEFAULT_THEME;
 }
 
 /** Theme to start with: ``?theme=<id>`` (deep link) beats the stored choice. */

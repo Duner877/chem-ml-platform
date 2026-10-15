@@ -42,8 +42,23 @@ class TestShippedDatasets:
 
     def test_no_mass_spectrometry_directory_mismatch(self):
         # The shimadzu FT-IR sample was relocated to spectroscopy/ (task G.2).
-        assert not (DATASETS / "mass_spectrometry").exists()
+        # v0.7.2 later added a *real* mass_spectrometry/ dataset (the mzML scan),
+        # so the directory itself is legitimate again -- what must never happen
+        # is a non-MS payload (e.g. the .spc FT-IR file) sitting inside it.
         assert (DATASETS / "spectroscopy" / "shimadzu_spc" / "sample_01.spc").is_file()
+        ms_dir = DATASETS / "mass_spectrometry"
+        if ms_dir.exists():
+            payloads = [
+                path
+                for path in ms_dir.rglob("*")
+                if path.is_file() and not path.name.endswith(".metadata.json")
+            ]
+            assert payloads, "mass_spectrometry/ exists but ships no payload"
+            for path in payloads:
+                assert path.suffix.lower() in {".mzml", ".mzmlg", ".msp", ".mgf", ".txt"}, path
+            for meta in metadata_files(ms_dir):
+                data = json.loads(meta.read_text(encoding="utf-8"))
+                assert data["data_type"] in FAMILY_DATA_TYPES["mass_spectrometry"], meta
 
     def test_every_record_has_source_license_and_checksums(self):
         for meta in metadata_files(DATASETS):

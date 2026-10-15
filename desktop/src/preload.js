@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld("chemmlDesktop", {
   restartBackend: () => ipcRenderer.invoke("restart-backend"),
   openLogFolder: () => ipcRenderer.invoke("open-log-folder"),
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
+  // Custom window chrome: min / max / close driven by the web top bar.
+  windowControl: (action) => ipcRenderer.invoke("window-control", action),
+  windowState: () => ipcRenderer.invoke("window-state"),
   onBackendStatus: (cb) => ipcRenderer.on("backend-status", (_e, data) => cb(data)),
   onBackendReady: (cb) => ipcRenderer.on("backend-ready", (_e, data) => cb(data)),
   onBackendExited: (cb) => ipcRenderer.on("backend-exited", (_e, data) => cb(data)),

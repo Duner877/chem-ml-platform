@@ -2,6 +2,7 @@
 
 import { useEditor } from "./store";
 import { api } from "./api";
+import { extractSpectra } from "./spectra";
 
 export function useRunActions() {
   const {
@@ -11,6 +12,7 @@ export function useRunActions() {
     resetStatus,
     setBusy,
     setRunResult,
+    setDockTab,
     pushLog,
     setNotice,
   } = useEditor();
@@ -52,6 +54,8 @@ export function useRunActions() {
     try {
       const result = await api.runInline(buildPayload());
       setRunResult(result);
+      // Spectrum in the output? Jump straight to the plot tab (mass spec UX).
+      if (extractSpectra(result).length > 0) setDockTab("plot");
       for (const [nodeId, record] of Object.entries(result.records ?? {})) {
         pushLog(
           `[${record.status}] ${nodeId} (${record.duration_ms.toFixed(0)} ms)` +
