@@ -66,3 +66,50 @@ class TestDeepLinkDoesNotFakeOffline:
         workflow_call = source.split("api\n            .workflow(requested)")[1]
         catch = workflow_call.split(".catch(")[1].split(");")[0]
         assert "setBackend" not in catch, catch
+
+
+
+
+class TestArtifactPathsAreUsableUrls:
+    """Artefact paths travel to the browser as URL path segments.
+
+    ``str(Path(...))`` yields Windows separators, which produces a link that
+    404s the moment it is clicked, so the API must emit POSIX separators and
+    the download endpoint must accept exactly what it emitted.
+    """
+
+    def test_relative_artifacts_uses_forward_slashes(self):
+        from backend.routers import workflows as wf_router
+
+        artefact = wf_router.ROOT / "output" / "api_runs" / "runs" / "x" / "a b.html"
+        artefact.parent.mkdir(parents=True, exist_ok=True)
+        artefact.write_text("<html></html>", encoding="utf-8")
+        try:
+            result = wf_router._relative_artifacts([str(artefact)])
+        finally:
+            artefact.unlink()
+
+        assert result, "artefact should resolve relative to the repo root"
+        assert "\\" not in result[0], result
+        assert result[0].startswith("output/"), result
+
+    def test_download_endpoint_accepts_posix_relative_path(self, client):
+        import urllib.parse
+
+        from backend.routers.runs import ARTIFACT_ROOTS
+
+        # Must sit under a registered artefact root: the containment check that
+        # rejects anything else is the endpoint's job, not an obstacle here.
+        artefact = ARTIFACT_ROOTS[0] / "pytest_deeplink" / "report name.html"
+        artefact.parent.mkdir(parents=True, exist_ok=True)
+        artefact.write_text("<html>ok</html>", encoding="utf-8")
+        try:
+            relative = artefact.relative_to(
+                Path(__file__).resolve().parents[1]
+            ).as_posix()
+            response = client.get(
+                "/api/runs/artifacts/" + urllib.parse.quote(relative)
+            )
+        finally:
+            artefact.unlink()
+        assert response.status_code == 200, response.text

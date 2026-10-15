@@ -30,8 +30,10 @@ def _iter_runs() -> List[Dict[str, Any]]:
         if not base.exists():
             continue
         for run_dir in sorted(base.glob("**/run_*"), reverse=True):
+            # POSIX separators: these paths are handed to the browser as URL
+            # segments, and a Windows "output\runs\x.html" is not a valid one.
             artifacts = sorted(
-                str(p.relative_to(ROOT))
+                p.relative_to(ROOT).as_posix()
                 for p in run_dir.rglob("*")
                 if p.is_file()
             )
@@ -39,7 +41,7 @@ def _iter_runs() -> List[Dict[str, Any]]:
                 {
                     "run_id": run_dir.name,
                     "workflow": run_dir.parent.name,
-                    "path": str(run_dir.relative_to(ROOT)),
+                    "path": run_dir.relative_to(ROOT).as_posix(),
                     "artifacts": artifacts,
                 }
             )

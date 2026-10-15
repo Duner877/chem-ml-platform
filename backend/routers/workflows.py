@@ -105,13 +105,15 @@ def _relative_artifacts(paths: Iterable[Any]) -> List[str]:
 
     Engine records hold absolute paths; the download endpoint (and the SDK's
     ``artifact_url`` helper) expect paths relative to the repository root.
+    Separators are normalised to ``/`` because the value travels as a URL
+    path -- a Windows ``output\\runs\\x.html`` is not a usable link.
     """
     relative: List[str] = []
     for item in paths or []:
         try:
-            relative.append(str(Path(item).resolve().relative_to(ROOT)))
+            relative.append(Path(item).resolve().relative_to(ROOT).as_posix())
         except (ValueError, OSError):
-            relative.append(str(item))
+            relative.append(str(item).replace("\\", "/"))
     return relative
 
 

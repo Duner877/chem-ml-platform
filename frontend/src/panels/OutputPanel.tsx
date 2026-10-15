@@ -256,7 +256,10 @@ export default function OutputPanel() {
               {artifacts.map((path) => (
                 <li key={path}>
                   <a
-                    href={`/api/runs/artifacts/${path}`}
+                    href={`/api/runs/artifacts/${path
+                      .split("/")
+                      .map(encodeURIComponent)
+                      .join("/")}`}
                     download
                     className="flex items-center gap-2 px-3 py-1 text-[11px] text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
                   >
