@@ -56,6 +56,7 @@ export default function App() {
     onConnect,
     setBackend,
     backend,
+    setNotice,
     lang,
     leftDrawer,
     setLeftDrawer,
@@ -93,7 +94,10 @@ export default function App() {
                 .getState()
                 .loadWorkflow(workflow as { nodes?: unknown[]; edges?: unknown[] });
             })
-            .catch(() => setBackend("offline"));
+            // A missing workflow is a bad deep link, not a dead backend -- the
+            // health poll owns the online/offline state.  Reporting "offline"
+            // here used to blank the whole UI whenever ?workflow= was wrong.
+            .catch(() => setNotice(`workflow ${requested} not found`));
         }
       })
       .catch(() => setBackend("offline"));
@@ -101,7 +105,7 @@ export default function App() {
       .health()
       .then(() => setBackend("online"))
       .catch(() => setBackend("offline"));
-  }, [setSpecs, setBackend]);
+  }, [setSpecs, setBackend, setNotice]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();

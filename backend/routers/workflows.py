@@ -141,11 +141,20 @@ async def list_workflows() -> List[Dict[str, Any]]:
 
 @router.get("/{filename}")
 async def load_workflow(filename: str) -> Dict[str, Any]:
-    """Load a stored workflow by file name."""
-    path = (WORKFLOW_DIR / filename).resolve()
-    if not str(path).startswith(str(WORKFLOW_DIR.resolve())) or not path.exists():
-        raise HTTPException(status_code=404, detail=f"workflow {filename!r} not found")
-    return json.loads(path.read_text(encoding="utf-8"))
+    """Load a stored workflow by file name.
+
+    ``?workflow=`` deep links name a workflow by stem (``07_mzml_mass_spec_analysis``)
+    while the UI lists bare file names (``07_mzml_mass_spec_analysis.json``), so
+    accept either spelling rather than 404-ing on the documented deep link.
+    """
+    candidates = [filename]
+    if not filename.endswith(".json"):
+        candidates.append(f"{filename}.json")
+    for candidate in candidates:
+        path = (WORKFLOW_DIR / candidate).resolve()
+        if str(path).startswith(str(WORKFLOW_DIR.resolve())) and path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+    raise HTTPException(status_code=404, detail=f"workflow {filename!r} not found")
 
 
 @router.post("", status_code=201)
