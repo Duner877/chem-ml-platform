@@ -101,12 +101,18 @@ tag `v0.7.2` 通过全部门禁后，按「先本地安装实测、再宣称可�
 - **界面文案双语化**：`i18n.ts` 补齐全部界面键位，支持 `?lang=zh|en` 深链；`NodePalette` / `Inspector` / `Dock` / `Marketplace` / `AIPanel` / `AgentPanel` / `Console` 全部接入双语标签，6 个 `workflows/*.json` 演示工作流补充 `label_en`。
 - **节点卡片重写**：`nodes/ScientificNodeCard.tsx` 改为 ComfyUI 风格——分类着色头部、节点内嵌参数控件（下拉/数字/文本/布尔）、按数据类型着色的输入输出端口（连线同色并带动画）、中英标题与描述切换。
 - **谱图绘制面板**：新增 `panels/PlotPanel.tsx` 与 `spectra.ts`（从运行记录提取谱图序列），右侧 Dock 增加「谱图」标签；按数据类型分别绘制——质谱为棒状图（stick plot）并列出主要峰，其余谱图为线图；工作流运行结束后自动切到该标签。
+- **产物窗口（ComfyUI 式输出抽屉）**：新增 `panels/OutputPanel.tsx`——状态徽标、运行 ID、**可读耗时**（`176 ms` / `6.61 s` / `2m 05s`，替换原先直接显示原始毫秒）、`完成/总数 节点` 与失败计数、逐节点进度条与展开的错误全文/日志、产物文件可下载链接；运行时秒表实时计时且进度条**保持不确定态**（内联接口整图跑完才返回，不伪造百分比）。**每次运行自动展开**，失败不会再被折叠的控制台吞掉。底栏新增带状态徽标的「产物」开关按钮。
+- **布局对齐 ComfyUI**：右侧 Dock 可折叠为边缘把手（画布因此获得整个窗口宽度）、Dock 宽度响应式（`w-72`→`xl:w-80`）、小地图上移让出右下角给浮动运行条（此前两者重叠、缩放按钮点不到）。
 - **mzML 质谱完整工作流**：新增 `workflows/07_mzml_mass_spec_analysis.json`（添加文件 → 峰提取 → 未知物鉴定 + AI agent 分析 → AI agent 生成鉴定报告），示例数据 `datasets/mass_spectrometry/scan_018081.mzml` 及配套元数据一并登记（`scripts/dataset_governance.py` 覆盖 10/10）。
 
 ### 修复 Fixed（UI 重构收尾 + 质谱链路）
 
 - `desktop/package.json` 的 `extraResources` 漏收新增根级模块 `node_i18n.py`，导致 `test_every_root_level_module_is_packaged` 失败；已补收并复跑桌面测试 35 项全过。
 - **mzML 解析器无法读取任何真实文件**：`workflow_engine/parsers/mzml.py::_decode_binary` 使用 numpy 风格的 `<f8` / `<i4` 格式串，`struct` 不接受 `<` 前缀（`struct.calcsize` 直接抛异常），且 `_parse_spectrum` 只在 `binaryDataArray` 上直查 `cvParam`，未解析 `referenceableParamGroupRef`，导致精度/压缩参数丢失。已修正为合法的 `<f`、`>i` 等格式串并支持引用组。
+- **无 PyTorch 主机上所有工作流整体崩溃**（用户实测报「运行出错」）：`provenance/schema.py::collect_environment` 的 `except Exception:` 分支里**又引用了 `torch`**，而 import 失败时该名字根本未绑定 → `UnboundLocalError: cannot access local variable 'torch'`，在第一个节点执行前抛出。桌面版用宿主机自带 Python（本机 `D://python 3.13.6` 无 torch）因此必然踩中，而开发 venv 有 torch 所以测试全绿。现已删除该多余分支（它同时是**第二个重复 `except Exception`**，属坏补丁指纹），并加 `tests/test_v07_2_no_torch_host.py`：模拟无 torch 主机 + 静态禁止任何 `except` 分支引用 `torch` + 全仓扫描重复 `except`。已在 `D://python 3.13.6`（真实无 torch 解释器）上验证整条 mzML 工作流 6/6 通过。
+- **失败在界面上不可见**：运行出错只写进默认折叠的控制台抽屉，用户看到的是「什么都没发生」。新增产物窗口（见下），并改为每次运行自动展开。
+- **产物下载链接点开即 404**：`_relative_artifacts` 用 `str(Path(...))` 生成路径，Windows 上是反斜杠，浏览器拿到 `output\api_runs\runs\<id>\artifacts\x.html` 这种非法 URL 路径。已改为 `.as_posix()` 输出 POSIX 分隔符（`backend/routers/runs.py` 的运行列表同样修正），前端对每段做 `encodeURIComponent`。
+
 - **`ScientificAgentNode` 子规划拿不到上游数据**：`nodes/agent/agent.py::_context_data` 按**节点类型**组织提示（如 `{"SpectrumFileNode": {"path": ...}}`），而规划器按 **data_key 名**（`path` / `smiles` / `formula`）取值，两者键名不一致，上游数据从未真正注入；此外单条边连入 `multi` 端口时引擎传入的是单个对象而非列表，可迭代的 Pydantic 模型被误当元素序列逐字段拆散。已统一为 data_key 键名、按 `ScientificObject`/列表/单对象三级归一化输入，并新增谱图 `metadata["source_file"]` 回退，使 agent 子工作流能读到真实文件。
 
 
