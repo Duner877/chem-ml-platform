@@ -35,7 +35,8 @@
       "params": {
         "smiles": "O",
         "name": "Water"
-      }
+      },
+      "label_en": "Water molecule"
     },
     {
       "id": "gromacs",
@@ -49,7 +50,8 @@
         "temperature": 0.7,
         "steps": 400,
         "dt": 0.005
-      }
+      },
+      "label_en": "Molecular dynamics"
     },
     {
       "id": "mat_in",
@@ -62,7 +64,8 @@
       "params": {
         "formula": "LiFePO4",
         "name": "Lithium Iron Phosphate"
-      }
+      },
+      "label_en": "Lithium iron phosphate"
     },
     {
       "id": "vasp",
@@ -76,7 +79,8 @@
         "calculation": "dos",
         "functional": "pbe",
         "kpoints": 4
-      }
+      },
+      "label_en": "Solid-state DFT"
     },
     {
       "id": "report",
@@ -91,7 +95,8 @@
         "summary": "本报告汇总分子动力学（Lennard-Jones 回退引擎输出的径向分布函数）、固体 DFT（紧束缚 + XRD 回退引擎输出的态密度 / 衍射图）两条跨尺度计算链路的结果，用于材料与体系的快速计算表征。",
         "format": "html",
         "filename": "demo05_multiscale_materials_report"
-      }
+      },
+      "label_en": "Research report"
     }
   ],
   "edges": [

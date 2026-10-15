@@ -1,4 +1,4 @@
-/** Minimal 中/EN dictionary for the editor chrome. */
+/** 中 / EN dictionary for the whole editor chrome (ComfyUI-style shell). */
 
 export type Lang = "zh" | "en";
 
@@ -119,6 +119,77 @@ const DICT: Record<Lang, Record<string, string>> = {
     foundationDim: "维度",
     foundationWeights: "需权重",
     foundationLocal: "内置",
+
+    // ---------------------------------------------------------------- //
+    // ComfyUI 风格外壳（v0.7.2 界面重构）                                //
+    // ---------------------------------------------------------------- //
+    // 顶部菜单栏
+    menuWorkflow: "工作流",
+    menuEdit: "编辑",
+    menuHelp: "帮助",
+    menuNew: "新建工作流",
+    menuSave: "保存工作流",
+    menuLoad: "加载示例…",
+    menuRun: "运行工作流",
+    menuValidate: "校验工作流",
+    menuClear: "清空画布",
+    menuDuplicate: "复制选中节点",
+    menuDelete: "删除选中节点",
+    menuZoomFit: "适应画布",
+    menuManager: "节点管理器",
+    menuAbout: "关于本平台",
+    menuDocs: "使用文档",
+    workflowUntitled: "未命名工作流",
+    workflowLabel: "工作流",
+    manager: "管理器",
+    artefacts: "产物",
+    theme: "主题",
+    themeComfy: "ComfyUI 深色",
+    themeWbLight: "WorkBuddy 白",
+    themeWbDark: "WorkBuddy 黑",
+    // 左侧图标轨
+    railNodes: "节点库",
+    railWorkflows: "示例工作流",
+    railConsole: "控制台",
+    railMarketplace: "节点市场",
+    dragHint: "拖拽节点到画布，或单击添加",
+    drawerNodes: "节点库",
+    drawerWorkflows: "示例工作流",
+    workflowEmpty: "暂无示例工作流。",
+    workflowLoad: "加载",
+    workflowNodesEdges: "节点 / 连线",
+    // 底部运行条
+    queue: "队列",
+    lastRun: "上次运行",
+    backendState: "后端",
+    zoomIn: "放大",
+    zoomOut: "缩小",
+    lockCanvas: "锁定画布",
+    unlockCanvas: "解锁画布",
+    // 节点卡片
+    nodeWidgets: "节点参数",
+    nodeNoParams: "无可调参数",
+    nodeMoreParams: "更多参数见右侧检查器",
+    nodeIn: "输入",
+    nodeOut: "输出",
+    // 控制台
+    clearLogs: "清空日志",
+    download: "下载",
+    // 空画布
+    emptyTitle: "Chem ML Platform",
+    emptyHint: "从左侧节点库拖拽节点开始编排，或打开右侧「助手」让 AI 帮你规划工作流。",
+    // 杂项
+    on: "开",
+    off: "关",
+    yes: "是",
+    no: "否",
+    none: "无",
+    unknown: "未知",
+    installed: "已安装",
+    notInstalled: "未安装",
+    aboutBody:
+      "Chem ML Platform v0.7.2「Trusted Delivery Release」——节点化科学工作流平台：统一科学基座模型、云 / 本地 AI 切换、科学数据目录、模拟作业队列与自主科学助手。",
+    aboutOk: "确定",
   },
   en: {
     title: "Chem ML Platform",
@@ -145,8 +216,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     completed: "completed",
     failed: "failed",
     skipped: "skipped",
-    logs: "Logs",
-    artifacts: "Artifacts",
+    logs: "logs",
+    artifacts: "Artefacts",
     errors: "Errors",
     ready: "ready",
     connecting: "connecting…",
@@ -225,7 +296,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     simRunning: "running…",
     simJobs: "Jobs",
     simEmpty: "No jobs yet.",
-    simEngine: "Engine",
+    simEngine: "engine",
     simSmiles: "SMILES / molecule",
     simFormula: "Formula / material",
     simAvailable: "Available backends",
@@ -236,6 +307,77 @@ const DICT: Record<Lang, Record<string, string>> = {
     foundationDim: "dim",
     foundationWeights: "needs weights",
     foundationLocal: "built-in",
+
+    // ---------------------------------------------------------------- //
+    // ComfyUI-style shell (v0.7.2 interface refresh)                     //
+    // ---------------------------------------------------------------- //
+    // top bar
+    menuWorkflow: "Workflow",
+    menuEdit: "Edit",
+    menuHelp: "Help",
+    menuNew: "New workflow",
+    menuSave: "Save workflow",
+    menuLoad: "Load demo…",
+    menuRun: "Run workflow",
+    menuValidate: "Validate workflow",
+    menuClear: "Clear canvas",
+    menuDuplicate: "Duplicate selected node",
+    menuDelete: "Delete selected node",
+    menuZoomFit: "Zoom to fit",
+    menuManager: "Node manager",
+    menuAbout: "About this platform",
+    menuDocs: "Documentation",
+    workflowUntitled: "untitled workflow",
+    workflowLabel: "Workflow",
+    manager: "Manager",
+    artefacts: "Artefacts",
+    theme: "Theme",
+    themeComfy: "ComfyUI dark",
+    themeWbLight: "WorkBuddy white",
+    themeWbDark: "WorkBuddy black",
+    // left icon rail
+    railNodes: "Node library",
+    railWorkflows: "Workflows",
+    railConsole: "Console",
+    railMarketplace: "Marketplace",
+    dragHint: "Drag a node onto the canvas, or click to add",
+    drawerNodes: "Node library",
+    drawerWorkflows: "Workflows",
+    workflowEmpty: "No demo workflows yet.",
+    workflowLoad: "Load",
+    workflowNodesEdges: "nodes / edges",
+    // bottom run bar
+    queue: "Queue",
+    lastRun: "Last run",
+    backendState: "Backend",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    lockCanvas: "Lock canvas",
+    unlockCanvas: "Unlock canvas",
+    // node card
+    nodeWidgets: "Widgets",
+    nodeNoParams: "No widgets",
+    nodeMoreParams: "More parameters in the inspector",
+    nodeIn: "in",
+    nodeOut: "out",
+    // console
+    clearLogs: "Clear logs",
+    download: "Download",
+    // empty canvas
+    emptyTitle: "Chem ML Platform",
+    emptyHint: "Drag a node from the left library to start, or open the Agent tab and let AI plan the workflow for you.",
+    // misc
+    on: "on",
+    off: "off",
+    yes: "yes",
+    no: "no",
+    none: "none",
+    unknown: "unknown",
+    installed: "installed",
+    notInstalled: "not installed",
+    aboutBody:
+      "Chem ML Platform v0.7.2 \"Trusted Delivery Release\" — a node-based scientific workflow platform: unified scientific foundation models, cloud / local AI switching, a scientific data catalog, a simulation job queue and an autonomous scientific agent.",
+    aboutOk: "OK",
   },
 };
 

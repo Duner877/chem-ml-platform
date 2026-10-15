@@ -87,6 +87,10 @@ def collect_records() -> List[Dict[str, Any]]:
                 "outputs": spec.get("outputs", []),
                 "author": author_of(node_cls),
                 "description": spec.get("description", ""),
+                # -- bilingual display mirrors (see ``node_i18n``) ----------- #
+                "name_zh": spec.get("name_zh", ""),
+                "category_zh": spec.get("category_zh", ""),
+                "description_en": spec.get("description_en", ""),
                 "category": spec.get("category", ""),
                 "tags": spec.get("tags", []),
                 "module": getattr(node_cls, "__module__", ""),

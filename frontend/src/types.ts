@@ -5,7 +5,11 @@ export interface NodeParamSpec {
   type: "string" | "text" | "number" | "integer" | "boolean" | "enum" | "file";
   default: unknown;
   description: string;
+  /** English mirror of ``description`` (see backend ``node_i18n``). */
+  description_en: string;
   options: unknown[];
+  /** English labels for ``(value, label)`` enum options. */
+  options_en: unknown[];
   min: number | null;
   max: number | null;
   step: number | null;
@@ -17,15 +21,24 @@ export interface PortSpec {
   name: string;
   data_type: string;
   description: string;
+  /** English mirror of ``description`` (see backend ``node_i18n``). */
+  description_en: string;
   optional: boolean;
   multi: boolean;
 }
 
 export interface NodeSpec {
   type: string;
+  /** Canonical (English) display name. */
   name: string;
+  /** Chinese display name (see backend ``node_i18n``). */
+  name_zh: string;
   category: string;
+  /** Chinese display name of the category. */
+  category_zh: string;
   description: string;
+  /** English mirror of ``description``. */
+  description_en: string;
   version: string;
   icon: string;
   tags: string[];
@@ -43,7 +56,10 @@ export interface NodeCategory {
 
 export interface WorkflowNodeData extends Record<string, unknown> {
   type: string;
+  /** Chinese display label (demo label or the node's Chinese name). */
   label: string;
+  /** English display label (demo ``label_en`` or the canonical node name). */
+  label_en: string;
   spec: NodeSpec;
   params: Record<string, unknown>;
   status?: "idle" | "running" | "completed" | "failed" | "skipped";
@@ -60,10 +76,16 @@ export interface WorkflowSummary {
 
 export interface RegistryNode {
   node_name: string;
+  /** Chinese display name (see backend ``node_i18n``). */
+  name_zh: string;
   type: string;
   version: string;
   category: string;
+  /** Chinese display name of the category. */
+  category_zh: string;
   description: string;
+  /** English mirror of ``description``. */
+  description_en: string;
   tags: string[];
   author: string;
   module: string;

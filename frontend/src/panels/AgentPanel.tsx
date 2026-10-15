@@ -15,7 +15,11 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function AgentPanel() {
   const { lang, pushLog } = useEditor();
-  const [question, setQuestion] = useState("请分析这个未知化合物 C8H10N4O2");
+  const [question, setQuestion] = useState(() =>
+    lang === "zh"
+      ? "请分析这个未知化合物 C8H10N4O2"
+      : "Please analyse this unknown compound C8H10N4O2"
+  );
   const [useLlm, setUseLlm] = useState(true);
   const [answer, setAnswer] = useState<AgentAnswer | null>(null);
   const [plan, setPlan] = useState("");

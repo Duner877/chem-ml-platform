@@ -32,7 +32,8 @@
       "params": {
         "smiles": "CC(=O)Cl",
         "name": "acetyl chloride"
-      }
+      },
+      "label_en": "Substrate (acetyl chloride)"
     },
     {
       "id": "aromatics",
@@ -45,7 +46,8 @@
       "params": {
         "smiles": "c1ccccc1",
         "name": "benzene"
-      }
+      },
+      "label_en": "Aromatic substrate (benzene)"
     },
     {
       "id": "quantum",
@@ -62,7 +64,8 @@
         "charge": 0,
         "multiplicity": 1,
         "online": false
-      }
+      },
+      "label_en": "ORCA single-point energy"
     },
     {
       "id": "embed",
@@ -75,7 +78,8 @@
       "params": {
         "dimension": 256,
         "include_features": true
-      }
+      },
+      "label_en": "Foundation model embedding"
     },
     {
       "id": "library",
@@ -87,7 +91,8 @@
       },
       "params": {
         "path": "datasets/demo/molecule_library.csv"
-      }
+      },
+      "label_en": "Catalyst library"
     },
     {
       "id": "similarity",
@@ -101,7 +106,8 @@
         "metric": "tanimoto",
         "top_k": 5,
         "smiles_column": "smiles"
-      }
+      },
+      "label_en": "Structural similarity search"
     },
     {
       "id": "llm",
@@ -115,7 +121,8 @@
         "provider": "offline",
         "prompt": "为苯与乙酰氯的傅-克酰基化反应设计催化剂与反应条件，需给出 Lewis 酸强度、温度、溶剂与产率预期。",
         "language": "zh"
-      }
+      },
+      "label_en": "LLM route design"
     },
     {
       "id": "summary",
@@ -128,7 +135,8 @@
       "params": {
         "max_rows": 80,
         "include_metadata": true
-      }
+      },
+      "label_en": "Summary table"
     },
     {
       "id": "report",
@@ -143,7 +151,8 @@
         "abstract": "结合量化电子结构、化学基础模型相似性与 LLM 推理的催化剂筛选结论。",
         "language": "zh",
         "include_tables": true
-      }
+      },
+      "label_en": "Catalyst design report"
     },
     {
       "id": "report_md",
@@ -156,7 +165,8 @@
       "params": {
         "format": "html",
         "filename": "catalyst_design_report"
-      }
+      },
+      "label_en": "Write report"
     },
     {
       "id": "export",
@@ -169,7 +179,8 @@
       "params": {
         "filename": "catalyst_candidates",
         "format": "json"
-      }
+      },
+      "label_en": "Export catalyst candidates"
     }
   ],
   "edges": [

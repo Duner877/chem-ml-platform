@@ -25,6 +25,13 @@ export default function Marketplace() {
     };
   }, []);
 
+  const displayName = (node: RegistryNode) =>
+    lang === "zh" ? node.name_zh || node.node_name : node.node_name;
+  const displayCategory = (node: RegistryNode) =>
+    lang === "zh" ? node.category_zh || node.category : node.category;
+  const displayDescription = (node: RegistryNode) =>
+    lang === "zh" ? node.description : node.description_en || node.description;
+
   const filtered = useMemo<RegistryNode[]>(() => {
     if (!registry) return [];
     const needle = query.trim().toLowerCase();
@@ -34,23 +41,34 @@ export default function Marketplace() {
         if (!needle) return true;
         return (
           node.node_name.toLowerCase().includes(needle) ||
+          (node.name_zh ?? "").toLowerCase().includes(needle) ||
           node.type.toLowerCase().includes(needle) ||
           node.description.toLowerCase().includes(needle) ||
+          (node.description_en ?? "").toLowerCase().includes(needle) ||
           node.tags.some((tag) => tag.toLowerCase().includes(needle)) ||
           node.author.toLowerCase().includes(needle)
         );
       })
-      .sort((a, b) => a.category.localeCompare(b.category) || a.node_name.localeCompare(b.node_name));
+      .sort(
+        (a, b) =>
+          a.category.localeCompare(b.category) || a.node_name.localeCompare(b.node_name)
+      );
   }, [registry, query, category]);
+
+  const categories = useMemo(() => {
+    const names = new Set<string>();
+    for (const node of registry?.nodes ?? []) names.add(node.category);
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }, [registry]);
 
   return (
     <div className="absolute inset-0 z-30 flex flex-col bg-canvas/95 backdrop-blur-sm">
       <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-3">
-        <h2 className="text-sm font-semibold text-slate-100">
+        <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">
           {translate(lang, "marketplace")}
         </h2>
-        <span className="text-[11px] text-slate-500">
-          {registry ? `${registry.total_nodes} nodes` : "…"}
+        <span className="text-[11px] text-[rgb(var(--c-text-faint))]">
+          {registry ? `${registry.total_nodes} ${translate(lang, "nodes")}` : "…"}
           {registry?.valid ? " · valid" : ""}
         </span>
 
@@ -58,16 +76,16 @@ export default function Marketplace() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={translate(lang, "search")}
-          className="ml-2 w-64 rounded-md border border-line bg-canvas px-2 py-1.5 text-xs text-slate-200 outline-none placeholder:text-slate-500 focus:border-accent"
+          className="cml-widget ml-2 w-64"
         />
 
         <select
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          className="rounded-md border border-line bg-canvas px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-accent"
+          className="cml-widget w-48"
         >
           <option value="">{translate(lang, "allCategories")}</option>
-          {(registry?.categories ?? []).map((name) => (
+          {categories.map((name) => (
             <option key={name} value={name}>
               {name}
             </option>
@@ -79,7 +97,7 @@ export default function Marketplace() {
         <button
           type="button"
           onClick={() => setMarketplace(false)}
-          className="rounded-md border border-line px-3 py-1.5 text-xs text-slate-300 transition hover:border-accent"
+          className="rounded-md border border-line px-3 py-1.5 text-xs text-[rgb(var(--c-text-dim))] transition hover:border-accent hover:text-[rgb(var(--c-text))]"
         >
           ✕ {translate(lang, "close")}
         </button>
@@ -87,7 +105,7 @@ export default function Marketplace() {
 
       <div className="grid flex-1 auto-rows-min grid-cols-1 gap-2 overflow-y-auto p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.length === 0 && (
-          <p className="col-span-full px-2 py-8 text-center text-xs text-slate-500">
+          <p className="col-span-full px-2 py-8 text-center text-xs text-[rgb(var(--c-text-faint))]">
             {translate(lang, "emptyMarketplace")}
           </p>
         )}
@@ -104,41 +122,49 @@ export default function Marketplace() {
               className="flex flex-col rounded-lg border border-line bg-panel p-3 transition hover:border-accent"
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="text-xs font-semibold text-slate-100">{node.node_name}</h3>
-                <span className="shrink-0 rounded bg-line px-1.5 text-[9px] text-slate-300">
+                <h3 className="text-xs font-semibold text-[rgb(var(--c-text))]">
+                  {displayName(node)}
+                </h3>
+                <span className="shrink-0 rounded bg-panel2 px-1.5 text-[9px] text-[rgb(var(--c-text-dim))]">
                   v{node.version}
                 </span>
               </div>
 
               <div className="mt-1 flex flex-wrap gap-1 text-[9px]">
                 <span className="rounded bg-accent/15 px-1.5 py-0.5 text-accent">
-                  {node.category}
+                  {displayCategory(node)}
                 </span>
                 {node.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="rounded bg-line px-1.5 py-0.5 text-slate-400">
+                  <span
+                    key={tag}
+                    className="rounded bg-panel2 px-1.5 py-0.5 text-[rgb(var(--c-text-dim))]"
+                  >
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <p className="mt-2 line-clamp-3 flex-1 text-[11px] leading-relaxed text-slate-400">
-                {node.description}
+              <p className="mt-2 line-clamp-3 flex-1 text-[11px] leading-relaxed text-[rgb(var(--c-text-dim))]">
+                {displayDescription(node)}
               </p>
 
-              <div className="mt-2 flex items-center justify-between text-[9px] text-slate-500">
+              <div className="mt-2 flex items-center justify-between text-[9px] text-[rgb(var(--c-text-faint))]">
                 <span>
-                  in {node.inputs.length} · out {node.outputs.length}
+                  {node.inputs.length} {translate(lang, "nodeIn")} · {node.outputs.length}{" "}
+                  {translate(lang, "nodeOut")}
                 </span>
-                <span>{node.author || "—"}</span>
+                <span>
+                  {installed ? translate(lang, "installed") : translate(lang, "notInstalled")}
+                </span>
               </div>
 
               <button
                 type="button"
                 disabled={!installed}
                 onClick={() => addNode(node.type)}
-                className="mt-2 rounded-md bg-accent px-2 py-1 text-[11px] font-semibold text-canvas transition hover:bg-accent/85 disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-2 rounded-md bg-accent px-2 py-1 text-[11px] font-semibold text-onAccent transition hover:bg-accent/85 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {installed ? `+ ${translate(lang, "addNode")}` : translate(lang, "addNode") + " (offline)"}
+                + {translate(lang, "addNode")}
               </button>
             </article>
           );

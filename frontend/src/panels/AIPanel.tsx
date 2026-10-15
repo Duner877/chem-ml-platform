@@ -11,7 +11,11 @@ export default function AIPanel() {
   const [state, setState] = useState<AIState | null>(null);
   const [config, setConfig] = useState<AIConfig | null>(null);
   const [models, setModels] = useState<FoundationModel[]>([]);
-  const [prompt, setPrompt] = useState("用一句话说明乙醇的分子式");
+  // The default probe prompt follows the interface language; the user may of
+  // course overwrite it with anything.
+  const [prompt, setPrompt] = useState(() =>
+    lang === "zh" ? "用一句话说明乙醇的分子式" : "State the molecular formula of ethanol in one sentence."
+  );
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

@@ -151,6 +151,10 @@
         "to": "app/chemml_version.py"
       },
       {
+        "from": "../node_i18n.py",
+        "to": "app/node_i18n.py"
+      },
+      {
         "from": "../BUILD_INFO.json",
         "to": "app/BUILD_INFO.json"
       },

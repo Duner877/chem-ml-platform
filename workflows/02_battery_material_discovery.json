@@ -31,7 +31,8 @@
       },
       "params": {
         "path": "datasets/demo/battery_candidates.csv"
-      }
+      },
+      "label_en": "Candidate materials library"
     },
     {
       "id": "lfp",
@@ -49,7 +50,8 @@
         "c": 4.69,
         "spacegroup": "Pnma",
         "crystal_system": "orthorhombic"
-      }
+      },
+      "label_en": "Cathode LiFePO₄"
     },
     {
       "id": "xrd",
@@ -64,7 +66,8 @@
         "two_theta_max": 80.0,
         "wavelength": 1.5406,
         "fwhm": 0.15
-      }
+      },
+      "label_en": "XRD powder diffraction"
     },
     {
       "id": "xrd_peaks",
@@ -78,7 +81,8 @@
         "height": 5.0,
         "prominence": 3.0,
         "limit": 40
-      }
+      },
+      "label_en": "Diffraction peak search"
     },
     {
       "id": "property",
@@ -90,7 +94,8 @@
       },
       "params": {
         "smiles": "CC(=O)Oc1ccccc1C(=O)O"
-      }
+      },
+      "label_en": "Molecular property prediction"
     },
     {
       "id": "discover",
@@ -105,7 +110,8 @@
         "target_value": 0.0,
         "top_k": 5,
         "language": "zh"
-      }
+      },
+      "label_en": "Material discovery"
     },
     {
       "id": "summary",
@@ -118,7 +124,8 @@
       "params": {
         "max_rows": 60,
         "include_metadata": true
-      }
+      },
+      "label_en": "Summary table"
     },
     {
       "id": "report",
@@ -133,7 +140,8 @@
         "abstract": "按质量比容量对候选组分排序，并结合 XRD 物相与分子级性质给出决策依据。",
         "language": "zh",
         "include_tables": true
-      }
+      },
+      "label_en": "Decision report"
     },
     {
       "id": "report_md",
@@ -146,7 +154,8 @@
       "params": {
         "format": "markdown",
         "filename": "battery_discovery_report"
-      }
+      },
+      "label_en": "Write report"
     },
     {
       "id": "export",
@@ -159,7 +168,8 @@
       "params": {
         "filename": "optimised_material",
         "format": "json"
-      }
+      },
+      "label_en": "Export optimised material"
     }
   ],
   "edges": [

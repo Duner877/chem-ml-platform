@@ -4,7 +4,7 @@
 
 ## [0.7.2] — 2026-10
 
-**可信交付基线版本（Trusted Delivery Release）。** 在 v0.7.1 基础上**不新增大规模科研节点、不重写前端、不重构 Agent**，只做一件事：把「功能已经写完」变成「交付可以被验证」。安全边界统一、桌面运行时方案落地、测试数字可复现、版本与产物互相追溯、科研节点如实声明执行来源、合成基准不冒充真实验证。
+**可信交付基线版本（Trusted Delivery Release）。** 在 v0.7.1 基础上**不新增大规模科研节点、不重构 Agent**；保持 0.7.2 版本号不变的前提下，按用户要求对前端做了一次 ComfyUI 风格整体重构（中英双语界面、三套视觉主题、节点双语），详见下方「UI 重构」小节。安全边界统一、桌面运行时方案落地、测试数字可复现、版本与产物互相追溯、科研节点如实声明执行来源、合成基准不冒充真实验证。
 
 ### 新增 Added
 
@@ -90,6 +90,20 @@ tag `v0.7.2` 通过全部门禁后，按「先本地安装实测、再宣称可�
 - `docs/V07_2_PLUGIN_SPEC.md`（新增）：插件与外部程序执行边界规范（P1-03 / P2-04），含 `ControlledRunner` 白名单、参数列表与 `shell=False`、超时与清理，以及**明确列为「未实现」**的沙箱能力清单。
 - `tests/test_v07_1_capabilities.py` 补两项超时用例：子进程心跳计数在超时后停止增长（证明进程确被终止，而非仅抛异常）与超时后 scratch 目录被清理。
 - 质量门新增 `reproducibility_verification` 阶段；CI 第 6 阶段支持**多命令独立记录**（每条命令各自退出码与日志），任一失败即否决该阶段。
+
+### 新增 Added（UI 重构：ComfyUI 框架 + 中英双语 + 三套主题）
+
+> 版本号保持 **0.7.2** 不变。按用户要求对前端做整体重构，使其框架结构与视觉语言对齐 ComfyUI，并支持界面中英切换、至少三套视觉配色、节点中英双语。
+
+- **框架结构（ComfyUI 风格）**：`App.tsx` 重写为「顶栏 + 左侧可折叠图标轨 + 中央画布 + 右侧 Dock + 底部运行条」五区布局。新增 `components/TopBar.tsx`（工作流/编辑/帮助菜单 + 工作流标题 + 主题/语言切换）、`components/IconRail.tsx`（节点库/示例/数据/AI/助手/模拟/控制台抽屉入口）、`components/BottomBar.tsx`（运行 + 队列数 + 状态）、`components/Drawer.tsx`（可复用抽屉）、`components/AboutDialog.tsx`；旧 `Toolbar.tsx` 退役。
+- **三套视觉主题**：`theme.ts` 导出 `comfy`（如图深蓝暗色）、`wb-light`（WorkBuddy 白）、`wb-dark`（WorkBuddy 黑）三套令牌，运行时写入 CSS 变量并持久化 `localStorage`；`tailwind.config.js` 语义色统一映射到 `rgb(var(--c-*) / <alpha-value>)`；`index.css` 的 React Flow 覆写、滚动条、节点卡片全部改用变量；支持 `?theme=` / `?lang=` / `?workflow=` 深链。
+- **节点中英双语**：新增根级数据层 `node_i18n.py`，为 89 个节点提供中文名、28 个分类中文名、节点/参数/端口的英文描述与枚举选项英中文标签；`workflow_engine/node_base.py::spec()` 出口统一注入 `name_zh` / `category_zh` / `description_en` / 参数与端口 `description_en` / `options_en`，`node_registry/scanner.py` 同写 `registry.json`。
+- **界面文案双语化**：`i18n.ts` 补齐全部界面键位，支持 `?lang=zh|en` 深链；`NodePalette` / `Inspector` / `Dock` / `Marketplace` / `AIPanel` / `AgentPanel` / `Console` 全部接入双语标签，6 个 `workflows/*.json` 演示工作流补充 `label_en`。
+- **节点卡片重写**：`nodes/ScientificNodeCard.tsx` 改为 ComfyUI 风格——分类着色头部、节点内嵌参数控件（下拉/数字/文本/布尔）、按数据类型着色的输入输出端口（连线同色并带动画）、中英标题与描述切换。
+
+### 修复 Fixed（UI 重构收尾）
+
+- `desktop/package.json` 的 `extraResources` 漏收新增根级模块 `node_i18n.py`，导致 `test_every_root_level_module_is_packaged` 失败；已补收并复跑桌面测试 35 项全过。
 
 ### 已知限制 Known Limitations
 

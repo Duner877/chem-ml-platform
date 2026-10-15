@@ -32,7 +32,8 @@
       "params": {
         "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
         "name": "Caffeine"
-      }
+      },
+      "label_en": "Caffeine molecule"
     },
     {
       "id": "orca",
@@ -48,7 +49,8 @@
         "charge": 0,
         "multiplicity": 1,
         "task": "single_point"
-      }
+      },
+      "label_en": "Quantum chemistry"
     },
     {
       "id": "descriptors",
@@ -58,7 +60,8 @@
         "x": 600,
         "y": 40
       },
-      "params": {}
+      "params": {},
+      "label_en": "Molecular descriptors"
     },
     {
       "id": "property",
@@ -68,7 +71,8 @@
         "x": 600,
         "y": 240
       },
-      "params": {}
+      "params": {},
+      "label_en": "AI property prediction"
     },
     {
       "id": "report",
@@ -83,7 +87,8 @@
         "summary": "本报告汇总量子化学（扩展 Hückel 回退引擎）计算的电子结构、自动提取的分子描述符，以及 AI 模型预测的类药性质，用于分子层面的快速筛选与解读。",
         "format": "html",
         "filename": "demo04_quantum_profiling_report"
-      }
+      },
+      "label_en": "Research report"
     }
   ],
   "edges": [

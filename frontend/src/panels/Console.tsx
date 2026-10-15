@@ -1,4 +1,4 @@
-/** Bottom console: run status, per-node records, artefacts and logs. */
+/** Console drawer: run status, per-node records, artefacts and logs. */
 
 import { useEffect, useRef } from "react";
 import { useEditor } from "../store";
@@ -57,9 +57,15 @@ function RunSummary({ result }: { result: RunResult }) {
       {result.artifacts.length > 0 && (
         <div className="mt-1 max-h-16 overflow-y-auto">
           {result.artifacts.map((path) => (
-            <div key={path} className="truncate font-mono text-[10px] text-accent/80">
-              {path.split(/[\\/]/).slice(-2).join("/")}
-            </div>
+            <a
+              key={path}
+              href={`/api/runs/artifacts/${path}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block truncate font-mono text-[10px] text-accent/80 hover:text-accent hover:underline"
+            >
+              ⤓ {path.split(/[\\/]/).slice(-2).join("/")}
+            </a>
           ))}
         </div>
       )}
@@ -68,7 +74,7 @@ function RunSummary({ result }: { result: RunResult }) {
 }
 
 export default function Console() {
-  const { logs, runResult, status, lang } = useEditor();
+  const { logs, runResult, status, lang, setConsoleOpen, pushLog } = useEditor();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,21 +82,37 @@ export default function Console() {
   }, [logs]);
 
   return (
-    <section className="flex h-56 shrink-0 flex-col border-t border-line bg-panel">
-      <header className="flex items-center justify-between border-b border-line px-3 py-1.5">
-        <h2 className="text-xs font-semibold text-slate-200">
-          {translate(lang, "console")}
-        </h2>
-        <span className="text-[10px] text-slate-500">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line px-3 py-1.5">
+        <span className="text-[10px] text-[rgb(var(--c-text-faint))]">
           {status} · {logs.length} {translate(lang, "logs")}
         </span>
-      </header>
+        <div className="flex-1" />
+        <button
+          type="button"
+          onClick={() => {
+            // Clearing the log list keeps the store honest: no hidden state.
+            useEditor.setState({ logs: [] });
+            pushLog(`$ ${translate(lang, "clearLogs")}`);
+          }}
+          className="rounded px-2 py-0.5 text-[10px] text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+        >
+          {translate(lang, "clearLogs")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConsoleOpen(false)}
+          className="rounded px-2 py-0.5 text-[10px] text-[rgb(var(--c-text-dim))] transition hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+        >
+          ✕ {translate(lang, "close")}
+        </button>
+      </div>
 
       {runResult && <RunSummary result={runResult} />}
 
-      <div className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
         {logs.length === 0 ? (
-          <p className="text-slate-500">{translate(lang, "idle")}</p>
+          <p className="text-[rgb(var(--c-text-faint))]">{translate(lang, "idle")}</p>
         ) : (
           logs.map((line, index) => (
             <div key={index} className="whitespace-pre-wrap break-all text-slate-300">
@@ -100,6 +122,6 @@ export default function Console() {
         )}
         <div ref={endRef} />
       </div>
-    </section>
+    </div>
   );
 }

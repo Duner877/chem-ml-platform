@@ -42,6 +42,19 @@ try:  # pragma: no cover - the fallback only triggers outside the monorepo
 except ImportError:  # pragma: no cover
     _PLATFORM_VERSION = "0.7.2"
 
+#: Bilingual display layer (zh / en).  Injected at the single ``spec()`` exit so
+#: the REST API, the node registry, the SDK and the GUI all see the same
+#: ``name_zh`` / ``category_zh`` / ``description_en`` mirrors without any node
+#: class having to duplicate a string.  Outside the monorepo the identity
+#: fallback degrades to the canonical strings -- never to an exception.
+try:  # pragma: no cover - the fallback only triggers outside the monorepo
+    from node_i18n import enrich_spec
+except ImportError:  # pragma: no cover
+
+    def enrich_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Identity fallback: keep the canonical spec when tables are absent."""
+        return spec
+
 __all__ = [
     "ParameterSpec",
     "ScientificNode",
@@ -397,7 +410,8 @@ class ScientificNode:
             spec["capability_status_note"] = status_note
         if mode_note:
             spec["execution_mode_note"] = mode_note
-        return spec
+        # zh / en display mirrors for the GUI (see ``node_i18n``).
+        return enrich_spec(spec)
 
     def validate_inputs(self, inputs: Dict[str, Any]) -> None:
         """Check that every mandatory input is present and correctly typed."""

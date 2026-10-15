@@ -17,6 +17,7 @@ import {
 
 import type { NodeSpec, RunResult } from "./types";
 import type { Lang } from "./i18n";
+import { applyTheme, initialTheme, portColor, THEMES, type ThemeId, type ThemeTokens } from "./theme";
 
 export type NodeStatus = "idle" | "running" | "completed" | "failed" | "skipped";
 
@@ -25,6 +26,7 @@ export type DockTab = "inspector" | "ai" | "agent" | "data" | "simulation";
 
 export interface EditorState {
   lang: Lang;
+  theme: ThemeId;
   specs: Record<string, NodeSpec>;
   categories: { name: string; count: number }[];
   nodes: Node[];
@@ -39,9 +41,19 @@ export interface EditorState {
   backend: "unknown" | "online" | "offline";
   busy: boolean;
   notice: string;
+  /** Which overlay drawer the left icon rail has open (``null`` = closed). */
+  leftDrawer: "nodes" | "workflows" | null;
+  /** Bottom console drawer visibility. */
+  consoleOpen: boolean;
+  /** About dialog visibility. */
+  aboutOpen: boolean;
+  /** Canvas interaction lock (ComfyUI-style lock button). */
+  canvasLocked: boolean;
 
   setLang: (lang: Lang) => void;
   toggleLang: () => void;
+  setTheme: (theme: ThemeId) => void;
+  cycleTheme: () => void;
   setSpecs: (specs: NodeSpec[]) => void;
   setSearch: (query: string) => void;
   setMarketplace: (open: boolean) => void;
@@ -50,6 +62,11 @@ export interface EditorState {
   setSelected: (id: string | null) => void;
   setBusy: (busy: boolean) => void;
   setNotice: (message: string) => void;
+  setLeftDrawer: (drawer: "nodes" | "workflows" | null) => void;
+  toggleLeftDrawer: (drawer: "nodes" | "workflows") => void;
+  setConsoleOpen: (open: boolean) => void;
+  setAboutOpen: (open: boolean) => void;
+  setCanvasLocked: (locked: boolean) => void;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -59,7 +76,7 @@ export interface EditorState {
   duplicateNode: (id: string) => void;
   removeNode: (id: string) => void;
   updateParams: (id: string, params: Record<string, unknown>) => void;
-  updateLabel: (id: string, label: string) => void;
+  updateLabel: (id: string, label: string, variant?: "zh" | "en") => void;
   setStatus: (id: string, status: NodeStatus) => void;
   clearCanvas: () => void;
 
@@ -79,6 +96,36 @@ function nextId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}${counter}`;
 }
 
+/** Active theme tokens (kept in sync with the CSS variables by ``applyTheme``). */
+export function useThemeTokens(): ThemeTokens {
+  return THEMES[useEditor((state) => state.theme)] ?? THEMES.comfy;
+}
+
+/** Order used by the theme cycler (top bar button / keyboard shortcut). */
+const THEME_CYCLE: ThemeId[] = ["comfy", "wb-light", "wb-dark"];
+
+/** Colour a connector by the data type of its *source* port (ComfyUI style). */
+function edgeStyleFor(
+  specs: Record<string, NodeSpec>,
+  sourceType: string | undefined,
+  sourceHandle: string | null | undefined,
+  tokens: ThemeTokens
+): { stroke: string; strokeWidth: number } {
+  const spec = sourceType ? specs[sourceType] : undefined;
+  const port = spec?.outputs.find((item) => item.name === sourceHandle);
+  return { stroke: `rgb(${portColor(tokens, port?.data_type ?? "Any")})`, strokeWidth: 2 };
+}
+
+/** Re-stamp every edge after a theme switch (edge colours are theme tokens). */
+function recolourEdges(state: EditorState, theme: ThemeId): Edge[] {
+  const tokens = THEMES[theme] ?? THEMES.comfy;
+  return state.edges.map((edge) => {
+    const source = state.nodes.find((node) => node.id === edge.source);
+    const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
+    return { ...edge, style: edgeStyleFor(state.specs, sourceType, edge.sourceHandle, tokens) };
+  });
+}
+
 function defaultParams(spec: NodeSpec): Record<string, unknown> {
   const params: Record<string, unknown> = {};
   for (const parameter of spec.parameters) {
@@ -89,6 +136,7 @@ function defaultParams(spec: NodeSpec): Record<string, unknown> {
 
 export const useEditor = create<EditorState>((set, get) => ({
   lang: "zh",
+  theme: initialTheme(),
   specs: {},
   categories: [],
   nodes: [],
@@ -103,9 +151,23 @@ export const useEditor = create<EditorState>((set, get) => ({
   backend: "unknown",
   busy: false,
   notice: "",
+  leftDrawer: "nodes",
+  consoleOpen: false,
+  aboutOpen: false,
+  canvasLocked: false,
 
   setLang: (lang) => set({ lang }),
   toggleLang: () => set({ lang: get().lang === "zh" ? "en" : "zh" }),
+  setTheme: (theme) => {
+    applyTheme(theme);
+    set({ theme, edges: recolourEdges(get(), theme) });
+  },
+  cycleTheme: () => {
+    const current = get().theme;
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
+    applyTheme(next);
+    set({ theme: next, edges: recolourEdges(get(), next) });
+  },
   setSpecs: (specs) =>
     set({
       specs: Object.fromEntries(specs.map((spec) => [spec.type, spec])),
@@ -125,6 +187,12 @@ export const useEditor = create<EditorState>((set, get) => ({
   setSelected: (selectedId) => set({ selectedId }),
   setBusy: (busy) => set({ busy }),
   setNotice: (notice) => set({ notice }),
+  setLeftDrawer: (leftDrawer) => set({ leftDrawer }),
+  toggleLeftDrawer: (drawer) =>
+    set({ leftDrawer: get().leftDrawer === drawer ? null : drawer }),
+  setConsoleOpen: (consoleOpen) => set({ consoleOpen }),
+  setAboutOpen: (aboutOpen) => set({ aboutOpen }),
+  setCanvasLocked: (canvasLocked) => set({ canvasLocked }),
 
   onNodesChange: (changes: NodeChange[]) =>
     set({ nodes: applyNodeChanges(changes, get().nodes) }),
@@ -132,17 +200,22 @@ export const useEditor = create<EditorState>((set, get) => ({
   onEdgesChange: (changes: EdgeChange[]) =>
     set({ edges: applyEdgeChanges(changes, get().edges) }),
 
-  onConnect: (connection: Connection) =>
+  onConnect: (connection: Connection) => {
+    const source = get().nodes.find((node) => node.id === connection.source);
+    const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
+    const tokens = THEMES[get().theme] ?? THEMES.comfy;
     set({
       edges: addEdge(
         {
           ...connection,
           id: nextId("e"),
           animated: true,
+          style: edgeStyleFor(get().specs, sourceType, connection.sourceHandle, tokens),
         },
         get().edges
       ),
-    }),
+    });
+  },
 
   addNode: (type, position) => {
     const spec = get().specs[type];
@@ -157,7 +230,10 @@ export const useEditor = create<EditorState>((set, get) => ({
       },
       data: {
         type,
-        label: spec.name,
+        // ``label`` is the Chinese display name, ``label_en`` the English one;
+        // the node card picks per the active language.
+        label: spec.name_zh || spec.name,
+        label_en: spec.name,
         spec,
         params: defaultParams(spec),
         status: "idle" as NodeStatus,
@@ -207,10 +283,18 @@ export const useEditor = create<EditorState>((set, get) => ({
       ),
     }),
 
-  updateLabel: (id, label) =>
+  updateLabel: (id, label, variant = "zh") =>
     set({
       nodes: get().nodes.map((node) =>
-        node.id === id ? { ...node, data: { ...node.data, label } } : node
+        node.id === id
+          ? {
+              ...node,
+              data:
+                variant === "en"
+                  ? { ...node.data, label_en: label }
+                  : { ...node.data, label },
+            }
+          : node
       ),
     }),
 
@@ -238,6 +322,7 @@ export const useEditor = create<EditorState>((set, get) => ({
         params?: Record<string, unknown>;
         position?: { x: number; y: number };
         label?: string;
+        label_en?: string;
       };
       const spec = specs[item.type ?? ""];
       if (!spec) continue;
@@ -252,7 +337,10 @@ export const useEditor = create<EditorState>((set, get) => ({
         },
         data: {
           type: item.type,
-          label: item.label || spec.name,
+          // Demo files carry Chinese labels; ``label_en`` is optional and the
+          // canonical English node name is the fallback.
+          label: item.label || spec.name_zh || spec.name,
+          label_en: item.label_en || spec.name,
           spec,
           params: { ...defaultParams(spec), ...(item.params ?? {}) },
           status: "idle",
@@ -272,6 +360,9 @@ export const useEditor = create<EditorState>((set, get) => ({
       const source = idMap[String(item.source)];
       const target = idMap[String(item.target)];
       if (!source || !target) continue;
+      const sourceNode = nodes.find((node) => node.id === source);
+      const sourceType = (sourceNode?.data as unknown as { type?: string } | undefined)?.type;
+      const tokens = THEMES[get().theme] ?? THEMES.comfy;
       edges.push({
         id: nextId("e"),
         source,
@@ -279,6 +370,7 @@ export const useEditor = create<EditorState>((set, get) => ({
         sourceHandle: item.source_port ?? null,
         targetHandle: item.target_port ?? null,
         animated: true,
+        style: edgeStyleFor(get().specs, sourceType, item.source_port ?? null, tokens),
       });
     }
 

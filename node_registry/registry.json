@@ -66,7 +66,8 @@
           "data_type": "Any",
           "description": "材料 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Material / text query"
         }
       ],
       "outputs": [
@@ -75,25 +76,31 @@
           "data_type": "Material",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 AFLOW 高通量计算材料数据库（热力学与电子结构）。",
+      "name_zh": "AFLOW 材料库",
+      "category_zh": "数据库 / 材料",
+      "description_en": "Search the AFLOW high-throughput materials database (thermodynamics and electronic structure).",
       "category": "Databases/Materials",
       "tags": [
         "database",
@@ -127,7 +134,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -136,32 +144,39 @@
           "data_type": "Image",
           "description": "显微图像",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Micrograph"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱 / 剖面",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum / profile"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "形貌统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Morphology statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "分析报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Analysis report"
         }
       ],
       "author": "",
       "description": "原子力显微镜：表面形貌与粗糙度分析，输出 Ra / Rq 粗糙度指标。",
+      "name_zh": "原子力显微镜",
+      "category_zh": "仪器 / 显微",
+      "description_en": "Atomic force microscopy: surface morphology and roughness analysis, reporting Ra / Rq roughness metrics.",
       "category": "Instruments/Microscopy",
       "tags": [
         "instrument",
@@ -194,14 +209,16 @@
           "data_type": "Text",
           "description": "科学问题（自然语言）",
           "optional": true,
-          "multi": false
+          "multi": false,
+          "description_en": "Scientific question (natural language)"
         },
         {
           "name": "context",
           "data_type": "Any",
           "description": "上游数据 / 上下文",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream data / context"
         }
       ],
       "outputs": [
@@ -210,18 +227,23 @@
           "data_type": "Text",
           "description": "生成的工作流 JSON",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Generated workflow JSON"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "规划说明",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Planning rationale"
         }
       ],
       "author": "",
       "description": "只做规划不执行：把自然语言问题转成工作流 JSON，便于人工审查后再运行。",
+      "name_zh": "智能体规划器",
+      "category_zh": "智能体",
+      "description_en": "Plan only, never execute: turn a natural-language question into workflow JSON for human review before running.",
       "category": "Agent",
       "tags": [
         "agent",
@@ -253,7 +275,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -262,25 +285,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "氮气吸附-脱附仪：BET 比表面积与孔容分析，输出 BET 线性拟合结果。",
+      "name_zh": "BET 比表面积",
+      "category_zh": "仪器 / 粒度",
+      "description_en": "Nitrogen adsorption-desorption analyser: BET specific surface area and pore volume, with the BET linear fit.",
       "category": "Instruments/Particle",
       "tags": [
         "instrument",
@@ -313,7 +342,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -322,25 +352,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 BMRB 生物核磁共振化学位移数据。",
+      "name_zh": "BMRB 生物核磁库",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "Search the BMRB biological NMR chemical-shift database.",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -375,7 +411,8 @@
           "data_type": "Spectrum",
           "description": "输入谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input spectrum"
         }
       ],
       "outputs": [
@@ -384,18 +421,23 @@
           "data_type": "Spectrum",
           "description": "基线校正后的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Baseline-corrected spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "校正统计信息",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Correction statistics"
         }
       ],
       "author": "",
       "description": "使用不对称最小二乘 (ALS) 算法扣除谱图基线，适用于拉曼与红外光谱。",
+      "name_zh": "基线校正",
+      "category_zh": "分析",
+      "description_en": "Remove spectral baselines with asymmetric least squares (ALS); suited to Raman and IR spectra.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -428,7 +470,8 @@
           "data_type": "Any",
           "description": "材料 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Material / text query"
         }
       ],
       "outputs": [
@@ -437,25 +480,31 @@
           "data_type": "Material",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 Crystallography Open Database 晶体学条目。",
+      "name_zh": "COD 晶体库",
+      "category_zh": "数据库 / 材料",
+      "description_en": "Search Crystallography Open Database entries.",
       "category": "Databases/Materials",
       "tags": [
         "database",
@@ -489,7 +538,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -498,32 +548,39 @@
           "data_type": "Molecule",
           "description": "带计算性质的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "预测谱图（频率 / 激发）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Predicted spectrum (frequencies / excitation)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "生成 CP2K 输入并运行 DFT；未安装时使用内置扩展 Hückel 引擎。",
+      "name_zh": "CP2K 量子化学",
+      "category_zh": "模拟 / 量子化学",
+      "description_en": "Generate CP2K input and run DFT; falls back to the built-in extended Hückel engine when not installed.",
       "category": "Simulation/Quantum",
       "tags": [
         "simulation",
@@ -573,7 +630,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -582,25 +640,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "循环伏安工作站：有限差分扩散 + Butler-Volmer 动力学，输出峰电位与峰电流。",
+      "name_zh": "循环伏安",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "Cyclic voltammetry workstation: finite-difference diffusion with Butler-Volmer kinetics, reporting peak potentials and currents.",
       "category": "Instruments/Electrochemistry",
       "tags": [
         "instrument",
@@ -633,7 +697,8 @@
           "data_type": "Any",
           "description": "分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Molecule / text query"
         }
       ],
       "outputs": [
@@ -642,25 +707,31 @@
           "data_type": "Molecule",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 ChEMBL 生物活性分子（含靶点与活性标注）。",
+      "name_zh": "ChEMBL 活性库",
+      "category_zh": "数据库 / 化学",
+      "description_en": "Search ChEMBL for bioactive molecules (with targets and activity annotations).",
       "category": "Databases/Chemical",
       "tags": [
         "database",
@@ -694,7 +765,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -703,25 +775,31 @@
           "data_type": "Molecule",
           "description": "带嵌入向量的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with embeddings"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "嵌入与预测性质",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Embeddings and predicted properties"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模型摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model summary"
         }
       ],
       "author": "",
       "description": "基于 SMILES 子词哈希的化学语言模型编码器，输出分子嵌入与性质预测。",
+      "name_zh": "ChemBERTa 编码器",
+      "category_zh": "AI / 基座模型",
+      "description_en": "Chemical language-model encoder over SMILES sub-word hashes; outputs molecular embeddings and property predictions.",
       "category": "AI/Foundation Models",
       "tags": [
         "ai",
@@ -756,7 +834,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -765,25 +844,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "动态光散射粒度仪：基于累积量法输出粒径分布、Z-average 与 PDI。",
+      "name_zh": "动态光散射",
+      "category_zh": "仪器 / 粒度",
+      "description_en": "Dynamic light scattering: cumulant-analysis particle size distribution, Z-average and PDI.",
       "category": "Instruments/Particle",
       "tags": [
         "instrument",
@@ -816,7 +901,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -825,25 +911,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "动态力学分析仪：储能 / 损耗模量与 tan δ 随温度变化曲线。",
+      "name_zh": "动态力学分析",
+      "category_zh": "仪器 / 热分析",
+      "description_en": "Dynamic mechanical analysis: storage / loss modulus and tan delta versus temperature.",
       "category": "Instruments/Thermal",
       "tags": [
         "instrument",
@@ -876,7 +968,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -885,25 +978,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "差示扫描量热仪：玻璃化转变、熔融与结晶热分析。",
+      "name_zh": "差示扫描量热",
+      "category_zh": "仪器 / 热分析",
+      "description_en": "Differential scanning calorimetry: glass transition, melting and crystallisation thermodynamics.",
       "category": "Instruments/Thermal",
       "tags": [
         "instrument",
@@ -937,7 +1036,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -946,25 +1046,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "电化学阻抗谱：Randles 等效电路 + Warburg 扩散阻抗，输出 Nyquist / Bode 数据。",
+      "name_zh": "电化学阻抗谱",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "Electrochemical impedance spectroscopy: Randles equivalent circuit with Warburg diffusion; Nyquist / Bode output.",
       "category": "Instruments/Electrochemistry",
       "tags": [
         "instrument",
@@ -997,7 +1103,8 @@
           "data_type": "Any",
           "description": "待导出的对象",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Object to export"
         }
       ],
       "outputs": [
@@ -1006,18 +1113,23 @@
           "data_type": "Text",
           "description": "导出文件的路径与摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Exported file path and summary"
         },
         {
           "name": "data",
           "data_type": "Any",
           "description": "透传的输入对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Pass-through input object"
         }
       ],
       "author": "",
       "description": "将任意科学对象导出为 JSON / CSV / PNG / Markdown / TXT 文件。",
+      "name_zh": "结果导出",
+      "category_zh": "输入输出",
+      "description_en": "Export any scientific object to JSON / CSV / PNG / Markdown / TXT files.",
       "category": "IO",
       "tags": [
         "io",
@@ -1051,7 +1163,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -1060,32 +1173,39 @@
           "data_type": "Image",
           "description": "化学成像图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Chemical image"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "组分统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Component statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "成像报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Imaging report"
         }
       ],
       "author": "",
       "description": "红外化学成像：基于特征吸收带生成组分分布图与平均红外谱。",
+      "name_zh": "红外化学成像",
+      "category_zh": "仪器 / 成像",
+      "description_en": "Infrared chemical imaging: component distribution maps and a mean IR spectrum from characteristic absorption bands.",
       "category": "Instruments/Imaging",
       "tags": [
         "instrument",
@@ -1118,7 +1238,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -1127,25 +1248,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "荧光光谱仪：基于镜像规则与 Stokes 位移生成激发 / 发射谱。",
+      "name_zh": "荧光光谱",
+      "category_zh": "仪器 / 电子谱",
+      "description_en": "Fluorescence spectrometer: excitation / emission spectra from the mirror-image rule and Stokes shift.",
       "category": "Instruments/Electronic",
       "tags": [
         "instrument",
@@ -1178,7 +1305,8 @@
           "data_type": "Any",
           "description": "分子或红外 / 拉曼谱图",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Molecule or IR / Raman spectrum"
         }
       ],
       "outputs": [
@@ -1187,18 +1315,23 @@
           "data_type": "Table",
           "description": "官能团统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Functional-group statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "官能团指认说明",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Functional-group assignment notes"
         }
       ],
       "author": "",
       "description": "从分子结构或红外 / 拉曼谱带指认官能团，输出统计表与文字说明。",
+      "name_zh": "官能团指认",
+      "category_zh": "分析",
+      "description_en": "Assign functional groups from molecular structure or IR / Raman bands, with a statistics table and narrative notes.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -1231,7 +1364,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -1240,25 +1374,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "气相色谱-质谱联用：电子轰击电离 (70 eV)，适合挥发性 / 热稳定化合物。",
+      "name_zh": "气相色谱-质谱",
+      "category_zh": "仪器 / 质谱",
+      "description_en": "Gas chromatography-mass spectrometry: electron ionisation (70 eV) for volatile / thermally stable compounds.",
       "category": "Instruments/Mass Spectrometry",
       "tags": [
         "instrument",
@@ -1291,7 +1431,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -1300,25 +1441,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 GNPS 社区质谱库（分子网络 / 分子式匹配）。",
+      "name_zh": "GNPS 质谱网络",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "Search the GNPS community mass-spectrometry library (molecular networking / formula matching).",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -1353,7 +1500,8 @@
           "data_type": "Molecule",
           "description": "输入分子（需坐标）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule (needs coordinates)"
         }
       ],
       "outputs": [
@@ -1362,32 +1510,39 @@
           "data_type": "Molecule",
           "description": "模拟后的分子（终态坐标）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulated molecule (final coordinates)"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "径向分布函数 g(r)",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Radial distribution function g(r)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "动力学统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Dynamics statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模拟报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulation report"
         }
       ],
       "author": "",
       "description": "调用 GROMACS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "name_zh": "GROMACS 分子动力学",
+      "category_zh": "模拟 / 分子动力学",
+      "description_en": "Run molecular dynamics with GROMACS; falls back to the built-in Lennard-Jones engine when not installed.",
       "category": "Simulation/MD",
       "tags": [
         "simulation",
@@ -1435,7 +1590,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -1444,25 +1600,31 @@
           "data_type": "Molecule",
           "description": "带嵌入向量的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with embeddings"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "嵌入与预测性质",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Embeddings and predicted properties"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模型摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model summary"
         }
       ],
       "author": "",
       "description": "基于图消息传递网络的分子表征模型，输出原子级与分子级嵌入。",
+      "name_zh": "GROVER 分子表征",
+      "category_zh": "AI / 基座模型",
+      "description_en": "Graph message-passing network for molecular representation; atom-level and molecule-level embeddings.",
       "category": "AI/Foundation Models",
       "tags": [
         "ai",
@@ -1498,7 +1660,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -1507,32 +1670,39 @@
           "data_type": "Molecule",
           "description": "带计算性质的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "预测谱图（频率 / 激发）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Predicted spectrum (frequencies / excitation)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "生成 Gaussian 输入并运行；未安装时使用内置扩展 Hückel 引擎。",
+      "name_zh": "Gaussian 量子化学",
+      "category_zh": "模拟 / 量子化学",
+      "description_en": "Generate Gaussian input and run; falls back to the built-in extended Hückel engine when not installed.",
       "category": "Simulation/Quantum",
       "tags": [
         "simulation",
@@ -1583,18 +1753,23 @@
           "data_type": "Text",
           "description": "GPU 环境报告（JSON 文本）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "GPU environment report (JSON text)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "每块 GPU 一行的显存表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Per-GPU memory table, one row per device"
         }
       ],
       "author": "",
       "description": "检测 PyTorch 版本、CUDA 可用性、GPU 名称与显存。GPU 不可用时如实报告原因，绝不虚报加速。",
+      "name_zh": "GPU 设备信息",
+      "category_zh": "GPU",
+      "description_en": "Report PyTorch version, CUDA availability, GPU names and memory. Never fakes acceleration when no GPU is present.",
       "category": "GPU",
       "tags": [
         "gpu",
@@ -1629,7 +1804,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -1638,25 +1814,31 @@
           "data_type": "Molecule",
           "description": "带嵌入向量的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with embeddings"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "嵌入与预测性质",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Embeddings and predicted properties"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模型摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model summary"
         }
       ],
       "author": "",
       "description": "图 Transformer 编码器：带度数与最短路径结构编码的自注意力分子表征。",
+      "name_zh": "Graphormer 编码器",
+      "category_zh": "AI / 基座模型",
+      "description_en": "Graph Transformer encoder with degree and shortest-path structural encodings.",
       "category": "AI/Foundation Models",
       "tags": [
         "ai",
@@ -1691,7 +1873,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -1700,25 +1883,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 HMDB 代谢物质谱 / 核磁记录。",
+      "name_zh": "HMDB 代谢组库",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "Search HMDB metabolite mass-spectrometry / NMR records.",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -1753,7 +1942,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -1762,32 +1952,39 @@
           "data_type": "Image",
           "description": "化学成像图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Chemical image"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "组分统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Component statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "成像报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Imaging report"
         }
       ],
       "author": "",
       "description": "通用高光谱成像：匹配滤波生成组分丰度图与端元光谱。",
+      "name_zh": "高光谱成像",
+      "category_zh": "仪器 / 成像",
+      "description_en": "General hyperspectral imaging: matched-filter component abundance maps and endmember spectra.",
       "category": "Instruments/Imaging",
       "tags": [
         "instrument",
@@ -1820,7 +2017,8 @@
           "data_type": "Any",
           "description": "上游材料（取其元素组成）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream material (uses its elemental composition)"
         }
       ],
       "outputs": [
@@ -1829,25 +2027,31 @@
           "data_type": "Spectrum",
           "description": "元素质谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Elemental mass spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "元素定量结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Elemental quantification"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "分析报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Analysis report"
         }
       ],
       "author": "",
       "description": "电感耦合等离子体质谱：元素定性定量分析，按天然同位素丰度给出同位素峰簇。",
+      "name_zh": "电感耦合质谱",
+      "category_zh": "仪器 / 质谱",
+      "description_en": "Inductively coupled plasma MS: elemental identification and quantification with natural-abundance isotope clusters.",
       "category": "Instruments/Mass Spectrometry",
       "tags": [
         "instrument",
@@ -1880,7 +2084,8 @@
           "data_type": "Any",
           "description": "材料 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Material / text query"
         }
       ],
       "outputs": [
@@ -1889,25 +2094,31 @@
           "data_type": "Material",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "ICSD 无机晶体结构数据库（需授权；本节点使用内置晶体参考数据）。",
+      "name_zh": "ICSD 晶体库",
+      "category_zh": "数据库 / 材料",
+      "description_en": "ICSD inorganic crystal-structure database (licensed; this node uses built-in crystal reference data).",
       "category": "Databases/Materials",
       "tags": [
         "database",
@@ -1941,7 +2152,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -1950,25 +2162,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "傅里叶变换红外光谱仪：由官能团特征频率预测红外吸收谱并完成谱带指认。",
+      "name_zh": "傅里叶红外光谱",
+      "category_zh": "仪器 / 振动谱",
+      "description_en": "FTIR spectrometer: predict IR absorption spectra from functional-group frequencies and assign the bands.",
       "category": "Instruments/Vibrational",
       "tags": [
         "instrument",
@@ -2002,11 +2220,15 @@
           "data_type": "Image",
           "description": "解码后的图像对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Decoded image object"
         }
       ],
       "author": "",
       "description": "读取 PNG / TIFF / JPEG 显微图像，转换为带物理像素尺寸的 Image 科学对象。",
+      "name_zh": "加载图像",
+      "category_zh": "输入输出",
+      "description_en": "Read PNG / TIFF / JPEG micrographs into an Image scientific object with physical pixel size.",
       "category": "IO",
       "tags": [
         "io",
@@ -2042,11 +2264,15 @@
           "data_type": "Table",
           "description": "每行一次计时测量的结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Timing result table, one row per measurement"
         }
       ],
       "author": "",
       "description": "对指定设备进行前向吞吐基准测试（真实计时，不做假数据）。",
+      "name_zh": "推理基准测试",
+      "category_zh": "GPU",
+      "description_en": "Forward-throughput benchmark on the chosen device (real timing, no synthetic data).",
       "category": "GPU",
       "tags": [
         "gpu",
@@ -2081,7 +2307,8 @@
           "data_type": "Molecule",
           "description": "输入分子（需坐标）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule (needs coordinates)"
         }
       ],
       "outputs": [
@@ -2090,32 +2317,39 @@
           "data_type": "Molecule",
           "description": "模拟后的分子（终态坐标）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulated molecule (final coordinates)"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "径向分布函数 g(r)",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Radial distribution function g(r)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "动力学统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Dynamics statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模拟报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulation report"
         }
       ],
       "author": "",
       "description": "调用 LAMMPS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "name_zh": "LAMMPS 分子动力学",
+      "category_zh": "模拟 / 分子动力学",
+      "description_en": "Run molecular dynamics with LAMMPS; falls back to the built-in Lennard-Jones engine when not installed.",
       "category": "Simulation/MD",
       "tags": [
         "simulation",
@@ -2163,7 +2397,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -2172,25 +2407,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "液相色谱-质谱联用：电喷雾电离，适合极性 / 热不稳定化合物的一级与二级质谱。",
+      "name_zh": "液相色谱-质谱",
+      "category_zh": "仪器 / 质谱",
+      "description_en": "Liquid chromatography-mass spectrometry: electrospray ionisation for polar / thermally labile compounds, MS1 and MS2.",
       "category": "Instruments/Mass Spectrometry",
       "tags": [
         "instrument",
@@ -2223,14 +2464,16 @@
           "data_type": "Any",
           "description": "提示词 / 文本",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Prompt / text"
         },
         {
           "name": "context",
           "data_type": "Any",
           "description": "待推理的科学对象",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Scientific object to reason about"
         }
       ],
       "outputs": [
@@ -2239,18 +2482,23 @@
           "data_type": "Text",
           "description": "模型回答",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model answer"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "结构化字段",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Structured fields"
         }
       ],
       "author": "",
       "description": "调用 GPT / Claude / Gemini / Qwen / DeepSeek / Ollama 进行科学推理与解释生成。",
+      "name_zh": "大模型推理",
+      "category_zh": "AI / 大语言模型",
+      "description_en": "Call GPT / Claude / Gemini / Qwen / DeepSeek / Ollama for scientific reasoning and explanation generation.",
       "category": "AI/LLM",
       "tags": [
         "ai",
@@ -2288,7 +2536,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -2297,25 +2546,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "基质辅助激光解吸电离飞行时间质谱，适合多肽 / 聚合物 / 大分子。",
+      "name_zh": "MALDI-TOF 质谱",
+      "category_zh": "仪器 / 质谱",
+      "description_en": "MALDI-TOF mass spectrometry, suited to peptides / polymers / large molecules.",
       "category": "Instruments/Mass Spectrometry",
       "tags": [
         "instrument",
@@ -2348,7 +2603,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -2357,25 +2613,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 MassBank 高分辨质谱库（按精确质量 / 分子式匹配）。",
+      "name_zh": "MassBank 质谱库",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "Search the MassBank high-resolution mass-spectrometry library (exact mass / formula matching).",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -2410,35 +2672,40 @@
           "data_type": "Spectrum",
           "description": "X 射线衍射图",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "X-ray diffractogram"
         },
         {
           "name": "sem",
           "data_type": "Image",
           "description": "显微图像",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Micrograph"
         },
         {
           "name": "xps",
           "data_type": "Spectrum",
           "description": "X 射线光电子能谱",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "X-ray photoelectron spectrum"
         },
         {
           "name": "dft",
           "data_type": "Any",
           "description": "DFT 计算结果",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "DFT calculation result"
         },
         {
           "name": "candidates",
           "data_type": "Any",
           "description": "候选库（可选）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Candidate library (optional)"
         }
       ],
       "outputs": [
@@ -2447,25 +2714,31 @@
           "data_type": "Material",
           "description": "优化后的材料",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Optimised material"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选排序与预测性质",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Ranked candidates and predicted properties"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "决策依据",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Decision rationale"
         }
       ],
       "author": "",
       "description": "材料发现与优化：融合 XRD / SEM / XPS / DFT 证据，按目标性质对候选组分排序并输出优化材料。",
+      "name_zh": "材料发现",
+      "category_zh": "科学问题",
+      "description_en": "Material discovery and optimisation: fuses XRD / SEM / XPS / DFT evidence and ranks candidate compositions by target properties.",
       "category": "Questions",
       "tags": [
         "question",
@@ -2500,11 +2773,15 @@
           "data_type": "Material",
           "description": "材料对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Material object"
         }
       ],
       "author": "",
       "description": "由化学式与晶胞参数构建材料对象（用于电池 / 催化 / 半导体工作流）。",
+      "name_zh": "材料输入",
+      "category_zh": "输入输出",
+      "description_en": "Build a material object from a formula and unit-cell parameters (battery / catalysis / semiconductor workflows).",
       "category": "IO",
       "tags": [
         "io",
@@ -2536,7 +2813,8 @@
           "data_type": "Any",
           "description": "材料 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Material / text query"
         }
       ],
       "outputs": [
@@ -2545,25 +2823,31 @@
           "data_type": "Material",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "查询 Materials Project 晶体结构摘要（需要 MP_API_KEY，否则回退内置材料库）。",
+      "name_zh": "Materials Project",
+      "category_zh": "数据库 / 材料",
+      "description_en": "Query Materials Project crystal-structure summaries (needs MP_API_KEY, otherwise the built-in materials library).",
       "category": "Databases/Materials",
       "tags": [
         "database",
@@ -2597,7 +2881,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -2606,25 +2891,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 MoNA 质谱记录（按质量 / 分子式匹配）。",
+      "name_zh": "MoNA 质谱库",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "Search MoNA mass-spectrometry records (by mass / formula).",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -2659,11 +2950,15 @@
           "data_type": "Text",
           "description": "推理结果摘要（JSON）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Inference result summary (JSON)"
         }
       ],
       "author": "",
       "description": "在 CPU/GPU 上执行一个小型 MLP 前向推理，标注实际设备与耗时。",
+      "name_zh": "模型推理",
+      "category_zh": "GPU",
+      "description_en": "Run a small MLP forward pass on CPU/GPU, reporting the actual device and timing.",
       "category": "GPU",
       "tags": [
         "gpu",
@@ -2698,7 +2993,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -2707,25 +3003,31 @@
           "data_type": "Molecule",
           "description": "带描述符的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with descriptors"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "描述符表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Descriptor table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "描述符摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Descriptor summary"
         }
       ],
       "author": "",
       "description": "计算分子量、LogP、TPSA、氢键供受体、可旋转键、Lipinski 违背数与 QED。",
+      "name_zh": "分子描述符",
+      "category_zh": "分析",
+      "description_en": "Compute MolWt, LogP, TPSA, H-bond donors / acceptors, rotatable bonds, Lipinski violations and QED.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -2759,11 +3061,15 @@
           "data_type": "Molecule",
           "description": "分子对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule object"
         }
       ],
       "author": "",
       "description": "由 SMILES 构建分子对象，自动计算分子式、精确质量与理化描述符。",
+      "name_zh": "分子输入",
+      "category_zh": "输入输出",
+      "description_en": "Build a molecule from SMILES; computes the formula, exact mass and physchem descriptors automatically.",
       "category": "IO",
       "tags": [
         "io",
@@ -2800,7 +3106,8 @@
           "data_type": "Any",
           "description": "谱图 / 分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Spectrum / molecule / text query"
         }
       ],
       "outputs": [
@@ -2809,25 +3116,31 @@
           "data_type": "SpectralMatch",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "候选列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Candidate list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "NIST 质谱 / 红外谱库检索（需本地授权库；未授权时回退到内置参考库）。",
+      "name_zh": "NIST 谱库",
+      "category_zh": "数据库 / 谱图",
+      "description_en": "NIST mass-spectrometry / IR library search (needs a local licensed library; falls back to the built-in reference library).",
       "category": "Databases/Spectral",
       "tags": [
         "database",
@@ -2862,7 +3175,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -2871,25 +3185,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "核磁共振波谱仪：支持 FID / JCAMP-DX / Bruker 数据读取，输出化学位移、峰列表、积分与二维谱。",
+      "name_zh": "核磁共振波谱仪",
+      "category_zh": "仪器 / 核磁",
+      "description_en": "NMR spectrometer: FID / JCAMP-DX / Bruker readers; chemical shifts, peak lists, integrals and 2D spectra.",
       "category": "Instruments/NMR",
       "tags": [
         "instrument",
@@ -2923,7 +3243,8 @@
           "data_type": "Spectrum",
           "description": "输入谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input spectrum"
         }
       ],
       "outputs": [
@@ -2932,11 +3253,15 @@
           "data_type": "Spectrum",
           "description": "归一化后的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Normalised spectrum"
         }
       ],
       "author": "",
       "description": "按最大值、面积、min-max 或 SNV 归一化谱图强度。",
+      "name_zh": "归一化",
+      "category_zh": "分析",
+      "description_en": "Normalise spectral intensity by max, area, min-max or SNV.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -2972,7 +3297,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -2981,32 +3307,39 @@
           "data_type": "Molecule",
           "description": "带计算性质的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "预测谱图（频率 / 激发）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Predicted spectrum (frequencies / excitation)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "调用 ORCA 做单点能 / 几何优化 / 频率计算；未安装时使用内置扩展 Hückel 引擎。",
+      "name_zh": "ORCA 量子化学",
+      "category_zh": "模拟 / 量子化学",
+      "description_en": "Run single-point / geometry optimisation / frequencies with ORCA; falls back to the built-in extended Hückel engine.",
       "category": "Simulation/Quantum",
       "tags": [
         "simulation",
@@ -3056,7 +3389,8 @@
           "data_type": "Molecule",
           "description": "输入分子（需坐标）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule (needs coordinates)"
         }
       ],
       "outputs": [
@@ -3065,32 +3399,39 @@
           "data_type": "Molecule",
           "description": "模拟后的分子（终态坐标）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulated molecule (final coordinates)"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "径向分布函数 g(r)",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Radial distribution function g(r)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "动力学统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Dynamics statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模拟报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Simulation report"
         }
       ],
       "author": "",
       "description": "调用 OpenMM 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
+      "name_zh": "OpenMM 分子动力学",
+      "category_zh": "模拟 / 分子动力学",
+      "description_en": "Run molecular dynamics with OpenMM; falls back to the built-in Lennard-Jones engine when not installed.",
       "category": "Simulation/MD",
       "tags": [
         "simulation",
@@ -3135,7 +3476,8 @@
           "data_type": "Any",
           "description": "分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Molecule / text query"
         }
       ],
       "outputs": [
@@ -3144,25 +3486,31 @@
           "data_type": "Molecule",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 RCSB PDB 结构条目（大分子 / 配合物）。",
+      "name_zh": "PDB 结构库",
+      "category_zh": "数据库 / 化学",
+      "description_en": "Search RCSB PDB structure entries (macromolecules / complexes).",
       "category": "Databases/Chemical",
       "tags": [
         "database",
@@ -3197,7 +3545,8 @@
           "data_type": "Spectrum",
           "description": "输入谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input spectrum"
         }
       ],
       "outputs": [
@@ -3206,25 +3555,31 @@
           "data_type": "Spectrum",
           "description": "带峰列表的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Spectrum with a peak list"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "峰表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Peak table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "峰检测摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Peak-detection summary"
         }
       ],
       "author": "",
       "description": "基于局部极大值与峰 prominence 的峰检测，输出峰表与带峰标注的谱图。",
+      "name_zh": "峰检测",
+      "category_zh": "分析",
+      "description_en": "Peak detection from local maxima and prominence, with a peak table and annotated spectrum.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -3262,7 +3617,8 @@
           "data_type": "Any",
           "description": "上游谱图",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream spectrum"
         }
       ],
       "outputs": [
@@ -3271,25 +3627,31 @@
           "data_type": "Spectrum",
           "description": "仅含 centroid 峰的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Centroid-only spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "峰表（位置 / 强度 / 面积 / 相对%）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Peak table (position / intensity / area / relative %)"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "转换摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Conversion summary"
         }
       ],
       "author": "",
       "description": "把连续谱（profile）转换为峰列表（centroid）：每个峰用半高宽内的强度加权位置表示，并输出峰面积与相对强度。",
+      "name_zh": "连续谱转峰谱",
+      "category_zh": "分析",
+      "description_en": "Convert profile spectra to centroid peak lists: intensity-weighted position within the FWHM, with peak areas and relative intensities.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -3323,14 +3685,16 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         },
         {
           "name": "model",
           "data_type": "Any",
           "description": "可选：训练好的模型信息",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Optional: trained model information"
         }
       ],
       "outputs": [
@@ -3339,25 +3703,31 @@
           "data_type": "Molecule",
           "description": "带预测性质的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with predicted properties"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "预测结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Prediction result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Summary"
         }
       ],
       "author": "",
       "description": "预测 LogP / TPSA / 溶解度 / QED / Lipinski 等分子性质，可加载训练好的模型。",
+      "name_zh": "性质预测",
+      "category_zh": "AI / 机器学习",
+      "description_en": "Predict LogP / TPSA / solubility / QED / Lipinski and other molecular properties; can load a trained model.",
       "category": "AI/ML",
       "tags": [
         "ai",
@@ -3390,7 +3760,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -3399,32 +3770,39 @@
           "data_type": "Molecule",
           "description": "带计算性质的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "预测谱图（频率 / 激发）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Predicted spectrum (frequencies / excitation)"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "生成 Psi4 输入脚本并运行；未安装时使用内置扩展 Hückel 引擎。",
+      "name_zh": "Psi4 量子化学",
+      "category_zh": "模拟 / 量子化学",
+      "description_en": "Generate Psi4 input scripts and run; falls back to the built-in extended Hückel engine when not installed.",
       "category": "Simulation/Quantum",
       "tags": [
         "simulation",
@@ -3473,7 +3851,8 @@
           "data_type": "Any",
           "description": "分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Molecule / text query"
         }
       ],
       "outputs": [
@@ -3482,25 +3861,31 @@
           "data_type": "Molecule",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "通过 PubChem PUG REST 按名称 / SMILES 查询分子结构与性质。",
+      "name_zh": "PubChem",
+      "category_zh": "数据库 / 化学",
+      "description_en": "Query molecular structures and properties from PubChem PUG REST by name / SMILES.",
       "category": "Databases/Chemical",
       "tags": [
         "database",
@@ -3535,11 +3920,15 @@
           "data_type": "Text",
           "description": "运算结果与设备标注（JSON）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Operation result with device tag (JSON)"
         }
       ],
       "author": "",
       "description": "在指定设备上执行张量运算（matmul / add / sigmoid），输出包含实际执行设备标注。",
+      "name_zh": "PyTorch 张量运算",
+      "category_zh": "GPU",
+      "description_en": "Run tensor operations (matmul / add / sigmoid) on the chosen device, tagged with the actual execution device.",
       "category": "GPU",
       "tags": [
         "gpu",
@@ -3573,7 +3962,8 @@
           "data_type": "Any",
           "description": "上游材料（材料 / 分子）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream material (material / molecule)"
         }
       ],
       "outputs": [
@@ -3582,32 +3972,39 @@
           "data_type": "Material",
           "description": "带计算性质的材料",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Material with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "能带 / 态密度 / 衍射图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Band structure / density of states / diffractogram"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "生成 Quantum ESPRESSO 输入并运行；未安装时使用内置紧束缚引擎。",
+      "name_zh": "Quantum ESPRESSO",
+      "category_zh": "模拟 / 材料",
+      "description_en": "Generate Quantum ESPRESSO input and run; falls back to the built-in tight-binding engine when not installed.",
       "category": "Simulation/Materials",
       "tags": [
         "simulation",
@@ -3656,7 +4053,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -3665,32 +4063,39 @@
           "data_type": "Image",
           "description": "化学成像图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Chemical image"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "组分统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Component statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "成像报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Imaging report"
         }
       ],
       "author": "",
       "description": "拉曼面扫成像：生成高光谱数据立方体并输出组分分布图与平均谱。",
+      "name_zh": "拉曼面扫成像",
+      "category_zh": "仪器 / 成像",
+      "description_en": "Raman mapping: build a hyperspectral data cube, component maps and a mean spectrum.",
       "category": "Instruments/Imaging",
       "tags": [
         "instrument",
@@ -3723,7 +4128,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -3732,25 +4138,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "拉曼光谱仪：预测拉曼位移谱（芳香环呼吸振动等强峰）并完成谱带指认。",
+      "name_zh": "拉曼光谱",
+      "category_zh": "仪器 / 振动谱",
+      "description_en": "Raman spectrometer: predict Raman shift spectra (aromatic ring breathing and other strong bands) and assign the bands.",
       "category": "Instruments/Vibrational",
       "tags": [
         "instrument",
@@ -3782,7 +4194,8 @@
           "data_type": "Any",
           "description": "待汇总的科学对象",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Scientific objects to summarise"
         }
       ],
       "outputs": [
@@ -3791,18 +4204,23 @@
           "data_type": "ScientificReport",
           "description": "结构化报告对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Structured report object"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "渲染后的文档文本 / 路径",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Rendered document text / path"
         }
       ],
       "author": "",
       "description": "汇总上游科学对象，自动生成 Markdown / HTML / PDF 研究报告并写入产物目录。",
+      "name_zh": "报告智能体",
+      "category_zh": "智能体 / 报告",
+      "description_en": "Aggregate upstream scientific objects into a Markdown / HTML / PDF research report written to the artefacts directory.",
       "category": "Agent/Reporting",
       "tags": [
         "agent",
@@ -3839,42 +4257,48 @@
           "data_type": "Spectrum",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "molecule",
           "data_type": "Molecule",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "material",
           "data_type": "Material",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "match",
           "data_type": "SpectralMatch",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         }
       ],
       "outputs": [
@@ -3883,18 +4307,23 @@
           "data_type": "ScientificReport",
           "description": "",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": ""
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": ""
         }
       ],
       "author": "",
       "description": "把上游的谱图、分子、材料、表格与文本结果汇总为一份结构化科学报告。",
+      "name_zh": "报告构建",
+      "category_zh": "报告",
+      "description_en": "Combine upstream spectra, molecules, materials, tables and text into one structured scientific report.",
       "category": "Report",
       "tags": [
         "report",
@@ -3927,14 +4356,16 @@
           "data_type": "ScientificReport",
           "description": "",
           "optional": true,
-          "multi": false
+          "multi": false,
+          "description_en": ""
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         }
       ],
       "outputs": [
@@ -3943,11 +4374,15 @@
           "data_type": "Text",
           "description": "",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": ""
         }
       ],
       "author": "",
       "description": "把结构化报告落盘为 Markdown / HTML / DOCX / JSON 产物文件，返回路径文本。",
+      "name_zh": "报告导出",
+      "category_zh": "报告",
+      "description_en": "Write a structured report to Markdown / HTML / DOCX / JSON artefacts and return the path text.",
       "category": "Report",
       "tags": [
         "report",
@@ -3982,7 +4417,8 @@
           "data_type": "Spectrum",
           "description": "输入谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input spectrum"
         }
       ],
       "outputs": [
@@ -3991,11 +4427,15 @@
           "data_type": "Spectrum",
           "description": "重采样后的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Resampled spectrum"
         }
       ],
       "author": "",
       "description": "将谱图重采样到等间距网格，便于多谱图对齐与融合。",
+      "name_zh": "重采样",
+      "category_zh": "分析",
+      "description_en": "Resample spectra onto an evenly spaced grid for multi-spectrum alignment and fusion.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -4027,7 +4467,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -4036,32 +4477,39 @@
           "data_type": "Image",
           "description": "显微图像",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Micrograph"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱 / 剖面",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum / profile"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "形貌统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Morphology statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "分析报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Analysis report"
         }
       ],
       "author": "",
       "description": "扫描电子显微镜：形貌衬度成像，输出颗粒形貌统计（等效直径、长径比）。",
+      "name_zh": "扫描电子显微镜",
+      "category_zh": "仪器 / 显微",
+      "description_en": "Scanning electron microscopy: morphology-contrast imaging with particle statistics (equivalent diameter, aspect ratio).",
       "category": "Instruments/Microscopy",
       "tags": [
         "instrument",
@@ -4094,14 +4542,16 @@
           "data_type": "Text",
           "description": "科学问题（自然语言）",
           "optional": true,
-          "multi": false
+          "multi": false,
+          "description_en": "Scientific question (natural language)"
         },
         {
           "name": "context",
           "data_type": "Any",
           "description": "上游数据 / 上下文",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream data / context"
         }
       ],
       "outputs": [
@@ -4110,32 +4560,39 @@
           "data_type": "ScientificReport",
           "description": "结构化结论报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Structured conclusion report"
         },
         {
           "name": "workflow",
           "data_type": "Text",
           "description": "生成的工作流 JSON",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Generated workflow JSON"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "结论叙述",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Conclusion narrative"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "逐节点执行结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Per-node execution results"
         }
       ],
       "author": "",
       "description": "AI 科学助手节点：理解自然语言科学问题，自动规划并生成工作流，调用节点执行，最后给出带置信度的结论与报告。",
+      "name_zh": "科学助手",
+      "category_zh": "智能体",
+      "description_en": "AI scientific assistant: understands natural-language questions, plans and builds a workflow, executes the nodes, and returns conclusions with confidence.",
       "category": "Agent",
       "tags": [
         "agent",
@@ -4168,14 +4625,16 @@
           "data_type": "Molecule",
           "description": "分子 A",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule A"
         },
         {
           "name": "b",
           "data_type": "Molecule",
           "description": "分子 B",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule B"
         }
       ],
       "outputs": [
@@ -4184,18 +4643,23 @@
           "data_type": "Table",
           "description": "相似度表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Similarity table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "相似度摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Similarity summary"
         }
       ],
       "author": "",
       "description": "计算两个分子的 Morgan 指纹 Tanimoto / Dice 相似度。",
+      "name_zh": "分子相似度",
+      "category_zh": "分析",
+      "description_en": "Morgan fingerprint Tanimoto / Dice similarity between two molecules.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -4228,14 +4692,16 @@
           "data_type": "Molecule",
           "description": "查询分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Query molecule"
         },
         {
           "name": "library",
           "data_type": "Table",
           "description": "候选库（含 SMILES 列）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Candidate library (with a SMILES column)"
         }
       ],
       "outputs": [
@@ -4244,18 +4710,23 @@
           "data_type": "Table",
           "description": "排序后的候选",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Ranked candidates"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Summary"
         }
       ],
       "author": "",
       "description": "以 Morgan 指纹相似度对候选库排序，用于虚拟筛选与结构确认。",
+      "name_zh": "相似度检索",
+      "category_zh": "AI / 机器学习",
+      "description_en": "Rank a candidate library by Morgan fingerprint similarity for virtual screening and structure confirmation.",
       "category": "AI/ML",
       "tags": [
         "ai",
@@ -4288,7 +4759,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -4297,25 +4769,31 @@
           "data_type": "Material",
           "description": "解析得到的晶体结构",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Resolved crystal structure"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "指标化结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Indexing result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "精修报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Refinement report"
         }
       ],
       "author": "",
       "description": "单晶 X 射线衍射：衍射峰指标化、晶胞参数精修并输出晶体结构对象。",
+      "name_zh": "单晶 X 射线衍射",
+      "category_zh": "仪器 / 衍射",
+      "description_en": "Single-crystal XRD: index diffraction peaks, refine unit-cell parameters and output a crystal-structure object.",
       "category": "Instruments/Diffraction",
       "tags": [
         "instrument",
@@ -4348,7 +4826,8 @@
           "data_type": "Spectrum",
           "description": "输入谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input spectrum"
         }
       ],
       "outputs": [
@@ -4357,11 +4836,15 @@
           "data_type": "Spectrum",
           "description": "平滑后的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Smoothed spectrum"
         }
       ],
       "author": "",
       "description": "移动平均或 Savitzky-Golay 平滑滤波，降低高频噪声。",
+      "name_zh": "平滑滤波",
+      "category_zh": "分析",
+      "description_en": "Moving-average or Savitzky-Golay smoothing to suppress high-frequency noise.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -4398,11 +4881,15 @@
           "data_type": "Spectrum",
           "description": "解析后的谱图对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Parsed spectrum object"
         }
       ],
       "author": "",
       "description": "读取 mzML、mzXML、MGF、MSP、JCAMP-DX、XY 或 Bruker 目录中的谱图，返回统一的 Spectrum 科学对象。",
+      "name_zh": "加载谱图",
+      "category_zh": "输入输出",
+      "description_en": "Read spectra from mzML, mzXML, MGF, MSP, JCAMP-DX, XY or Bruker directories into a unified Spectrum object.",
       "category": "IO",
       "tags": [
         "io",
@@ -4436,14 +4923,16 @@
           "data_type": "Spectrum",
           "description": "谱图 A",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Spectrum A"
         },
         {
           "name": "b",
           "data_type": "Spectrum",
           "description": "谱图 B",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Spectrum B"
         }
       ],
       "outputs": [
@@ -4452,18 +4941,23 @@
           "data_type": "Spectrum",
           "description": "运算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Operation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "运算摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Operation summary"
         }
       ],
       "author": "",
       "description": "两个谱图之间的加 / 减 / 乘 / 除运算（按 x 轴线性插值对齐）。",
+      "name_zh": "谱图运算",
+      "category_zh": "分析",
+      "description_en": "Add / subtract / multiply / divide two spectra (aligned by linear interpolation on the x axis).",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -4495,7 +4989,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -4504,18 +4999,23 @@
           "data_type": "Table",
           "description": "检索结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search results"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search summary"
         }
       ],
       "author": "",
       "description": "使用 VF2 子图同构在分子中检索指定子结构（SMILES 片段）。",
+      "name_zh": "子结构检索",
+      "category_zh": "分析",
+      "description_en": "Search a molecule for a substructure (SMILES fragment) with VF2 subgraph isomorphism.",
       "category": "Analysis",
       "tags": [
         "analysis",
@@ -4547,35 +5047,40 @@
           "data_type": "Spectrum",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "molecule",
           "data_type": "Molecule",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "material",
           "data_type": "Material",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         },
         {
           "name": "image",
           "data_type": "Image",
           "description": "",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": ""
         }
       ],
       "outputs": [
@@ -4584,11 +5089,15 @@
           "data_type": "Table",
           "description": "",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": ""
         }
       ],
       "author": "",
       "description": "将任意上游科学对象压平为一张“指标 / 数值”汇总表，便于直接与报告或导出节点衔接。",
+      "name_zh": "汇总表",
+      "category_zh": "报告",
+      "description_en": "Flatten any upstream scientific object into one metric / value summary table for reports or export.",
       "category": "Report",
       "tags": [
         "report",
@@ -4621,7 +5130,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -4630,32 +5140,39 @@
           "data_type": "Image",
           "description": "显微图像",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Micrograph"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "平均谱 / 剖面",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Mean spectrum / profile"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "形貌统计",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Morphology statistics"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "分析报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Analysis report"
         }
       ],
       "author": "",
       "description": "透射电子显微镜：高分辨晶格成像，输出粒径分布与晶面间距统计。",
+      "name_zh": "透射电子显微镜",
+      "category_zh": "仪器 / 显微",
+      "description_en": "Transmission electron microscopy: high-resolution lattice imaging with particle-size distribution and d-spacing statistics.",
       "category": "Instruments/Microscopy",
       "tags": [
         "instrument",
@@ -4688,7 +5205,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -4697,25 +5215,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "热重分析仪：多步失重过程模拟，输出各步起始温度与残余质量。",
+      "name_zh": "热重分析",
+      "category_zh": "仪器 / 热分析",
+      "description_en": "Thermogravimetric analysis: multi-step mass-loss simulation with onset temperatures and residual mass.",
       "category": "Instruments/Thermal",
       "tags": [
         "instrument",
@@ -4749,11 +5273,15 @@
           "data_type": "Table",
           "description": "表格对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Table object"
         }
       ],
       "author": "",
       "description": "读取 CSV / TSV 表格文件，输出 Table 科学对象。",
+      "name_zh": "加载表格",
+      "category_zh": "输入输出",
+      "description_en": "Read CSV / TSV table files into a Table scientific object.",
       "category": "IO",
       "tags": [
         "io",
@@ -4786,11 +5314,15 @@
           "data_type": "Text",
           "description": "文本对象",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Text object"
         }
       ],
       "author": "",
       "description": "输出一段文本对象，可作为 LLM 节点的提示词或报告素材。",
+      "name_zh": "文本输入",
+      "category_zh": "输入输出",
+      "description_en": "Emit a text object usable as an LLM prompt or report material.",
       "category": "IO",
       "tags": [
         "io",
@@ -4822,7 +5354,8 @@
           "data_type": "Table",
           "description": "训练数据（含 SMILES 与目标列）",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Training data (with SMILES and target columns)"
         }
       ],
       "outputs": [
@@ -4831,18 +5364,23 @@
           "data_type": "Text",
           "description": "训练报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Training report"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "评估指标",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Evaluation metrics"
         }
       ],
       "author": "",
       "description": "由含 SMILES 与目标列的表格训练分子性质预测模型（PyTorch MPNN 或 NumPy 岭回归）。",
+      "name_zh": "训练模型",
+      "category_zh": "AI / 机器学习",
+      "description_en": "Train a molecular property prediction model (PyTorch MPNN or NumPy ridge regression) from a table with SMILES and target columns.",
       "category": "AI/ML",
       "tags": [
         "ai",
@@ -4878,7 +5416,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -4887,25 +5426,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "紫外-可见吸收光谱仪：基于 Woodward-Fieser 规则估算最大吸收波长 λmax。",
+      "name_zh": "紫外-可见光谱",
+      "category_zh": "仪器 / 电子谱",
+      "description_en": "UV-Vis spectrometer: estimate the absorption maximum lambda-max with Woodward-Fieser rules.",
       "category": "Instruments/Electronic",
       "tags": [
         "instrument",
@@ -4938,7 +5483,8 @@
           "data_type": "Molecule",
           "description": "输入分子",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input molecule"
         }
       ],
       "outputs": [
@@ -4947,25 +5493,31 @@
           "data_type": "Molecule",
           "description": "带嵌入向量的分子",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Molecule with embeddings"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "嵌入与预测性质",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Embeddings and predicted properties"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "模型摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model summary"
         }
       ],
       "author": "",
       "description": "三维分子编码器：基于原子间距离矩阵的几何感知注意力表征。",
+      "name_zh": "Uni-Mol 编码器",
+      "category_zh": "AI / 基座模型",
+      "description_en": "3D molecular encoder: geometry-aware attention over interatomic distance matrices.",
       "category": "AI/Foundation Models",
       "tags": [
         "ai",
@@ -5000,42 +5552,48 @@
           "data_type": "Spectrum",
           "description": "质谱（LC-MS / GC-MS / MALDI）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Mass spectrum (LC-MS / GC-MS / MALDI)"
         },
         {
           "name": "nmr",
           "data_type": "Spectrum",
           "description": "核磁共振谱",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "NMR spectrum"
         },
         {
           "name": "ir",
           "data_type": "Spectrum",
           "description": "红外光谱",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "IR spectrum"
         },
         {
           "name": "raman",
           "data_type": "Spectrum",
           "description": "拉曼光谱",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Raman spectrum"
         },
         {
           "name": "uvvis",
           "data_type": "Spectrum",
           "description": "紫外可见光谱",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "UV-Vis spectrum"
         },
         {
           "name": "candidates",
           "data_type": "Any",
           "description": "外部候选库（可选）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "External candidate library (optional)"
         }
       ],
       "outputs": [
@@ -5044,25 +5602,31 @@
           "data_type": "Molecule",
           "description": "最佳候选结构",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Best candidate structure"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "排序后的候选与置信度",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Ranked candidates with confidence"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "证据解释",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Evidence interpretation"
         }
       ],
       "author": "",
       "description": "未知物结构鉴定：融合质谱分子离子与碎片、核磁化学位移、红外拉曼谱带，输出候选结构、置信度与解释。",
+      "name_zh": "未知物鉴定",
+      "category_zh": "科学问题",
+      "description_en": "Unknown structure elucidation: fuses MS molecular ions and fragments, NMR shifts and IR/Raman bands into candidates, confidence and explanations.",
       "category": "Questions",
       "tags": [
         "question",
@@ -5103,7 +5667,8 @@
           "data_type": "Any",
           "description": "上游材料（材料 / 分子）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream material (material / molecule)"
         }
       ],
       "outputs": [
@@ -5112,32 +5677,39 @@
           "data_type": "Material",
           "description": "带计算性质的材料",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Material with computed properties"
         },
         {
           "name": "spectrum",
           "data_type": "Spectrum",
           "description": "能带 / 态密度 / 衍射图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Band structure / density of states / diffractogram"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "计算结果",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation result"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "计算报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Calculation report"
         }
       ],
       "author": "",
       "description": "生成 VASP/POSCAR 输入并运行；未安装时使用内置紧束缚引擎。",
+      "name_zh": "VASP 量子化学",
+      "category_zh": "模拟 / 材料",
+      "description_en": "Generate VASP/POSCAR input and run; falls back to the built-in tight-binding engine when not installed.",
       "category": "Simulation/Materials",
       "tags": [
         "simulation",
@@ -5187,25 +5759,31 @@
           "data_type": "Spectrum",
           "description": "厂商适配器解码后的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Spectrum decoded by a vendor adapter"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "特征提取结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Feature-extraction result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "数据来源与 provenance 说明",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Data source and provenance notes"
         }
       ],
       "author": "",
       "description": "读取厂商原始数据（Bruker .d / 1r、Shimadzu SPC/QGD/LCD、Thermo/Waters/Agilent 文件夹）或开放格式（mzML/mzXML/MGF/MSP/JCAMP-DX/XY），返回统一的 Spectrum 对象。",
+      "name_zh": "加载厂商谱图",
+      "category_zh": "输入输出",
+      "description_en": "Read vendor raw data (Bruker .d / 1r, Shimadzu SPC/QGD/LCD, Thermo/Waters/Agilent folders) or open formats into a unified Spectrum object.",
       "category": "IO",
       "tags": [
         "io",
@@ -5243,7 +5821,8 @@
           "data_type": "Any",
           "description": "输入图像（无则生成示例图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Input image (a sample image is generated when absent)"
         }
       ],
       "outputs": [
@@ -5252,25 +5831,31 @@
           "data_type": "Image",
           "description": "输出图像 / 分割掩膜",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Output image / segmentation mask"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "模型输出",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Model output"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "摘要",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Summary"
         }
       ],
       "author": "",
       "description": "对显微图像 / 化学成像图运行 ViT / CLIP / SAM / DINO 风格的视觉模型。",
+      "name_zh": "视觉模型",
+      "category_zh": "AI / 视觉",
+      "description_en": "Run ViT / CLIP / SAM / DINO style vision models on micrographs / chemical images.",
       "category": "AI/Vision",
       "tags": [
         "ai",
@@ -5305,7 +5890,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -5314,25 +5900,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "X 射线吸收谱：吸收边 + 白线 + EXAFS 振荡，可用于价态与配位环境分析。",
+      "name_zh": "X 射线吸收谱",
+      "category_zh": "仪器 / 表面",
+      "description_en": "X-ray absorption spectroscopy: absorption edge, white line and EXAFS oscillations for valence and coordination analysis.",
       "category": "Instruments/Surface",
       "tags": [
         "instrument",
@@ -5366,7 +5958,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -5375,25 +5968,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "X 射线光电子能谱：按元素特征结合能生成 Survey 全谱，含 Shirley 型本底。",
+      "name_zh": "X 射线光电子能谱",
+      "category_zh": "仪器 / 表面",
+      "description_en": "X-ray photoelectron spectroscopy: element-characteristic survey scan with a Shirley-type background.",
       "category": "Instruments/Surface",
       "tags": [
         "instrument",
@@ -5426,7 +6025,8 @@
           "data_type": "Any",
           "description": "上游样品（分子 / 材料 / 谱图）",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Upstream sample (molecule / material / spectrum)"
         }
       ],
       "outputs": [
@@ -5435,25 +6035,31 @@
           "data_type": "Spectrum",
           "description": "采集得到的谱图",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Acquired spectrum"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "处理结果表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Result table"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "仪器日志与结论",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Instrument log and conclusions"
         }
       ],
       "author": "",
       "description": "粉末 X 射线衍射仪：由晶胞与原子占位计算衍射峰位与强度（含 Scherrer 展宽）。",
+      "name_zh": "粉末 X 射线衍射",
+      "category_zh": "仪器 / 衍射",
+      "description_en": "Powder XRD: peak positions and intensities from the unit cell and site occupancies (with Scherrer broadening).",
       "category": "Instruments/Diffraction",
       "tags": [
         "instrument",
@@ -5486,7 +6092,8 @@
           "data_type": "Any",
           "description": "分子 / 文本查询",
           "optional": true,
-          "multi": true
+          "multi": true,
+          "description_en": "Molecule / text query"
         }
       ],
       "outputs": [
@@ -5495,25 +6102,31 @@
           "data_type": "Molecule",
           "description": "命中记录",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Matching records"
         },
         {
           "name": "table",
           "data_type": "Table",
           "description": "命中列表",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Match list"
         },
         {
           "name": "text",
           "data_type": "Text",
           "description": "检索报告",
           "optional": false,
-          "multi": false
+          "multi": false,
+          "description_en": "Search report"
         }
       ],
       "author": "",
       "description": "检索 ZINC 可购买化合物库（虚拟筛选常用）。",
+      "name_zh": "ZINC 化合物库",
+      "category_zh": "数据库 / 化学",
+      "description_en": "Search the ZINC purchasable-compound library (common in virtual screening).",
       "category": "Databases/Chemical",
       "tags": [
         "database",

@@ -34,7 +34,8 @@
       "params": {
         "smiles": "CN1C=NC2=C1C(=O)N(C)C(=O)N2",
         "name": "Caffeine"
-      }
+      },
+      "label_en": "Caffeine"
     },
     {
       "id": "chemberta",
@@ -48,7 +49,8 @@
         "embedding_dim": 256,
         "n_grams": 2,
         "task": "embedding"
-      }
+      },
+      "label_en": "ChemBERTa embedding"
     },
     {
       "id": "unimol",
@@ -61,7 +63,8 @@
       "params": {
         "embedding_dim": 256,
         "with_3d": true
-      }
+      },
+      "label_en": "Uni-Mol 3D embedding"
     },
     {
       "id": "descriptors",
@@ -71,7 +74,8 @@
         "x": 600,
         "y": 300
       },
-      "params": {}
+      "params": {},
+      "label_en": "Physchem descriptors"
     },
     {
       "id": "report",
@@ -86,7 +90,8 @@
         "summary": "本报告汇总 ChemBERTa（SMILES 语言模型）、Uni-Mol（三维几何模型）与理化描述符三种科学基座模型对咖啡因的表征结果，包含分子嵌入向量、理化性质与模型摘要，用于比较不同基座模型的表征能力。",
         "format": "html",
         "filename": "demo06_foundation_models_report"
-      }
+      },
+      "label_en": "Foundation model report"
     }
   ],
   "edges": [

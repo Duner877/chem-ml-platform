@@ -2,13 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Base surfaces.  All colours come from the runtime ``--c-*`` variables (see
+ * src/theme.ts) so the three shipped themes share exactly one code path.
+ */
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
-  background: #0b1120;
-  color: #e2e8f0;
+  background: rgb(var(--c-canvas));
+  color: rgb(var(--c-text));
   font-family: "Inter", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
 }
 
@@ -18,44 +22,49 @@ body,
 }
 
 .react-flow__edge-path {
-  stroke: #38bdf8;
+  stroke: rgb(var(--c-edge));
   stroke-width: 2;
 }
 
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke: #7dd3fc;
+  stroke: rgb(var(--c-accent));
   stroke-width: 3;
 }
 
 .react-flow__handle {
   width: 10px;
   height: 10px;
-  background: #38bdf8;
-  border: 2px solid #0b1120;
+  background: rgb(var(--c-text-dim));
+  border: 2px solid rgb(var(--c-canvas));
 }
 
 .react-flow__handle-connecting {
-  background: #fbbf24;
+  background: rgb(var(--c-warn));
+}
+
+.react-flow__connection-path {
+  stroke: rgb(var(--c-accent));
+  stroke-width: 2;
 }
 
 .react-flow__controls button {
-  background: #16213a;
-  border-bottom: 1px solid #23304d;
-  color: #e2e8f0;
-  fill: #e2e8f0;
+  background: rgb(var(--c-panel));
+  border-bottom: 1px solid rgb(var(--c-line));
+  color: rgb(var(--c-text));
+  fill: rgb(var(--c-text));
 }
 
 .react-flow__controls button:hover {
-  background: #23304d;
+  background: rgb(var(--c-panel2));
 }
 
 .react-flow__minimap {
-  background: #111a2e;
+  background: rgb(var(--c-minimap));
 }
 
 .react-flow__background {
-  background: #0b1120;
+  background: rgb(var(--c-canvas));
 }
 
 /* scrollbars -------------------------------------------------------------- */
@@ -65,14 +74,62 @@ body,
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b1120;
+  background: rgb(var(--c-canvas));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #23304d;
+  background: rgb(var(--c-line));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #33456e;
+  background: rgb(var(--c-text-faint));
+}
+
+/* ComfyUI-style node widgets --------------------------------------------- *
+ * Native controls inside a node keep the node-editor look: dark inputs, no
+ * spinner arrows, compact rows. */
+.cml-widget {
+  appearance: none;
+  background: rgb(var(--c-widget));
+  border: 1px solid rgb(var(--c-node-border));
+  border-radius: 4px;
+  color: rgb(var(--c-text));
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 2px 6px;
+  width: 100%;
+  outline: none;
+}
+
+.cml-widget:focus {
+  border-color: rgb(var(--c-accent));
+}
+
+select.cml-widget {
+  cursor: pointer;
+}
+
+select.cml-widget option {
+  background: rgb(var(--c-panel));
+  color: rgb(var(--c-text));
+}
+
+input.cml-widget[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input.cml-widget[type="number"]::-webkit-outer-spin-button,
+input.cml-widget[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* Thin dropdown/menu surfaces shared by the top bar and the drawers. */
+.cml-menu {
+  background: rgb(var(--c-panel));
+  border: 1px solid rgb(var(--c-line));
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
 }
