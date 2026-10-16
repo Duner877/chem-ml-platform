@@ -28,11 +28,18 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from models.xas_domain_map import (
-    GRID_POINTS,
-    XASMapper,
-    XASMappingResult,
-)
+try:  # 平台内：正常走包导入
+    from models.xas_domain_map import (
+        GRID_POINTS,
+        XASMapper,
+        XASMappingResult,
+    )
+except ImportError:  # 赛题独立投放：solution.py 已按路径注册为裸模块名
+    from xas_domain_map import (  # type: ignore[no-redef]
+        GRID_POINTS,
+        XASMapper,
+        XASMappingResult,
+    )
 
 __all__ = ["load_pairs", "load_queries", "solve", "main"]
 
