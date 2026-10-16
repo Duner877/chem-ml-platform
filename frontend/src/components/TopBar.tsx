@@ -19,6 +19,7 @@ import {
   IconImage,
   IconPalette,
   IconStar,
+  IconKey,
   IconCheck,
 } from "./Icons";
 
@@ -106,6 +107,8 @@ export default function TopBar() {
     setAboutOpen,
     pushLog,
     setConsoleOpen,
+    setDockTab,
+    credentialCount,
   } = useEditor();
   const { handleRun, handleValidate, buildPayload } = useRunActions();
   const [demos, setDemos] = useState<WorkflowSummary[]>([]);
@@ -269,6 +272,37 @@ export default function TopBar() {
       >
         <IconImage size={13} />
         {translate(lang, "artefacts")}
+      </button>
+
+      {/* API-key badge (v0.7.3) --------------------------------------------
+       * The one control the user must be able to find without being told.  It
+       * stays in the bar whatever the state, amber when no key exists: the AI
+       * runtime silently degrading to offline rules is exactly the kind of
+       * thing nobody notices until a result looks wrong. */}
+      <button
+        type="button"
+        onClick={() => {
+          setDockTab("apikey");
+          useEditor.getState().setDockOpen(true);
+        }}
+        title={translate(lang, credentialCount ? "keyBadgeReady" : "keyBadgeMissing")}
+        className={`flex items-center gap-1.5 rounded border px-2.5 py-1 text-[11px] font-medium transition ${
+          credentialCount
+            ? "border-line text-[rgb(var(--c-text-dim))] hover:border-accent hover:text-accent"
+            : "border-warn/60 bg-warn/15 text-warn hover:bg-warn/25"
+        }`}
+      >
+        <IconKey size={13} />
+        {translate(lang, "keyPanel")}
+        {credentialCount !== null && (
+          <span
+            className={`rounded px-1 text-[9px] ${
+              credentialCount ? "bg-good/20 text-good" : "bg-warn/25 text-warn"
+            }`}
+          >
+            {credentialCount}
+          </span>
+        )}
       </button>
 
       {/* theme switcher --------------------------------------------------- */}

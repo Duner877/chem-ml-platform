@@ -142,6 +142,19 @@ ROUTE_RULES: List[RouteRule] = [
     _rule("POST", r"^/api/ai/test$", EXECUTE, "provider probe"),
     _rule("PUT", r"^/api/ai/config$", WRITE, "AI configuration change"),
 
+    # -- provider credentials (v0.7.3): the most sensitive thing here ----- #
+    # A stored key is a bearer token for someone else's account.  Listing it
+    # returns only masks, but the write, the delete and the probe all act on
+    # real secrets, so each is named explicitly instead of falling through to
+    # the default READ -- which would have let any read-only token add or remove
+    # credentials.  The ordering matters: the ``.+/test`` rule has to precede
+    # the bare ``.+$`` POST rule only in the sense that both are POST on
+    # different shapes, and ``^/api/credentials$`` is an exact match so it
+    # cannot swallow the per-provider paths.
+    _rule("POST", r"^/api/credentials$", WRITE, "store a provider credential"),
+    _rule("DELETE", r"^/api/credentials/.+$", WRITE, "delete a provider credential"),
+    _rule("POST", r"^/api/credentials/.+/test$", EXECUTE, "probe a provider credential"),
+
     # -- filesystem mutation -------------------------------------------- #
     _rule("POST", r"^/api/storage/upload/", WRITE, "file upload"),
     _rule("POST", r"^/api/storage/extract/", WRITE, "archive extraction"),

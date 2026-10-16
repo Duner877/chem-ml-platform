@@ -10,6 +10,7 @@ import {
   IconCube,
   IconFolder,
   IconGrid,
+  IconKey,
   IconSparkle,
   IconTerminal,
 } from "./Icons";
@@ -20,6 +21,8 @@ interface RailButton {
   icon: typeof IconCube;
   onSelect: () => void;
   active: boolean;
+  /** Draws a small amber dot: the button has something to act on. */
+  alert?: boolean;
 }
 
 export default function IconRail() {
@@ -32,7 +35,15 @@ export default function IconRail() {
     setMarketplace,
     dockTab,
     setDockTab,
+    setDockOpen,
+    credentialCount,
   } = useEditor();
+
+  function openTab(tab: "agent" | "apikey") {
+    // Clicking a rail entry on a collapsed dock must not look like it worked.
+    if (!useEditor.getState().dockOpen) setDockOpen(true);
+    setDockTab(tab);
+  }
 
   const top: RailButton[] = [
     {
@@ -53,8 +64,16 @@ export default function IconRail() {
       id: "agent",
       label: translate(lang, "dockAgent"),
       icon: IconSparkle,
-      onSelect: () => setDockTab("agent"),
+      onSelect: () => openTab("agent"),
       active: dockTab === "agent",
+    },
+    {
+      id: "apikey",
+      label: translate(lang, "dockApiKey"),
+      icon: IconKey,
+      onSelect: () => openTab("apikey"),
+      active: dockTab === "apikey",
+      alert: credentialCount === 0,
     },
   ];
 
@@ -84,13 +103,21 @@ export default function IconRail() {
         title={button.label}
         aria-label={button.label}
         onClick={button.onSelect}
-        className={`flex h-9 w-9 items-center justify-center rounded-md transition ${
+        className={`relative flex h-9 w-9 items-center justify-center rounded-md transition ${
           button.active
             ? "bg-accent/15 text-accent"
-            : "text-[rgb(var(--c-text-dim))] hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
+            : button.alert
+              ? "text-warn hover:bg-panel2 hover:text-warn"
+              : "text-[rgb(var(--c-text-dim))] hover:bg-panel2 hover:text-[rgb(var(--c-text))]"
         }`}
       >
         <Icon size={17} />
+        {button.alert && (
+          <span
+            aria-hidden="true"
+            className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-warn"
+          />
+        )}
       </button>
     );
   }

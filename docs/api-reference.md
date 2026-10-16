@@ -248,6 +248,61 @@ Base URL：`http://localhost:8000`，所有路由前缀 `/api`。交互式文档
 { "prompt": "用一句话解释 EHT", "family": "auto", "context": "" }
 ```
 
+## 3.5 凭据管理（v0.7.3 新增）
+
+与 `/api/ai/config` 分开：后者改**行为**（模式、供应商、模型、温度），本节管**密钥**。
+本节任何响应都**不包含已存的明文密钥**——只有掩码、长度与来源。一个显示不出密钥的界面，才值得用户把密钥交给他。
+
+### `GET /api/credentials`
+
+```json
+{
+  "backend": "file",
+  "backend_label": { "zh": "本地文件（config/credentials.json）", "en": "local file (config/credentials.json)" },
+  "warning": { "zh": "当前系统没有可用的密钥环…", "en": "No OS keyring is available…" },
+  "credentials": [
+    { "provider": "deepseek", "labels": { "zh": "DeepSeek", "en": "DeepSeek" },
+      "kind": "cloud", "env_var": "DEEPSEEK_API_KEY", "configured": true,
+      "source": "environment", "masked": "sk-a•••••3456", "length": 40,
+      "docs_url": "https://…", "notes": { "zh": "…", "en": "…" },
+      "default_base_url": "https://api.deepseek.com/v1" }
+  ]
+}
+```
+
+`backend` 为 `keyring` 或 `file`；非 `keyring` 时 `warning` 一定非空——用户以为密钥进了系统密钥环时，
+应当在这里就知道它其实是明文文件。掩码保留首尾各 4 字符，≤ 8 字符全掩。
+
+### `GET /api/credentials/providers`
+
+仅返回目录（9 家服务商的中英文名、环境变量、文档链接、默认端点、备注），供界面在尚未存储任何密钥时渲染下拉框。
+
+### `POST /api/credentials`
+
+```json
+{ "provider": "deepseek", "secret": "sk-…", "base_url": "" }
+```
+
+写入存储**并同步推入 `os.environ`**：供应商读的是环境变量，只落盘会让界面显示「已配置」而运行时仍在离线降级。
+返回 `{ provider, stored_in, masked, status }`，其中 `stored_in ∈ {keyring, file, environment}`。
+空值或含换行的密钥返回 422，未知服务商返回 404。
+
+### `DELETE /api/credentials/{provider}`
+
+清除该服务商在**所有**可能位置的密钥（环境变量、密钥环、文件）。返回 `{ provider, removed, status }`；
+本来就没有密钥时 `removed` 为 `false` 且仍返回 200——「本来就没有」是界面要显示的答案。
+
+### `POST /api/credentials/{provider}/test`
+
+对已存密钥做一次真实连通性探测（`max_tokens=1`）。
+
+```json
+{ "provider": "deepseek", "ok": false, "detail": "HTTP 401: the key was rejected -- check it in the provider's console" }
+```
+
+服务商拒绝密钥返回 **200 + `ok: false`**：这是要显示给用户的诊断，不是传输层错误。
+只有未知服务商才是 404。本地服务商（Ollama / vLLM）没有可探测的密钥，返回 `ok: false` 并指向 AI 面板的测试按钮。
+
 返回补全文本与真实来源（外部分不可用时为 `built-in`，并在 `skipped` 中记录原因）。
 
 ### `POST /api/ai/test`

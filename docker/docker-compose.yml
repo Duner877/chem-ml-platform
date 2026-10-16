@@ -1,4 +1,4 @@
-# Chem ML Platform v0.7.2 -- compose stack.
+# Chem ML Platform v0.7.3 -- compose stack.
 #
 #   docker compose -f docker/docker-compose.yml up --build
 #       -> API + pre-built frontend on http://localhost:8000
@@ -15,7 +15,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: chem-ml-platform:0.7.2
+    image: chem-ml-platform:0.7.3
     container_name: chemml-api
     restart: unless-stopped
     ports:

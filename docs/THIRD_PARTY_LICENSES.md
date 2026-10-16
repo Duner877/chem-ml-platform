@@ -1,4 +1,4 @@
-# 第三方依赖与许可证清单（Chem ML Platform 0.7.2）
+# 第三方依赖与许可证清单（Chem ML Platform 0.7.3）
 
 > 生成脚本：`scripts/license_report.py`；所有条目均来自**真实**的安装 / 锁定元数据。
 > 本项目自身许可：**Apache-2.0**（见根目录 `LICENSE`）。

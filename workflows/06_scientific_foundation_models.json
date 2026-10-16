@@ -1,7 +1,7 @@
 {
   "name": "科学基座模型表征 / Scientific Foundation Model Profiling",
   "description": "对咖啡因依次执行三种科学基座模型——ChemBERTa（SMILES 语言模型嵌入）、Uni-Mol（三维几何嵌入）与理化描述符（Molecular Descriptors）——输出分子嵌入与性质向量，最后交由 Report Agent 汇总为基座模型表征报告。演示 v0.6 统一科学基座模型运行时（foundation）在节点层的调用。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

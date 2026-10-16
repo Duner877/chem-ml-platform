@@ -9,11 +9,13 @@ import Inspector from "./Inspector";
 import PlotPanel from "./PlotPanel";
 import AIPanel from "./AIPanel";
 import AgentPanel from "./AgentPanel";
+import ApiKeyPanel from "./ApiKeyPanel";
 import DataPanel from "./DataPanel";
 import SimulationPanel from "./SimulationPanel";
 import {
   IconSparkle,
   IconStar,
+  IconKey,
   IconTerminal,
   IconGrid,
   IconCube,
@@ -26,6 +28,7 @@ const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
   { id: "plot", label: "dockPlot", icon: IconImage },
   { id: "ai", label: "dockAI", icon: IconStar },
   { id: "agent", label: "dockAgent", icon: IconSparkle },
+  { id: "apikey", label: "dockApiKey", icon: IconKey },
   { id: "data", label: "dockData", icon: IconGrid },
   { id: "simulation", label: "dockSimulation", icon: IconTerminal },
 ];
@@ -87,6 +90,7 @@ export default function Dock() {
         {dockTab === "plot" && <PlotPanel />}
         {dockTab === "ai" && <AIPanel />}
         {dockTab === "agent" && <AgentPanel />}
+        {dockTab === "apikey" && <ApiKeyPanel />}
         {dockTab === "data" && <DataPanel />}
         {dockTab === "simulation" && <SimulationPanel />}
       </div>

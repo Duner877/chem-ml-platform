@@ -1,0 +1,114 @@
+{
+  "name": "硬碳预脱溶剂 / Hard-carbon Pre-desolvation",
+  "description": "复现 Nat. Commun. 15, 3497 (2024) 的尺寸筛分预脱溶剂机制：按溶剂化结构特征尺寸判定能否穿过 ~4 Å 墨水瓶孔，给出过孔能垒与孔内 Na–P 配位，再串起静置老化动力学与双 SEI 活化能证据链，最后由汇总节点检查三条支路是否自洽。首效曲线锚定在论文两个实测点（12 h 的 90.14% 与 10 天的 99.09%）。",
+  "version": "0.7.3",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Demo",
+    "tags": [
+      "hard-carbon",
+      "desolvation",
+      "sei",
+      "sodium",
+      "battery",
+      "arrhenius"
+    ],
+    "language": "zh",
+    "citation": "Lu, Yang et al., Nat. Commun. 15, 3497 (2024), doi:10.1038/s41467-024-47522-y",
+    "expected_outputs": [
+      "table",
+      "spectrum",
+      "text"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "sieve",
+      "type": "DesolvationSieveNode",
+      "label": "尺寸筛分（4 Å 孔口）",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": {
+        "pore_diameter": 4.0,
+        "electrolyte": "ether",
+        "concentration": 1.0,
+        "dielectric": 7.2,
+        "language": "zh"
+      },
+      "label_en": "Size sieve (4 A throat)"
+    },
+    {
+      "id": "aging",
+      "type": "ElectrolyteAgingNode",
+      "label": "静置老化动力学",
+      "position": {
+        "x": 0,
+        "y": 220
+      },
+      "params": {
+        "tau_fill": 20.27,
+        "r_initial": 86.2,
+        "r_residual": 14.6,
+        "sei_loss": 8.95,
+        "residual_loss": 0.91,
+        "max_time": 240.0,
+        "language": "zh"
+      },
+      "label_en": "Rest-time aging kinetics"
+    },
+    {
+      "id": "sei",
+      "type": "DoubleSEIEnergeticsNode",
+      "label": "双 SEI 活化能（醚系）",
+      "position": {
+        "x": 0,
+        "y": 440
+      },
+      "params": {
+        "electrolyte": "ether",
+        "process": "1",
+        "dielectric": 7.2,
+        "language": "zh"
+      },
+      "label_en": "Double SEI activation energies (ether)"
+    },
+    {
+      "id": "mechanism",
+      "type": "PreDesolvationMechanismNode",
+      "label": "机制汇总与自洽检查",
+      "position": {
+        "x": 400,
+        "y": 220
+      },
+      "params": {
+        "language": "zh"
+      },
+      "label_en": "Mechanism roll-up and consistency check"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-sieve-mech",
+      "source": "sieve",
+      "source_port": "sieve",
+      "target": "mechanism",
+      "target_port": "sieve"
+    },
+    {
+      "id": "e-aging-mech",
+      "source": "aging",
+      "source_port": "table",
+      "target": "mechanism",
+      "target_port": "aging"
+    },
+    {
+      "id": "e-sei-mech",
+      "source": "sei",
+      "source_port": "table",
+      "target": "mechanism",
+      "target_port": "energetics"
+    }
+  ]
+}

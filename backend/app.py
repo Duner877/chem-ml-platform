@@ -100,8 +100,8 @@ def create_app() -> FastAPI:
     )
 
     from backend.routers import (
-        ai, agent, data, files, foundation, nodes, runs, simulations, storage,
-        workflows, ws,
+        ai, agent, credentials, data, files, foundation, nodes, runs, simulations,
+        storage, workflows, ws,
     )
 
     app.include_router(nodes.router, prefix="/api")
@@ -115,6 +115,10 @@ def create_app() -> FastAPI:
     app.include_router(foundation.router, prefix="/api")
     app.include_router(storage.router, prefix="/api")
     app.include_router(files.router, prefix="/api")
+    # Credential management is its own router rather than part of ``ai``: the
+    # config endpoints edit behaviour, these manage secrets, and the GUI needs
+    # them to be reachable without touching the AI configuration form.
+    app.include_router(credentials.router, prefix="/api")
 
     @app.get("/api/health", tags=["meta"])
     async def health() -> dict:

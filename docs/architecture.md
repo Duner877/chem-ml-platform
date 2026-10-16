@@ -215,7 +215,35 @@ v0.6 把所有"外部能力"收敛为**门面 + 注册表 + 诚实降级**三件
 
 `JobManager`（线程池）包装 `runtime.run(family, system, backend)`，提供 `submit / run_now / list / get / stats`，`SimulationJob` 记录状态、结果与来源引擎。
 
-### 5.5 依赖方向
+### 5.5 凭据存储 `ai_runtime/credentials.py`（v0.7.3）
+
+与 `ai_runtime/config.py` 分工明确：config 管**行为**（模式、供应商、模型），credentials 管**密钥**。存储顺序为**系统密钥环 → 本地文件**（`config/credentials.json`，已 gitignore，权限 600）。
+
+写入时同步推入 `os.environ`：供应商读的是环境变量，只落盘会让界面显示「已配置」而运行时仍在离线降级。删除会清除**所有**位置（环境变量、密钥环、文件）——界面上的「忘记此密钥」必须真的忘记。
+
+任何响应都不含明文：`mask_secret()` 保留首尾各 4 字符，≤ 8 字符全掩。没有「显示明文」按钮，因为后端根本不发送。
+
+### 5.6 Agent 工具守卫 `agent_runtime/tool_guard.py`（v0.7.3）
+
+借鉴腾讯开源 [Octop](https://github.com/TencentCloud/Octop) 的 `tool_guard`。核心是**一个判定点**：任何入口（Agent 节点、`/api/agent/*`、工作流运行）在执行**之前**都要过 `check_tool_call()`，而不是事后补一条日志。
+
+```
+ToolCall(node_type, approved?)
+      │
+      ▼
+  ToolGuard.check()          首条匹配胜出；无匹配 → deny
+      │
+   ┌──┴──┬────────┐
+allow  approval  deny
+                │
+        approved=True 才放行
+```
+
+判定分三档而非布尔值：读与删不是同一个决定。规则是数据（`config/tool_guard.json`），用户可编辑而不必读 Python。
+
+**为什么 `approval` 在这里不是弹窗**：Octop 是多用户服务，审批有第二个人；本项目是单用户桌面工作流，没有人可审批。伪造一个对话框比直接说不行更糟，因此 `approval` 表示「调用方必须显式批准」，Agent 节点把它作为明确拒绝上报。被拒节点**直接让任务失败**（`status: refused`）——记一条「denied」然后照常执行，比没有守卫更糟。
+
+### 5.7 依赖方向
 
 ```
 backend/ ─▶ foundation/ ai_runtime/ data_layer/ simulation_runtime/ ─▶ models/ simulations/ databases/

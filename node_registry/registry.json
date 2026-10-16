@@ -1,6 +1,6 @@
 {
   "package": "nodes",
-  "modules_scanned": 53,
+  "modules_scanned": 56,
   "modules": [
     "nodes._helpers",
     "nodes.agent",
@@ -23,6 +23,7 @@
     "nodes.gpu.gpu_nodes",
     "nodes.instruments",
     "nodes.instruments._base",
+    "nodes.instruments.desolvation",
     "nodes.instruments.diffraction",
     "nodes.instruments.electro",
     "nodes.instruments.electronic",
@@ -34,6 +35,7 @@
     "nodes.instruments.ms",
     "nodes.instruments.nmr",
     "nodes.instruments.particle",
+    "nodes.instruments.seismic",
     "nodes.instruments.surface",
     "nodes.instruments.thermal",
     "nodes.instruments.vendor_adapters",
@@ -44,6 +46,7 @@
     "nodes.instruments.vendor_adapters.thermo",
     "nodes.instruments.vendor_adapters.waters",
     "nodes.instruments.vibrational",
+    "nodes.instruments.xas_sim2real",
     "nodes.io",
     "nodes.loader",
     "nodes.question",
@@ -60,7 +63,7 @@
     {
       "node_name": "AFLOW",
       "type": "AFLOWNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -128,7 +131,7 @@
     {
       "node_name": "AFM",
       "type": "AFMNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -203,7 +206,7 @@
     {
       "node_name": "Agent Planner",
       "type": "AgentPlanNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "question",
@@ -269,7 +272,7 @@
     {
       "node_name": "BET Surface Area",
       "type": "BETNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -336,7 +339,7 @@
     {
       "node_name": "BMRB",
       "type": "BMRBNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -405,7 +408,7 @@
     {
       "node_name": "Baseline Correction",
       "type": "BaselineCorrectionNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -464,7 +467,7 @@
     {
       "node_name": "COD",
       "type": "CODNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -532,7 +535,7 @@
     {
       "node_name": "CP2K",
       "type": "CP2KNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -624,7 +627,7 @@
     {
       "node_name": "Cyclic Voltammetry",
       "type": "CVNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -691,7 +694,7 @@
     {
       "node_name": "ChEMBL",
       "type": "ChEMBLNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -759,7 +762,7 @@
     {
       "node_name": "ChemBERTa",
       "type": "ChemBERTaNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -828,7 +831,7 @@
     {
       "node_name": "DLS",
       "type": "DLSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -895,7 +898,7 @@
     {
       "node_name": "DMA",
       "type": "DMANode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -962,7 +965,7 @@
     {
       "node_name": "DSC",
       "type": "DSCNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -1028,9 +1031,142 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "Pre-desolvation Sieve",
+      "type": "DesolvationSieveNode",
+      "version": "0.7.3",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "sieve",
+          "data_type": "Table",
+          "description": "各溶剂化结构的尺寸、反射系数与过孔能垒",
+          "optional": false,
+          "multi": false,
+          "description_en": "各溶剂化结构的尺寸、反射系数与过孔能垒"
+        },
+        {
+          "name": "barrier",
+          "data_type": "Spectrum",
+          "description": "过孔相对能量曲线（Fig. 2e）",
+          "optional": false,
+          "multi": false,
+          "description_en": "过孔相对能量曲线（Fig. 2e）"
+        },
+        {
+          "name": "rdf",
+          "data_type": "Spectrum",
+          "description": "Na–P 径向分布：体相 vs 孔内",
+          "optional": false,
+          "multi": false,
+          "description_en": "Na–P 径向分布：体相 vs 孔内"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "预脱溶剂机理说明与数据出处",
+          "optional": false,
+          "multi": false,
+          "description_en": "预脱溶剂机理说明与数据出处"
+        }
+      ],
+      "author": "",
+      "description": "硬碳纳米孔的尺寸筛分模型：按溶剂化结构特征尺寸判定能否穿过孔口，给出过孔能垒曲线与孔内 Na–P 配位（Fig. 2d/2e + 补充 Fig. 9）。",
+      "name_zh": "Pre-desolvation Sieve",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "硬碳纳米孔的尺寸筛分模型：按溶剂化结构特征尺寸判定能否穿过孔口，给出过孔能垒曲线与孔内 Na–P 配位（Fig. 2d/2e + 补充 Fig. 9）。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "hard-carbon",
+        "desolvation",
+        "solvation",
+        "sei",
+        "sodium",
+        "pore"
+      ],
+      "module": "nodes.instruments.desolvation",
+      "capabilities": [
+        "models_nanopore_desolvation"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
+      "node_name": "Double SEI Energetics",
+      "type": "DoubleSEIEnergeticsNode",
+      "version": "0.7.3",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "arrhenius",
+          "data_type": "Spectrum",
+          "description": "ln(1/R) ~ 1000/T 拟合直线",
+          "optional": false,
+          "multi": false,
+          "description_en": "ln(1/R) ~ 1000/T 拟合直线"
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "S-SEI / I-SEI 活化能与降幅",
+          "optional": false,
+          "multi": false,
+          "description_en": "S-SEI / I-SEI 活化能与降幅"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "双 SEI 机理与 LUMO 估算",
+          "optional": false,
+          "multi": false,
+          "description_en": "双 SEI 机理与 LUMO 估算"
+        }
+      ],
+      "author": "",
+      "description": "双 SEI 能量学：对比表面 SEI 与孔内 SEI 的活化能（Fig. 4h/4i），给出 Arrhenius 直线，并估算预脱溶剂引起的电解液 LUMO 位移。",
+      "name_zh": "Double SEI Energetics",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "双 SEI 能量学：对比表面 SEI 与孔内 SEI 的活化能（Fig. 4h/4i），给出 Arrhenius 直线，并估算预脱溶剂引起的电解液 LUMO 位移。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "sei",
+        "arrhenius",
+        "activation-energy",
+        "lumo",
+        "hard-carbon"
+      ],
+      "module": "nodes.instruments.desolvation",
+      "capabilities": [
+        "models_double_sei_energetics"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
       "node_name": "EIS",
       "type": "EISNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -1095,9 +1231,71 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "Electrolyte Aging",
+      "type": "ElectrolyteAgingNode",
+      "version": "0.7.3",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "curves",
+          "data_type": "Spectrum",
+          "description": "阻抗 / OCP / 首效 随静置时间",
+          "optional": false,
+          "multi": false,
+          "description_en": "阻抗 / OCP / 首效 随静置时间"
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "老化序列逐点数值",
+          "optional": false,
+          "multi": false,
+          "description_en": "老化序列逐点数值"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "老化机理说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "老化机理说明"
+        }
+      ],
+      "author": "",
+      "description": "电解液静置老化动力学：按孔填充时间常数给出界面阻抗、开路电压与首效随静置时间的演化（Fig. 1a/1c/1d）。",
+      "name_zh": "Electrolyte Aging",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "电解液静置老化动力学：按孔填充时间常数给出界面阻抗、开路电压与首效随静置时间的演化（Fig. 1a/1c/1d）。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "aging",
+        "sei",
+        "ice",
+        "impedance",
+        "hard-carbon"
+      ],
+      "module": "nodes.instruments.desolvation",
+      "capabilities": [
+        "models_electrolyte_aging"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
       "node_name": "Export Result",
       "type": "ExportNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "data",
@@ -1157,7 +1355,7 @@
     {
       "node_name": "FTIR Imaging",
       "type": "FTIRImagingNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -1230,9 +1428,104 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "FWI Inversion",
+      "type": "FWIInversionNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "survey",
+          "data_type": "Survey",
+          "description": "采集对象（必需）",
+          "optional": false,
+          "multi": false,
+          "description_en": "采集对象（必需）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "velocity",
+          "data_type": "Image",
+          "description": "反演速度模型（灰度图，物理像素尺寸）",
+          "optional": false,
+          "multi": false,
+          "description_en": "反演速度模型（灰度图，物理像素尺寸）"
+        },
+        {
+          "name": "velocity_table",
+          "data_type": "Table",
+          "description": "逐深度速度剖面与照明度",
+          "optional": false,
+          "multi": false,
+          "description_en": "逐深度速度剖面与照明度"
+        },
+        {
+          "name": "wavelet",
+          "data_type": "Spectrum",
+          "description": "估计震源子波",
+          "optional": false,
+          "multi": false,
+          "description_en": "估计震源子波"
+        },
+        {
+          "name": "progress",
+          "data_type": "Table",
+          "description": "分阶段误差与迭代记录",
+          "optional": false,
+          "multi": false,
+          "description_en": "分阶段误差与迭代记录"
+        },
+        {
+          "name": "report",
+          "data_type": "Text",
+          "description": "完整反演结果（JSON），供下游节点引用",
+          "optional": false,
+          "multi": false,
+          "description_en": "完整反演结果（JSON），供下游节点引用"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "反演方法、验证结果与诚实说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "反演方法、验证结果与诚实说明"
+        }
+      ],
+      "author": "",
+      "description": "二维声学全波形反演：频率递进 + 伴随梯度 + 照明度均衡 + 线搜索，输出速度模型、估计子波与分阶段误差。",
+      "name_zh": "FWI Inversion",
+      "category_zh": "Instruments/Seismic",
+      "description_en": "二维声学全波形反演：频率递进 + 伴随梯度 + 照明度均衡 + 线搜索，输出速度模型、估计子波与分阶段误差。",
+      "category": "Instruments/Seismic",
+      "tags": [
+        "seismic",
+        "fwi",
+        "inversion",
+        "adjoint",
+        "frequency-continuation"
+      ],
+      "module": "nodes.instruments.seismic",
+      "capabilities": [
+        "models_seismic_fwi"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
       "node_name": "Fluorescence",
       "type": "FluorescenceNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -1299,7 +1592,7 @@
     {
       "node_name": "Fragmentation Pathway",
       "type": "FragmentationPathwayNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -1379,7 +1672,7 @@
     {
       "node_name": "Functional Groups",
       "type": "FunctionalGroupNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "data",
@@ -1438,7 +1731,7 @@
     {
       "node_name": "GC-MS",
       "type": "GCMSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -1505,7 +1798,7 @@
     {
       "node_name": "GNPS",
       "type": "GNPSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -1574,7 +1867,7 @@
     {
       "node_name": "GROMACS",
       "type": "GROMACSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -1664,7 +1957,7 @@
     {
       "node_name": "GROVER",
       "type": "GROVERNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -1734,7 +2027,7 @@
     {
       "node_name": "Gaussian",
       "type": "GaussianNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -1826,7 +2119,7 @@
     {
       "node_name": "GPU Device Info",
       "type": "GpuDeviceInfoNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -1878,7 +2171,7 @@
     {
       "node_name": "Graphormer",
       "type": "GraphormerNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -1947,7 +2240,7 @@
     {
       "node_name": "HMDB",
       "type": "HMDBNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -2016,7 +2309,7 @@
     {
       "node_name": "Hyperspectral Imaging",
       "type": "HyperspectralNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -2091,7 +2384,7 @@
     {
       "node_name": "ICP-MS",
       "type": "ICPMSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -2158,7 +2451,7 @@
     {
       "node_name": "ICSD",
       "type": "ICSDNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -2226,7 +2519,7 @@
     {
       "node_name": "FTIR",
       "type": "IRNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -2293,7 +2586,7 @@
     {
       "node_name": "Load Image",
       "type": "ImageFileNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -2337,7 +2630,7 @@
     {
       "node_name": "Inference Benchmark",
       "type": "InferenceBenchmarkNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -2381,7 +2674,7 @@
     {
       "node_name": "LAMMPS",
       "type": "LAMMPSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -2471,7 +2764,7 @@
     {
       "node_name": "LC-MS",
       "type": "LCMSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -2538,7 +2831,7 @@
     {
       "node_name": "LLM Reasoner",
       "type": "LLMNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "prompt",
@@ -2610,7 +2903,7 @@
     {
       "node_name": "MALDI-TOF",
       "type": "MALDINode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -2677,7 +2970,7 @@
     {
       "node_name": "MassBank",
       "type": "MassBankNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -2746,7 +3039,7 @@
     {
       "node_name": "Material Discovery",
       "type": "MaterialDiscoveryNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "xrd",
@@ -2846,7 +3139,7 @@
     {
       "node_name": "Material Input",
       "type": "MaterialInputNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -2887,7 +3180,7 @@
     {
       "node_name": "Materials Project",
       "type": "MaterialsProjectNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -2955,7 +3248,7 @@
     {
       "node_name": "MoNA",
       "type": "MoNANode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -3023,7 +3316,7 @@
     {
       "node_name": "Model Inference",
       "type": "ModelInferenceNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -3067,7 +3360,7 @@
     {
       "node_name": "Molecular Descriptors",
       "type": "MolecularDescriptorsNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -3134,7 +3427,7 @@
     {
       "node_name": "Molecule Input",
       "type": "MoleculeInputNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -3180,7 +3473,7 @@
     {
       "node_name": "NIST Library",
       "type": "NISTNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -3249,7 +3542,7 @@
     {
       "node_name": "NMR Spectrometer",
       "type": "NMRNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -3317,7 +3610,7 @@
     {
       "node_name": "Normalize",
       "type": "NormalizeNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -3371,7 +3664,7 @@
     {
       "node_name": "ORCA",
       "type": "ORCANode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -3463,7 +3756,7 @@
     {
       "node_name": "OpenMM",
       "type": "OpenMMNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -3550,7 +3843,7 @@
     {
       "node_name": "PDB",
       "type": "PDBNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -3619,7 +3912,7 @@
     {
       "node_name": "Peak Picking",
       "type": "PeakPickingNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -3689,9 +3982,104 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "Pre-desolvation Mechanism",
+      "type": "PreDesolvationMechanismNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "sieve",
+          "data_type": "Table",
+          "description": "尺寸筛分结果",
+          "optional": true,
+          "multi": false,
+          "description_en": "尺寸筛分结果"
+        },
+        {
+          "name": "aging",
+          "data_type": "Table",
+          "description": "静置老化序列",
+          "optional": true,
+          "multi": false,
+          "description_en": "静置老化序列"
+        },
+        {
+          "name": "energetics",
+          "data_type": "Table",
+          "description": "双 SEI 活化能",
+          "optional": true,
+          "multi": false,
+          "description_en": "双 SEI 活化能"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mechanism",
+          "data_type": "Spectrum",
+          "description": "首效 / 孔径比 合并视图",
+          "optional": false,
+          "multi": false,
+          "description_en": "首效 / 孔径比 合并视图"
+        },
+        {
+          "name": "barriers",
+          "data_type": "Spectrum",
+          "description": "表面 SEI 与孔内 SEI 活化能对比",
+          "optional": false,
+          "multi": false,
+          "description_en": "表面 SEI 与孔内 SEI 活化能对比"
+        },
+        {
+          "name": "stages",
+          "data_type": "Table",
+          "description": "分阶段判据与自洽性检查",
+          "optional": false,
+          "multi": false,
+          "description_en": "分阶段判据与自洽性检查"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "机制证据链与限制说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "机制证据链与限制说明"
+        }
+      ],
+      "author": "",
+      "description": "预脱溶剂机制汇总节点：把尺寸筛分、静置老化与双 SEI 能量学三条支路接成一条证据链，逐项检查三者是否自洽，输出论文 Fig.1a 的首效主曲线与可交互的分阶段判据表。",
+      "name_zh": "Pre-desolvation Mechanism",
+      "category_zh": "仪器 / 电化学",
+      "description_en": "预脱溶剂机制汇总节点：把尺寸筛分、静置老化与双 SEI 能量学三条支路接成一条证据链，逐项检查三者是否自洽，输出论文 Fig.1a 的首效主曲线与可交互的分阶段判据表。",
+      "category": "Instruments/Electrochemistry",
+      "tags": [
+        "hard-carbon",
+        "desolvation",
+        "sei",
+        "evidence",
+        "sodium"
+      ],
+      "module": "nodes.instruments.desolvation",
+      "capabilities": [
+        "models_pre_desolvation_mechanism"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
       "node_name": "Profile to Centroid",
       "type": "ProfileCentroidNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -3759,7 +4147,7 @@
     {
       "node_name": "Property Prediction",
       "type": "PropertyPredictionNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -3834,7 +4222,7 @@
     {
       "node_name": "Psi4",
       "type": "Psi4Node",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -3925,7 +4313,7 @@
     {
       "node_name": "PubChem",
       "type": "PubChemNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -3993,7 +4381,7 @@
     {
       "node_name": "PyTorch Tensor Operation",
       "type": "PyTorchTensorOpNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -4036,7 +4424,7 @@
     {
       "node_name": "Quantum ESPRESSO",
       "type": "QuantumESPRESSONode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "material",
@@ -4127,7 +4515,7 @@
     {
       "node_name": "Raman Mapping",
       "type": "RamanMappingNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -4202,7 +4590,7 @@
     {
       "node_name": "Raman",
       "type": "RamanNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -4268,7 +4656,7 @@
     {
       "node_name": "Report Agent",
       "type": "ReportAgentNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "data",
@@ -4331,7 +4719,7 @@
     {
       "node_name": "Report Builder",
       "type": "ReportBuilderNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -4430,7 +4818,7 @@
     {
       "node_name": "Report Export",
       "type": "ReportExportNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "report",
@@ -4491,7 +4879,7 @@
     {
       "node_name": "Resample",
       "type": "ResampleNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -4541,7 +4929,7 @@
     {
       "node_name": "SEM",
       "type": "SEMNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -4616,7 +5004,7 @@
     {
       "node_name": "Scientific Agent",
       "type": "ScientificAgentNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "question",
@@ -4697,9 +5085,269 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "Seismic Forward",
+      "type": "SeismicForwardNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "survey",
+          "data_type": "Survey",
+          "description": "采集对象（必需）",
+          "optional": false,
+          "multi": false,
+          "description_en": "采集对象（必需）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "gather",
+          "data_type": "Spectrum",
+          "description": "正演炮集道集",
+          "optional": false,
+          "multi": false,
+          "description_en": "正演炮集道集"
+        },
+        {
+          "name": "green",
+          "data_type": "Spectrum",
+          "description": "格林函数（单位脉冲响应）",
+          "optional": false,
+          "multi": false,
+          "description_en": "格林函数（单位脉冲响应）"
+        },
+        {
+          "name": "energy",
+          "data_type": "Table",
+          "description": "各炮能量与 CFL 裕度",
+          "optional": false,
+          "multi": false,
+          "description_en": "各炮能量与 CFL 裕度"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "正演设置说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "正演设置说明"
+        }
+      ],
+      "author": "",
+      "description": "用给定或估计的震源子波做正演计算，输出炮集道集与格林函数，并在违反 CFL 稳定条件时明确报错。",
+      "name_zh": "Seismic Forward",
+      "category_zh": "Instruments/Seismic",
+      "description_en": "用给定或估计的震源子波做正演计算，输出炮集道集与格林函数，并在违反 CFL 稳定条件时明确报错。",
+      "category": "Instruments/Seismic",
+      "tags": [
+        "seismic",
+        "fwi",
+        "forward",
+        "green-function",
+        "cfl"
+      ],
+      "module": "nodes.instruments.seismic",
+      "capabilities": [
+        "models_seismic_forward"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
+      "node_name": "Seismic Submission",
+      "type": "SeismicSubmissionNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "velocity",
+          "data_type": "Image",
+          "description": "反演速度模型（必需）",
+          "optional": false,
+          "multi": false,
+          "description_en": "反演速度模型（必需）"
+        },
+        {
+          "name": "survey",
+          "data_type": "Survey",
+          "description": "采集对象（含起始模型，必需）",
+          "optional": false,
+          "multi": false,
+          "description_en": "采集对象（含起始模型，必需）"
+        },
+        {
+          "name": "report",
+          "data_type": "Text",
+          "description": "上游反演节点的完整结果（JSON），提供后才有误差与验证数据",
+          "optional": false,
+          "multi": false,
+          "description_en": "上游反演节点的完整结果（JSON），提供后才有误差与验证数据"
+        },
+        {
+          "name": "wavelet",
+          "data_type": "Spectrum",
+          "description": "上游估计的震源子波（必需，否则 wavelet.npy 为全零）",
+          "optional": false,
+          "multi": false,
+          "description_en": "上游估计的震源子波（必需，否则 wavelet.npy 为全零）"
+        },
+        {
+          "name": "truth",
+          "data_type": "Image",
+          "description": "可选真值剖面（Image；提供后才计算评分）",
+          "optional": false,
+          "multi": false,
+          "description_en": "可选真值剖面（Image；提供后才计算评分）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "summary",
+          "data_type": "Table",
+          "description": "评分与验证指标",
+          "optional": false,
+          "multi": false,
+          "description_en": "评分与验证指标"
+        },
+        {
+          "name": "files",
+          "data_type": "Table",
+          "description": "三个产物的路径与存在性",
+          "optional": false,
+          "multi": false,
+          "description_en": "三个产物的路径与存在性"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "提交说明与读回校验结果",
+          "optional": false,
+          "multi": false,
+          "description_en": "提交说明与读回校验结果"
+        }
+      ],
+      "author": "",
+      "description": "导出赛题要求的三个文件（velocity_model.npy / wavelet.npy / run_summary.json），并在有真值时计算深度均值去除后的横向相关评分。",
+      "name_zh": "Seismic Submission",
+      "category_zh": "Instruments/Seismic",
+      "description_en": "导出赛题要求的三个文件（velocity_model.npy / wavelet.npy / run_summary.json），并在有真值时计算深度均值去除后的横向相关评分。",
+      "category": "Instruments/Seismic",
+      "tags": [
+        "seismic",
+        "fwi",
+        "submission",
+        "export",
+        "score"
+      ],
+      "module": "nodes.instruments.seismic",
+      "capabilities": [
+        "models_seismic_submission"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
+      "node_name": "Seismic Survey",
+      "type": "SeismicSurveyNode",
+      "version": "0.7.3",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "survey",
+          "data_type": "Survey",
+          "description": "采集对象：记录、炮检几何与起始模型",
+          "optional": false,
+          "multi": false,
+          "description_en": "采集对象：记录、炮检几何与起始模型"
+        },
+        {
+          "name": "records",
+          "data_type": "Spectrum",
+          "description": "炮集道集（横轴道号，纵轴振幅）",
+          "optional": false,
+          "multi": false,
+          "description_en": "炮集道集（横轴道号，纵轴振幅）"
+        },
+        {
+          "name": "trend",
+          "data_type": "Spectrum",
+          "description": "一维深度趋势起始速度",
+          "optional": false,
+          "multi": false,
+          "description_en": "一维深度趋势起始速度"
+        },
+        {
+          "name": "truth",
+          "data_type": "Image",
+          "description": "合成真值剖面（仅 source=synthetic 时提供；真实数据无此项）",
+          "optional": false,
+          "multi": false,
+          "description_en": "合成真值剖面（仅 source=synthetic 时提供；真实数据无此项）"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "采集几何说明与数据出处",
+          "optional": false,
+          "multi": false,
+          "description_en": "采集几何说明与数据出处"
+        }
+      ],
+      "author": "",
+      "description": "构建二维声学地震采集：一维深度趋势起始模型 + 炮检几何，无外部数据时生成可复现的合成含断层剖面。",
+      "name_zh": "Seismic Survey",
+      "category_zh": "Instruments/Seismic",
+      "description_en": "构建二维声学地震采集：一维深度趋势起始模型 + 炮检几何，无外部数据时生成可复现的合成含断层剖面。",
+      "category": "Instruments/Seismic",
+      "tags": [
+        "seismic",
+        "fwi",
+        "survey",
+        "acquisition",
+        "inversion"
+      ],
+      "module": "nodes.instruments.seismic",
+      "capabilities": [
+        "models_seismic_forward"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+    },
+    {
       "node_name": "Molecular Similarity",
       "type": "SimilarityNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "a",
@@ -4766,7 +5414,7 @@
     {
       "node_name": "Similarity Search",
       "type": "SimilaritySearchNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -4833,7 +5481,7 @@
     {
       "node_name": "Single Crystal XRD",
       "type": "SingleCrystalXRDNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -4900,7 +5548,7 @@
     {
       "node_name": "Smoothing",
       "type": "SmoothingNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -4954,7 +5602,7 @@
     {
       "node_name": "Load Spectrum",
       "type": "SpectrumFileNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -4997,7 +5645,7 @@
     {
       "node_name": "Spectrum Math",
       "type": "SpectrumMathNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "a",
@@ -5063,7 +5711,7 @@
     {
       "node_name": "Substructure Search",
       "type": "SubstructureSearchNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -5121,7 +5769,7 @@
     {
       "node_name": "Summary Table",
       "type": "SummaryTableNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "spectrum",
@@ -5204,7 +5852,7 @@
     {
       "node_name": "TEM",
       "type": "TEMNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -5279,7 +5927,7 @@
     {
       "node_name": "TGA",
       "type": "TGANode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -5346,7 +5994,7 @@
     {
       "node_name": "Load Table",
       "type": "TableFileNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -5387,7 +6035,7 @@
     {
       "node_name": "Text Input",
       "type": "TextInputNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -5428,7 +6076,7 @@
     {
       "node_name": "Train Model",
       "type": "TrainModelNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "table",
@@ -5490,7 +6138,7 @@
     {
       "node_name": "UV-Vis",
       "type": "UVVisNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -5557,7 +6205,7 @@
     {
       "node_name": "Uni-Mol",
       "type": "UniMolNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "molecule",
@@ -5626,7 +6274,7 @@
     {
       "node_name": "Unknown Compound Identification",
       "type": "UnknownCompoundIdentificationNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "ms",
@@ -5741,7 +6389,7 @@
     {
       "node_name": "VASP",
       "type": "VASPNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "material",
@@ -5832,7 +6480,7 @@
     {
       "node_name": "Load Vendor Spectrum",
       "type": "VendorSpectrumNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [],
       "outputs": [
         {
@@ -5895,7 +6543,7 @@
     {
       "node_name": "Vision Model",
       "type": "VisionNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "image",
@@ -5964,7 +6612,7 @@
     {
       "node_name": "XAS",
       "type": "XASNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -6030,9 +6678,78 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "XAS 谱域映射",
+      "type": "XASSim2RealNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "待映射的源谱（模拟谱或实验谱）",
+          "optional": true,
+          "multi": true,
+          "description_en": "待映射的源谱（模拟谱或实验谱）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prediction",
+          "data_type": "Spectrum",
+          "description": "目标域预测谱",
+          "optional": false,
+          "multi": false,
+          "description_en": "目标域预测谱"
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "逐点预测与残差",
+          "optional": false,
+          "multi": false,
+          "description_en": "逐点预测与残差"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "映射方法与可靠性说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "映射方法与可靠性说明"
+        }
+      ],
+      "author": "",
+      "description": "XANES 谱到谱双向迁移：sim2exp 由标准化模拟谱预测实验谱，exp2sim 反向。采用恒等映射 + 岭回归/近邻残差修正，输出方法来源、支撑样本量与外推标记，不做物相或结构判定。",
+      "name_zh": "XAS 谱域映射",
+      "category_zh": "仪器 / 表面",
+      "description_en": "XANES 谱到谱双向迁移：sim2exp 由标准化模拟谱预测实验谱，exp2sim 反向。采用恒等映射 + 岭回归/近邻残差修正，输出方法来源、支撑样本量与外推标记，不做物相或结构判定。",
+      "category": "Instruments/Surface",
+      "tags": [
+        "xas",
+        "xanes",
+        "sim2exp",
+        "exp2sim",
+        "domain transfer",
+        "spectrum"
+      ],
+      "module": "nodes.instruments.xas_sim2real",
+      "capabilities": [],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
       "node_name": "XPS",
       "type": "XPSNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -6099,7 +6816,7 @@
     {
       "node_name": "XRD",
       "type": "XRDNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "sample",
@@ -6166,7 +6883,7 @@
     {
       "node_name": "ZINC",
       "type": "ZINCNode",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "inputs": [
         {
           "name": "query",
@@ -6291,7 +7008,7 @@
     },
     {
       "category": "Instruments/Electrochemistry",
-      "count": 2
+      "count": 6
     },
     {
       "category": "Instruments/Electronic",
@@ -6318,8 +7035,12 @@
       "count": 2
     },
     {
+      "category": "Instruments/Seismic",
+      "count": 4
+    },
+    {
       "category": "Instruments/Surface",
-      "count": 2
+      "count": 3
     },
     {
       "category": "Instruments/Thermal",
@@ -6350,15 +7071,22 @@
       "count": 4
     }
   ],
-  "total_nodes": 90,
+  "total_nodes": 99,
   "availability_summary": {
-    "executable": 77,
+    "executable": 86,
     "experimental": 5,
     "unavailable": 8
   },
   "capability_summary": {
     "deduces_fragmentation_pathway": 1,
     "experimental": 13,
+    "models_double_sei_energetics": 1,
+    "models_electrolyte_aging": 1,
+    "models_nanopore_desolvation": 1,
+    "models_pre_desolvation_mechanism": 1,
+    "models_seismic_forward": 2,
+    "models_seismic_fwi": 1,
+    "models_seismic_submission": 1,
     "nondeterministic": 2,
     "requires_external_software": 9,
     "requires_gpu": 4,
@@ -6377,17 +7105,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 77,
+    "executable": 86,
     "experimental": 1,
     "unavailable": 8,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 90
+    "internal_approximation": 99
   },
   "reproducibility_summary": {
-    "deterministic": 88,
+    "deterministic": 97,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 85
+  "nodes_without_validation_evidence": 94
 }

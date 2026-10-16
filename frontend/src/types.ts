@@ -175,6 +175,62 @@ export interface AICompletion {
   metadata: Record<string, unknown>;
 }
 
+/** One provider's credential, described without disclosing the secret. */
+export interface CredentialStatus {
+  provider: string;
+  /** Chinese and English display names. */
+  labels: Record<string, string>;
+  /** ``"cloud"`` for a hosted API, ``"local"`` for Ollama / vLLM. */
+  kind: string;
+  env_var: string;
+  configured: boolean;
+  /** Where the value came from: environment, keyring, file or none. */
+  source: string;
+  /** e.g. ``sk-a•••••3456`` — never the whole secret. */
+  masked: string;
+  length: number;
+  docs_url: string;
+  notes: Record<string, string>;
+  default_base_url: string;
+}
+
+/** The catalogue entry used to render the picker before anything is stored. */
+export interface CredentialProvider {
+  id: string;
+  labels: Record<string, string>;
+  kind: string;
+  env_var: string;
+  docs_url: string;
+  default_base_url: string;
+  notes: Record<string, string>;
+}
+
+export interface CredentialStore {
+  /** ``"keyring"``, ``"file"`` — where a newly added key would land. */
+  backend: string;
+  backend_label: Record<string, string>;
+  /** Present only when the backend is a plain file; bilingual. */
+  warning: Record<string, string> | null;
+  credentials: CredentialStatus[];
+}
+
+export interface CredentialStoreResult {
+  provider: string;
+  status: CredentialStore;
+  masked?: string;
+  stored_in?: string;
+  removed?: boolean;
+}
+
+export interface CredentialProbe {
+  provider: string;
+  /** A rejected key is ``ok: false`` with a 200, not an exception. */
+  ok: boolean;
+  detail: string;
+  latency_ms?: number;
+  model?: string;
+}
+
 export interface AgentFinding {
   text: string;
   status: string;

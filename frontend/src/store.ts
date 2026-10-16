@@ -30,7 +30,14 @@ import {
 export type NodeStatus = "idle" | "running" | "completed" | "failed" | "skipped";
 
 /** Tabs of the right hand workbench dock. */
-export type DockTab = "inspector" | "plot" | "ai" | "agent" | "data" | "simulation";
+export type DockTab =
+  | "inspector"
+  | "plot"
+  | "ai"
+  | "agent"
+  | "apikey"
+  | "data"
+  | "simulation";
 
 export interface EditorState {
   lang: Lang;
@@ -61,6 +68,14 @@ export interface EditorState {
   aboutOpen: boolean;
   /** Canvas interaction lock (ComfyUI-style lock button). */
   canvasLocked: boolean;
+  /**
+   * How many providers hold a credential, or ``null`` before the first fetch.
+   * Shared so the top bar badge and the key panel cannot disagree about
+   * whether the platform is running on a model or on offline rules.
+   */
+  credentialCount: number | null;
+  /** Provider ids that currently hold a credential (drives the rail badge). */
+  credentialProviders: string[];
 
   setLang: (lang: Lang) => void;
   toggleLang: () => void;
@@ -80,6 +95,7 @@ export interface EditorState {
   setOutputOpen: (open: boolean) => void;
   setDockOpen: (open: boolean) => void;
   setAboutOpen: (open: boolean) => void;
+  setCredentialStatus: (providers: string[] | null) => void;
   setCanvasLocked: (locked: boolean) => void;
 
   onNodesChange: OnNodesChange;
@@ -171,6 +187,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   dockOpen: true,
   aboutOpen: false,
   canvasLocked: false,
+  credentialCount: null,
+  credentialProviders: [],
 
   setLang: (lang) => set({ lang }),
   toggleLang: () => set({ lang: get().lang === "zh" ? "en" : "zh" }),
@@ -210,6 +228,12 @@ export const useEditor = create<EditorState>((set, get) => ({
   setOutputOpen: (outputOpen) => set({ outputOpen }),
   setDockOpen: (dockOpen) => set({ dockOpen }),
   setAboutOpen: (aboutOpen) => set({ aboutOpen }),
+  setCredentialStatus: (providers) =>
+    set({
+      credentialProviders: providers ?? [],
+      // ``null`` means "not fetched yet", which must not read as "none".
+      credentialCount: providers === null ? null : providers.length,
+    }),
   setCanvasLocked: (canvasLocked) => set({ canvasLocked }),
 
   onNodesChange: (changes: NodeChange[]) =>

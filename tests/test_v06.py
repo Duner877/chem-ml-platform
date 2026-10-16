@@ -240,10 +240,15 @@ def client(ai_config, tmp_path, monkeypatch):
 def test_api_health_version(client):
     body = client.get("/api/health").json()
     assert body["status"] == "ok"
-    # v0.7 migration: the API version moved to 0.7.x; accept every released
-    # 0.6/0.7 line so this regression test keeps guarding "a real version is
-    # reported", not a specific marketing number.
-    assert body["version"] in {"0.6.0", "0.7.0", "0.7.1", "0.7.2"}
+    # v0.7 migration: the API version moved to 0.7.x.  Compared against the
+    # single source of truth rather than a hard-coded list -- a literal here
+    # goes stale at every release and turns the regression guard into a
+    # version-bump chore.  What is actually being guarded is "a real version is
+    # reported", and that the reported line is the current one.
+    from chemml_version import __version__ as platform_version
+
+    assert body["version"] == platform_version
+    assert body["version"].startswith(("0.6.", "0.7."))
     assert body["nodes"] >= 85
 
 

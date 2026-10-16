@@ -1,7 +1,7 @@
 {
   "name": "催化剂设计 / Catalyst Design",
   "description": "以苯甲酸傅-克酰基化为例：从反应描述出发，经 ORCA 量化计算、LLM 方案设计、化学基础模型嵌入与相似性检索，输出催化剂选择、反应条件与设计报告。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

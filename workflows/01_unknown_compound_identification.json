@@ -1,7 +1,7 @@
 {
   "name": "未知化合物鉴定 / Unknown Compound Identification",
   "description": "读取咖啡因的 EI 质谱、¹H NMR 与红外光谱，融合多通道证据在分子库中检索，输出候选结构、置信度与结构解释报告。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

@@ -1,6 +1,6 @@
 @echo off
 REM ===========================================================================
-REM  Chem ML Platform v0.7.2  -  Desktop (Electron) launcher
+REM  Chem ML Platform v0.7.3  -  Desktop (Electron) launcher
 REM ---------------------------------------------------------------------------
 REM  Starts the platform in its OWN window.  This is NOT the browser mode --
 REM  for that, use start-platform.bat instead.
@@ -42,7 +42,7 @@ pause
 exit /b 1
 
 :packaged
-echo   Chem ML Platform v0.7.2  -  Desktop window
+echo   Chem ML Platform v0.7.3  -  Desktop window
 echo   ------------------------------------------------------------
 echo   Python : %CHEMML_PY%
 echo   App    : %APP%
@@ -53,7 +53,7 @@ echo.
 exit /b %ERRORLEVEL%
 
 :devshell
-echo   Chem ML Platform v0.7.2  -  Desktop window (dev shell)
+echo   Chem ML Platform v0.7.3  -  Desktop window (dev shell)
 echo   ------------------------------------------------------------
 echo   Python : %CHEMML_PY%
 echo.

@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo   Chem ML Platform v0.7.2  -  dependency installer
+echo   Chem ML Platform v0.7.3  -  dependency installer
 echo ============================================================
 echo.
 

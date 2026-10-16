@@ -1,7 +1,7 @@
 {
   "name": "mzML 质谱分析 / mzML Mass Spectrum Analysis",
   "description": "完整质谱工作流：读取 mzML 文件（MALDI DHB 基质单次扫描）、峰检测、AI 科学助手辅助谱图解析与未知物鉴定（候选库检索 + 多证据打分），最后由报告代理汇总生成 HTML 鉴定报告。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

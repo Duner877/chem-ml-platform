@@ -2,6 +2,64 @@
 
 本文件记录 Chem ML Platform 的显著变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.7.3] — 2026-10
+
+**三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。
+
+### 新增 Added
+
+**二维声学全波形反演（赛题：Recover the subsurface structure from a seismic line, starting from a one-dimensional trend）**
+- `simulations/fwi.py`（新增）：二维常密度声学有限差分求解器。正演为二阶时间 / **二阶空间**中心差分——四阶空间格式用镜像闭包处理地表时破坏算子对称性，产生本征模态不稳定，实测在几百步内发散到 1e+20，且阻尼越强越糟；改二阶后在三档阻尼下输出均约 1.7e-07。吸收层只作用于深部与两侧，地表行保留（该采集全部炮点/检波点都在 row 0，浅层阻尼等于把波场乘 0），地表用**对称 Neumann 闭包**。
+- **源子波由最小二乘反演，不做假设**：以 `S = argmin Σ‖d − s*g‖²` 形式在**短滤波器**（L = nt/8 样本）上求解，正规方程由互谱 `Σ|G|²` 与 `Σ conj(G)D` 反变换得到的 Toeplitz 矩阵构成。两种被否掉的写法连同原因记录在 `estimate_wavelet` 的文档字符串里：单道滞后窗反卷积因单道格林函数存在深零点，相关系数只有 0.26；全长分频域相除则因 `R(f)/max(R)` 只在 2049 个频点中的 291 个高于 1e-3，60 Hz 以上格林函数能量不足峰值 1e-4。现版本起点模型下与注入子波相关 **0.873**，模型正确时为 **1.000**。
+- **伴随梯度**取 `−(2/v)·∂²u/∂t²·λ`。原先的一阶时间导数形式与二阶导数形式**符号相反**（沿固定测试方向有限差分给出 `+6.34e-4` 而解析值 `−6.68e7`），且梯度非零、有限、量级合理，只有让误差上升才暴露。修正后误差单调下降、横向结构相关系数转正。
+- **线搜索**：固定步长是此前每阶段误差反而上升的直接原因；改为在真实 misfit 上回溯，并按接受比例调节步长上限。
+- **held-out 炮完全不参与梯度**（`Survey.held_out` / `fit_shots`），且起始值与终值用**同一子波**评估——子波在反演中被刷新，用不同子波算的两个数不是同一个问题的 misfit，其差值可能是进步也可能是换了震源。
+- `simulations/fwi_submission.py`（新增）：写出赛题要求的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`，写完立即读回校验；`score_model` 在提供真值时计算**去除每个深度水平均值后的横向相关系数**（该指标下纯深度趋势起点模型恒为 0），并把起点模型的值并列写出。没有真值时相关字段为**显式 null** 而非 0——两者在 JSON 里含义不同。
+- 节点 `SeismicSurveyNode` / `SeismicForwardNode` / `FWIInversionNode` / `SeismicSubmissionNode`；`workflows/09_seismic_fwi.json` 端到端实跑通过。
+- `tests/check_fwi.py`（新增）：正演稳定性、子波恢复精度、梯度方向（**沿梯度自身的下降曲线**——单方向有限差分低于 misfit 的 float64 噪声底）、误差下降 + 横向结构恢复，共 16 项。`tests/test_v07_3_seismic_fwi.py`（新增）19 项回归。
+
+**硬碳预脱溶剂机理（Nat. Commun. 15, 3497 (2024)）**
+- `models/desolvation.py` 与 `nodes/instruments/desolvation.py`：尺寸筛分 / 静置老化 / 双 SEI 能量学三个节点。
+- 引擎数值精确对标论文：CIP / AGG 过孔能垒误差 0.00000 eV，静置阻抗在 4 h / 40 h 两点精确命中（86.200 / 14.600 Ω），活化能取原值，LUMO 位移为平台补充的库仑屏蔽估算（论文断言但未给计算）。
+- `PreDesolvationMechanismNode`（新增）：把三条支路接成一条证据链，并**检查三者是否自洽**。三个独立标定的代理模型即便互相矛盾也各自画得像模像样，说出来比画出来更有用。未连接的支路显示为 `not_connected` 而不是伪装成「没有影响」。
+- `workflows/08_hard_carbon_predesolvation.json` 由三个孤立节点改为 4 节点 / 3 边的连通链路，整链实跑 `completed`，三条判据全 `ok`。
+- `tests/test_v07_3_hard_carbon.py`（新增）21 项回归。
+
+**API Key 管理与图形入口**
+
+**Agent 工具守卫（借鉴腾讯开源 Octop）**
+- `agent_runtime/tool_guard.py`（新增）：借鉴 [Octop](https://github.com/TencentCloud/Octop) 的 `tool_guard` 设计——**所有入口共用一个判定点**，工具调用在执行**之前**分类，而不是事后记录。Octop 是多用户服务、带交互式审批 UI；本项目是单用户桌面工作流，没有第二方来审批，所以 `approval` 在此表示「调用方必须显式传 `approved=True`」，Agent 节点把它作为明确拒绝上报。**不伪造一个审批对话框**，那比直接说不行更糟。
+- 判定分三档 `allow` / `approval` / `deny` 而非布尔值：读与删不是同一个决定，压成布尔只会逼调用方自己重新区分。
+- 规则是数据（`config/tool_guard.json`），用户可自行编辑而不必读 Python。**首条匹配胜出**——用户把规则加在文件开头就是要覆盖内置默认，「最specific 优先」会静默忽略它。**无匹配即拒绝**，用户策略文件若恰好没有兜底规则，必须失败关闭而不是失败打开。
+- 已接入 `agent_runtime/tasks.py`：规划完成后判定，被拒节点**直接让任务失败**（`status: refused`），而不是记一条「denied」然后照常执行——后者比没有守卫更糟。
+- 对全部 99 个已注册节点验证过分类结果：96 个只读计算节点放行，`ExportNode` / `ReportExportNode` / `SeismicSubmissionNode` 落入需审批。
+- 规则按**真实类名**核对而非凭直觉：`*Submit*` 匹配不到 `Submission`（s-u-b-m-i-s-s-i-o-n），这条"看起来对"的规则实际上匹配为空，会让覆盖赛题产物的节点无人看守地运行。改为 `*Submission*`，并加测试遍历注册表，确保没有规则再次变成死策略。
+- 没有对应节点的类别规则（`*Controlled*` / `*Delete*` / `*Upload*` / `*Write*` / `*.export*`）显式标注 `forward_looking=True`——前瞻性策略是合理的，「看着对但匹配为空」不是。
+- `tests/test_v07_3_tool_guard.py`（新增）22 项回归。
+
+- `ai_runtime/credentials.py`（新增）：9 家服务商的密钥存储，顺序为**系统密钥环 → 本地文件**（`config/credentials.json`，已 gitignore）。`list_credentials` / `set_credential` / `delete_credential` / `test_credential` / `mask_secret` / `credential_backend`。
+- 保存时同步写进 `os.environ`——供应商读的是环境变量，只落盘会让界面显示「已配置」而运行时仍在离线降级。
+- `backend/routers/credentials.py`（新增）5 个端点；写入类路由显式声明 `write` / `execute` 权限。
+- GUI：`ApiKeyPanel`（右侧「密钥」标签页）+ **顶栏常驻徽标**（未配置时琥珀色并显示计数）+ 左侧图标栏钥匙按钮（无密钥时带提示点）。三处入口都直接打开该面板。
+- **接口与界面都只返回掩码**（`sk-a•••••3456`，≤8 字符全掩），没有「显示明文」按钮，因为后端根本不会发送。
+- 「已保存」不等于「可用」：测试连接是独立的一等按钮，走真实 HTTP 探测；服务商拒绝密钥返回 200 + `ok: false`（这是要显示的答案，不是传输错误），只有未知服务商才是 404。
+- 存储位置写在面板顶部；无密钥环时明确告知密钥将明文保存，而不是让用户以为已被系统加密。
+- `tests/test_v07_3_credentials.py`（新增）31 项回归，含「响应体全文搜索不得出现明文」与 GUI 入口的静态检查。
+
+### 修复 Fixed
+
+- **首效曲线的饱和值被硬编码成 100 %**：`aging_curves` 把「孔填充期间形成的损失」与「填满后仍然存在的损失」折成了一个参数，于是老化到极限的电池报出 100 % 首效——一个论文从未测到、实验也做不出的数字。现拆为 `sei_capacity_loss`（老化期）与 `residual_loss_percent`（满孔残余，默认 `100 − ICE_AT_10D`），曲线同时命中论文两个实测锚点：**12 h 的 90.14 %** 与 **10 天的 99.09 %**。节点说明文本原先还在教用户把 `sei_loss` 设成 `100 − ICE_AT_10D` 才能复现平台值，那个建议在语义拆分后是错的，一并改掉。
+- 汇总节点最初按**列位置**读上游表格，而三张表的列序并无约定，第一版把物种标签当成了半径（`ValueError`）。改为按列名取值——这同时也是「某条支路未连接」能被安全处理的前提。
+- `ai_runtime/credentials.py`：`set_credential` 有一行重复的环境变量赋值；`delete_credential` 的注释声称「只清自己写入的」，代码却无条件清除。注释改成描述真实行为（界面上的「忘记此密钥」必须真的忘记），而不是留一句与代码相矛盾的话。
+- `scripts/version.py`：`TEXT_TARGETS`（README 标题、本地安装说明、requirements 头部、Python SDK README）与 `DESCRIPTION_TARGETS`（package.json description）此前**只被检查、从未被写入**——`--check` 报出漂移，`--write` 却输出「stamped 0 artefact(s)」，随后最自然的反应就是手改五个文件，再往后就是不再信任这个检查。现已补上写入路径，且 `--write` 会明确列出仍需手工处理的项目。
+- 引擎监控 misfit 曾用**已滤波的建模减去未滤波的观测**，与梯度实际优化的目标不是同一个函数；现两侧用同一零相位窗。
+- 子波刷新阈值原先与一个在本分支内被重新赋值的变量比较，导致每次读数恒为 0、此后不再刷新。
+
+### 变更 Changed
+
+- 端口类型新增不透明的 `Survey`，用于在图上传递采集对象；`Survey` 刻意**不**做成 `ScientificObject`——三维道集检查器无法渲染，把每条道都记进运行输出会淹没结果；节点另行发布人可查看的道集、深度趋势与反演产物。
+- `nodes/instruments/__init__.py` 导出四个地震节点与机制汇总节点；节点总数 99。
+
 ## [0.7.2] — 2026-10
 
 **可信交付基线版本（Trusted Delivery Release）。** 在 v0.7.1 基础上**不新增大规模科研节点、不重构 Agent**；保持 0.7.2 版本号不变的前提下，按用户要求对前端做了一次 ComfyUI 风格整体重构（中英双语界面、三套视觉主题、节点双语），详见下方「UI 重构」小节。安全边界统一、桌面运行时方案落地、测试数字可复现、版本与产物互相追溯、科研节点如实声明执行来源、合成基准不冒充真实验证。

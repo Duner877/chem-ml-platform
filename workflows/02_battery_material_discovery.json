@@ -1,7 +1,7 @@
 {
   "name": "电池材料发现 / Battery Material Discovery",
   "description": "从候选材料库出发，经分子描述符与性质预测、XRD 结构表征、EHT 电子结构计算，最终按目标性质排序并输出优化材料与决策报告。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

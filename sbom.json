@@ -6,7 +6,7 @@
     "component": {
       "type": "application",
       "name": "Chem ML Platform",
-      "version": "0.7.2",
+      "version": "0.7.3",
       "licenses": [
         {
           "license": {
@@ -18,7 +18,7 @@
     "tools": [
       {
         "name": "scripts/license_report.py",
-        "version": "0.7.2"
+        "version": "0.7.3"
       }
     ]
   },

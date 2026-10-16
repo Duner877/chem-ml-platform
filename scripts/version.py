@@ -335,6 +335,46 @@ def stamp() -> List[str]:
             path.write_text(new, encoding="utf-8")
             changed.append(f"{rel} [{label}]")
 
+    # v0.7.3: ``TEXT_TARGETS`` used to be checked by ``collect_drift`` but never
+    # written by ``stamp``, so the README title, the local-install guide, the
+    # requirements header and the Python SDK README were reported as drift and
+    # then left untouched by the very command advertised as fixing them --
+    # "stamped 0 artefact(s)" while nine items were on the list.  A repair tool
+    # that cannot repair half of what it reports is a trap: the obvious next
+    # step is to hand-edit five files, and the next one after that is to stop
+    # trusting the check.
+    for label, rel, pattern in TEXT_TARGETS:
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = _read(path)
+        new = re.sub(
+            pattern,
+            lambda m: m.group(0).replace(m.group(1), VERSION),
+            text,
+            flags=re.M,
+        )
+        if new != text:
+            path.write_text(new, encoding="utf-8")
+            changed.append(f"{rel} [{label}]")
+
+    # The package ``description`` fields embed the version in prose and were
+    # checked but never stamped, for the same reason as ``TEXT_TARGETS``.
+    for label, rel, pattern in DESCRIPTION_TARGETS:
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = _read(path)
+        new = re.sub(
+            pattern,
+            lambda m: m.group(0).replace(m.group(1), VERSION),
+            text,
+            flags=re.M,
+        )
+        if new != text:
+            path.write_text(new, encoding="utf-8")
+            changed.append(f"{rel} [{label}]")
+
     return changed
 
 
@@ -355,8 +395,13 @@ def main() -> int:
     if args.write:
         changed = stamp()
         print(f"stamped {len(changed)} artefact(s): {', '.join(changed) or 'none'}")
-        if changed:
-            print("note: README / CHANGELOG / requirements / SDK headers need a manual edit")
+        # What ``stamp`` genuinely cannot fix, so the message names it instead of
+        # gesturing at a list the reader has to guess at.
+        remaining = collect_drift()
+        if remaining:
+            print("still needs a manual edit:")
+            for item in remaining:
+                print(f"  - {item}")
         return 0
 
     drift = collect_drift()

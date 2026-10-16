@@ -1,0 +1,142 @@
+{
+  "name": "二维声学全波形反演（赛题）",
+  "description": "从一维深度趋势出发，用伴随梯度全波形反演恢复横向速度结构，并写出赛题要求的三个文件：velocity_model.npy / wavelet.npy / run_summary.json。评分为深度均值去除后的横向相关系数，起点模型该值恒为 0。",
+  "version": "0.7.3",
+  "metadata": {
+    "task": "Recover the subsurface structure from a seismic line, starting from a one-dimensional trend",
+    "engine": "internal:acoustic-fd",
+    "data_source": "synthetic benchmark (normal fault + dipping interfaces + low-velocity lens)",
+    "provenance_zh": "内置二维常密度声学有限差分求解器（二阶时间/二阶空间，海绵吸收层，地表对称 Neumann 闭包），非工业地震成像软件；数据为合成基准，非真实地质。",
+    "provenance_en": "Built-in 2-D constant-density acoustic finite-difference solver, not a commercial seismic imaging package; the data is a synthetic benchmark, not real geology.",
+    "score_note_zh": "赛题评分会去除每个深度的水平均值，因此只修正深度趋势的模型得分恒为 0。",
+    "score_note_en": "The task's score removes the horizontal mean at every depth, so a model that only fixes the depth trend scores zero."
+  },
+  "nodes": [
+    {
+      "id": "survey",
+      "type": "SeismicSurveyNode",
+      "label": "采集与起始模型（一维深度趋势）",
+      "position": {
+        "x": 0,
+        "y": 120
+      },
+      "params": {
+        "n_depth": 60,
+        "n_lateral": 120,
+        "n_shots": 8,
+        "n_receivers": 60,
+        "nt": 1500,
+        "dx": 15.0,
+        "dt": 0.0015,
+        "wavelet_f0": 12.0,
+        "source": "synthetic",
+        "language": "zh",
+        "held_out": "1,6"
+      },
+      "label_en": "Survey and 1-D depth-trend start"
+    },
+    {
+      "id": "forward",
+      "type": "SeismicForwardNode",
+      "label": "正演与格林函数（CFL 检查）",
+      "position": {
+        "x": 340,
+        "y": -80
+      },
+      "params": {
+        "wavelet": "",
+        "wavelet_f0": 12.0,
+        "shot_indices": "",
+        "language": "zh"
+      },
+      "label_en": "Forward model and Green's functions"
+    },
+    {
+      "id": "invert",
+      "type": "FWIInversionNode",
+      "label": "全波形反演（频率递进 + 线搜索）",
+      "position": {
+        "x": 340,
+        "y": 160
+      },
+      "params": {
+        "stage_1": "2.5-7.0",
+        "stage_2": "5.0-14.0",
+        "stage_3": "9.0-24.0",
+        "iterations_per_stage": 4,
+        "max_update_fraction": 0.08,
+        "gradient_smoothing": 2.0,
+        "laplace_weight": 0.02,
+        "wavelet_refresh_rms": 12.0,
+        "language": "zh"
+      },
+      "label_en": "Full-waveform inversion"
+    },
+    {
+      "id": "submit",
+      "type": "SeismicSubmissionNode",
+      "label": "导出赛题三文件并评分",
+      "position": {
+        "x": 720,
+        "y": 160
+      },
+      "params": {
+        "output_dir": "output/fwi_submission",
+        "write_files": true,
+        "language": "zh"
+      },
+      "label_en": "Export the three task files and score"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "survey",
+      "source_port": "survey",
+      "target": "forward",
+      "target_port": "survey"
+    },
+    {
+      "id": "e2",
+      "source": "survey",
+      "source_port": "survey",
+      "target": "invert",
+      "target_port": "survey"
+    },
+    {
+      "id": "e3",
+      "source": "invert",
+      "source_port": "velocity",
+      "target": "submit",
+      "target_port": "velocity"
+    },
+    {
+      "id": "e4",
+      "source": "survey",
+      "source_port": "survey",
+      "target": "submit",
+      "target_port": "survey"
+    },
+    {
+      "id": "e5",
+      "source": "survey",
+      "source_port": "truth",
+      "target": "submit",
+      "target_port": "truth"
+    },
+    {
+      "id": "e6",
+      "source": "invert",
+      "source_port": "report",
+      "target": "submit",
+      "target_port": "report"
+    },
+    {
+      "id": "e7",
+      "source": "invert",
+      "source_port": "wavelet",
+      "target": "submit",
+      "target_port": "wavelet"
+    }
+  ]
+}

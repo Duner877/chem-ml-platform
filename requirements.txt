@@ -1,4 +1,4 @@
-# Chem ML Platform v0.7.2 -- Python dependencies.
+# Chem ML Platform v0.7.3 -- Python dependencies.
 #
 # This file is a *manifest of groups*, not a list of packages: each group is
 # declared exactly once, in its own file, so the three audiences cannot drift

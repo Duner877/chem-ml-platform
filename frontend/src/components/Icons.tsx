@@ -140,6 +140,16 @@ export function IconUnlock({ size = 16, className }: IconProps) {
   );
 }
 
+/** Key, for the credential entry point (v0.7.3). */
+export function IconKey({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <circle cx="8" cy="15" r="4" />
+      <path d="m11 12 8-8 2 2-1.5 1.5L21 9l-2 2-2-2-1.5 1.5" />
+    </svg>
+  );
+}
+
 export function IconPlus({ size = 16, className }: IconProps) {
   return (
     <svg {...base(size, className)}>

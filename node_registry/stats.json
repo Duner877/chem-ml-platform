@@ -1,15 +1,22 @@
 {
-  "total_nodes": 90,
-  "categories": 29,
-  "modules_scanned": 53,
+  "total_nodes": 99,
+  "categories": 30,
+  "modules_scanned": 56,
   "availability_summary": {
-    "executable": 77,
+    "executable": 86,
     "experimental": 5,
     "unavailable": 8
   },
   "capability_summary": {
     "deduces_fragmentation_pathway": 1,
     "experimental": 13,
+    "models_double_sei_energetics": 1,
+    "models_electrolyte_aging": 1,
+    "models_nanopore_desolvation": 1,
+    "models_pre_desolvation_mechanism": 1,
+    "models_seismic_forward": 2,
+    "models_seismic_fwi": 1,
+    "models_seismic_submission": 1,
     "nondeterministic": 2,
     "requires_external_software": 9,
     "requires_gpu": 4,
@@ -28,17 +35,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 77,
+    "executable": 86,
     "experimental": 1,
     "unavailable": 8,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 90
+    "internal_approximation": 99
   },
   "reproducibility_summary": {
-    "deterministic": 88,
+    "deterministic": 97,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 85
+  "nodes_without_validation_evidence": 94
 }

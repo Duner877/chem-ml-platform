@@ -1,7 +1,7 @@
 {
   "name": "多尺度材料模拟与动力学研究 / Multi-scale Materials & Dynamics Study",
   "description": "以水分子演示分子动力学（缺失外部程序时回退内置 Lennard-Jones 引擎，输出径向分布函数），以 LiFePO4 演示固体 DFT（回退内置紧束缚 + XRD），最终由 Report Agent 汇总为跨尺度研究报告。",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Demo",

@@ -68,6 +68,7 @@ export default function App() {
     setOutputOpen,
     canvasLocked,
     addNode,
+    setCredentialStatus,
   } = useEditor();
   const tokens = useThemeTokens();
 
@@ -109,7 +110,19 @@ export default function App() {
       .health()
       .then(() => setBackend("online"))
       .catch(() => setBackend("offline"));
-  }, [setSpecs, setBackend, setNotice]);
+
+    // Ask for the credential status up front so the top bar badge is truthful
+    // before the user ever opens the key panel.  A failure here is *not* a
+    // backend outage -- the health poll above owns that state.
+    api
+      .credentials()
+      .then((store) =>
+        setCredentialStatus(
+          store.credentials.filter((item) => item.configured).map((item) => item.provider)
+        )
+      )
+      .catch(() => setCredentialStatus(null));
+  }, [setSpecs, setBackend, setNotice, setCredentialStatus]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();

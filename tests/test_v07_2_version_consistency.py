@@ -263,13 +263,17 @@ class TestArchiveDoesNotShipItsOwnChecksum:
         import json
         import zipfile
 
+        from chemml_version import __version__ as platform_version
         from chemml_version import git_commit
 
         out = tmp_path / "probe.zip"
         pkg.build(out, "Probe")
         with zipfile.ZipFile(out) as zf:
             info = json.loads(zf.read("Probe/BUILD_INFO.json").decode("utf-8"))
-        assert info["version"] == "0.7.2"
+        # Against the single source of truth, not a literal: this assertion is
+        # about "the archive names the version the code reports", and a hard-coded
+        # string would quietly stop testing that on the next release.
+        assert info["version"] == platform_version
         assert info["commit"] != "unknown", "the build must know its own commit"
         # both hash widths must agree with what git_commit() reports, so a dev
         # tree and an extracted copy answer the *same* question identically

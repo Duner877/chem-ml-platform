@@ -17,6 +17,10 @@ DATA_TYPES = (
     "Reaction",
     "Text",
     "ScientificReport",
+    # Opaque acquisition bundles: arrays of traces and geometry that the
+    # inspector cannot render.  They travel through the graph unchanged and the
+    # nodes publish human-readable views of them on ordinary ports.
+    "Survey",
 )
 
 # Compatibility matrix.  A key maps the *source* type to the set of accepted

@@ -9,6 +9,10 @@ import type {
   AgentPlanResult,
   CatalogEntry,
   CatalogStats,
+  CredentialProbe,
+  CredentialProvider,
+  CredentialStore,
+  CredentialStoreResult,
   FileListing,
   FileProbe,
   FoundationModel,
@@ -167,6 +171,33 @@ export const api = {
   simJobs: (limit = 30) =>
     request<{ count: number; stats: Record<string, unknown>; jobs: SimulationJob[] }>(
       `/simulations/jobs?limit=${limit}`
+    ),
+
+  // ---- v0.7.3: credentials (the GUI's API-key entry point) --------------- //
+  // Separate from ``aiConfig`` on purpose: that endpoint edits behaviour, this
+  // one manages secrets.  No response here ever carries a stored key.
+  credentials: () => request<CredentialStore>("/credentials"),
+
+  credentialProviders: () =>
+    request<{ backend: string; providers: CredentialProvider[] }>(
+      "/credentials/providers"
+    ),
+
+  setCredential: (provider: string, secret: string, baseUrl = "") =>
+    request<CredentialStoreResult>("/credentials", {
+      method: "POST",
+      body: JSON.stringify({ provider, secret, base_url: baseUrl }),
+    }),
+
+  deleteCredential: (provider: string) =>
+    request<CredentialStoreResult>(`/credentials/${encodeURIComponent(provider)}`, {
+      method: "DELETE",
+    }),
+
+  testCredential: (provider: string) =>
+    request<CredentialProbe>(
+      `/credentials/${encodeURIComponent(provider)}/test`,
+      { method: "POST" }
     ),
 
   // ---- v0.7.2: local file browsing (file-parameter picker) --------------- //

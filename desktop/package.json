@@ -1,8 +1,8 @@
 {
   "name": "chemml-desktop",
   "productName": "Chem ML Platform",
-  "version": "0.7.2",
-  "description": "Chem ML Platform v0.7.2 -- Desktop Scientific AI OS (Electron shell)",
+  "version": "0.7.3",
+  "description": "Chem ML Platform v0.7.3 -- Desktop Scientific AI OS (Electron shell)",
   "main": "src/main.js",
   "author": "Chem ML Platform contributors",
   "license": "Apache-2.0",
@@ -34,117 +34,182 @@
       {
         "from": "../frontend/dist",
         "to": "app/frontend/dist",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "../backend",
         "to": "app/backend",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../nodes",
         "to": "app/nodes",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../workflow_engine",
         "to": "app/workflow_engine",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../simulations",
         "to": "app/simulations",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../models",
         "to": "app/models",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../foundation",
         "to": "app/foundation",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../ai_runtime",
         "to": "app/ai_runtime",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../data_layer",
         "to": "app/data_layer",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../simulation_runtime",
         "to": "app/simulation_runtime",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../database_runtime",
         "to": "app/database_runtime",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../databases",
         "to": "app/databases",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../provenance",
         "to": "app/provenance",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../storage",
         "to": "app/storage",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../report_agent",
         "to": "app/report_agent",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../report_engine",
         "to": "app/report_engine",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../agent_runtime",
         "to": "app/agent_runtime",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../node_registry",
         "to": "app/node_registry",
-        "filter": ["**/*.py", "**/*.json", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "**/*.json",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../memory",
         "to": "app/memory",
-        "filter": ["**/*.py", "!**/__pycache__/**"]
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
       },
       {
         "from": "../config",
         "to": "app/config",
-        "filter": ["*.json"]
+        "filter": [
+          "*.json"
+        ]
       },
       {
         "from": "../plugins",
         "to": "app/plugins",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "../datasets",
         "to": "app/datasets",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "../workflows",
         "to": "app/workflows",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "../chemml_version.py",
@@ -169,14 +234,18 @@
       {
         "from": "resources/python-runtime",
         "to": "python-runtime",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -187,11 +256,16 @@
       "deleteAppDataOnUninstall": false
     },
     "linux": {
-      "target": ["AppImage", "tar.gz"],
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
       "category": "Science"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "category": "public.app-category.developer-tools"
     }
   }

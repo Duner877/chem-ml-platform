@@ -104,6 +104,10 @@ class AgentTask:
     workflow: Dict[str, Any] = field(default_factory=dict)
     permissions: List[str] = field(default_factory=list)
     risks: List[Dict[str, str]] = field(default_factory=list)
+    #: Nodes the tool guard refuses outright (see ``agent_runtime.tool_guard``).
+    blocked_nodes: List[Dict[str, Any]] = field(default_factory=list)
+    #: Nodes the tool guard will run only with an explicit approval.
+    gated_nodes: List[Dict[str, Any]] = field(default_factory=list)
 
     records: Dict[str, Any] = field(default_factory=dict)
     verification: List[Dict[str, Any]] = field(default_factory=list)
@@ -139,6 +143,8 @@ class AgentTask:
             "plan": self.plan,
             "permissions": list(self.permissions),
             "risks": list(self.risks),
+            "blocked_nodes": list(self.blocked_nodes),
+            "gated_nodes": list(self.gated_nodes),
             "records": dict(self.records),
             "verification": list(self.verification),
             "errors": list(self.errors),
@@ -365,6 +371,37 @@ class TaskScheduler:
         permissions, risks = assess_plan(built_plan, registry)
         task.permissions = permissions
         task.risks = risks
+
+        # Tool guard (v0.7.3, adapted from Octop's tool_guard): capability
+        # grading says *what a node needs*; the guard says *whether an agent may
+        # run it at all*.  Both are needed -- a read-only node can still be one
+        # the user does not want an agent touching, and the capability grades
+        # have no vocabulary for "delete" versus "export".
+        from agent_runtime.tool_guard import check_tool_call
+
+        node_types = list(getattr(built_plan, "node_types", []) or [])
+        blocked: List[Dict[str, Any]] = []
+        gated: List[Dict[str, Any]] = []
+        for node_type in node_types:
+            decision = check_tool_call(str(node_type))
+            if decision.verdict == "deny":
+                blocked.append({"node": str(node_type), **decision.to_dict()})
+            elif decision.requires_approval:
+                gated.append({"node": str(node_type), **decision.to_dict()})
+        task.blocked_nodes = blocked
+        task.gated_nodes = gated
+        if gated and not task.permissions:
+            # The guard found something the capability table did not; surface it
+            # as a permission so the existing approval flow catches it rather
+            # than inventing a second approval path.
+            task.permissions = ["write"]
+        if blocked or gated:
+            task.records["guard"] = {
+                "at": _utc(),
+                "blocked": blocked,
+                "approval_required": gated,
+                "engine": "internal:tool-guard",
+            }
         task.records["plan"] = {
             "at": _utc(),
             "engine": getattr(built_plan, "engine", ""),
@@ -398,6 +435,32 @@ class TaskScheduler:
 
         try:
             registry = get_registry()
+
+            # The guard's verdict must stop the run, not merely annotate it.
+            # A record saying "denied" next to an execution that went ahead is
+            # worse than no guard at all.
+            if task.blocked_nodes:
+                names = ", ".join(str(item.get("node", "")) for item in task.blocked_nodes)
+                task.errors.append(
+                    f"tool guard refused: {names}"
+                )
+                task.result = {
+                    "status": "refused",
+                    "refused_nodes": list(task.blocked_nodes),
+                    "reason": (
+                        "工具守卫拒绝了计划中的节点，任务未执行。/ The tool guard "
+                        "refused nodes in the plan; nothing was executed."
+                    ),
+                }
+                task.records["guard_refusal"] = {
+                    "at": _utc(),
+                    "nodes": list(task.blocked_nodes),
+                    "engine": "internal:tool-guard",
+                }
+                with self._lock:
+                    task.machine.transition(AgentState.FAILED, "refused by tool guard")
+                return
+
             node = registry.create("ScientificAgentNode")
             node.params.update({
                 "question": task.question,

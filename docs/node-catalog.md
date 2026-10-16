@@ -1,12 +1,12 @@
-# 节点能力与状态目录（v0.7.2）
+# 节点能力与状态目录（v0.7.3）
 
 > 本文件由 `scripts/node_catalog.py` 自动生成，请勿手工编辑。
 > 数据来源：`node_registry/registry.json`（节点注册表扫描结果）。
 
-- 节点总数：**90**
-- 分类数：**29**
-- 扫描模块：**53**
-- 尚无验证证据的节点：**85**（未验证 ≠ 不可用，但**不得**宣传为已验证）
+- 节点总数：**99**
+- 分类数：**30**
+- 扫描模块：**56**
+- 尚无验证证据的节点：**94**（未验证 ≠ 不可用，但**不得**宣传为已验证）
 
 ## 能力标签说明
 
@@ -44,7 +44,7 @@
 
 | 状态 | 节点数 |
 | --- | --- |
-| `executable` | 77 |
+| `executable` | 86 |
 | `experimental` | 5 |
 | `unavailable` | 8 |
 
@@ -52,7 +52,7 @@
 
 | capability_status | 节点数 |
 | --- | --- |
-| `executable` | 77 |
+| `executable` | 86 |
 | `experimental` | 1 |
 | `unavailable` | 8 |
 | `verified` | 4 |
@@ -61,13 +61,13 @@
 
 | execution_mode | 节点数 |
 | --- | --- |
-| `internal_approximation` | 90 |
+| `internal_approximation` | 99 |
 
 ## 可复现级别汇总（v0.7.2）
 
 | reproducibility_level | 节点数 |
 | --- | --- |
-| `deterministic` | 88 |
+| `deterministic` | 97 |
 | `nondeterministic` | 2 |
 
 ## 能力汇总
@@ -76,6 +76,13 @@
 | --- | --- |
 | `deduces_fragmentation_pathway` | 1 |
 | `experimental` | 13 |
+| `models_double_sei_energetics` | 1 |
+| `models_electrolyte_aging` | 1 |
+| `models_nanopore_desolvation` | 1 |
+| `models_pre_desolvation_mechanism` | 1 |
+| `models_seismic_forward` | 2 |
+| `models_seismic_fwi` | 1 |
+| `models_seismic_submission` | 1 |
 | `nondeterministic` | 2 |
 | `requires_external_software` | 9 |
 | `requires_gpu` | 4 |
@@ -140,7 +147,11 @@
 | `SingleCrystalXRDNode` | Instruments/Diffraction | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `XRDNode` | Instruments/Diffraction | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `CVNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
+| `DesolvationSieveNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | `models_nanopore_desolvation` | — |
+| `DoubleSEIEnergeticsNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | `models_double_sei_energetics` | — |
 | `EISNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
+| `ElectrolyteAgingNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | `models_electrolyte_aging` | — |
+| `PreDesolvationMechanismNode` | Instruments/Electrochemistry | `executable` | `executable` | `internal_approximation` | 是 | — | `models_pre_desolvation_mechanism` | — |
 | `FluorescenceNode` | Instruments/Electronic | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `UVVisNode` | Instruments/Electronic | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `FTIRImagingNode` | Instruments/Imaging | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
@@ -156,7 +167,12 @@
 | `NMRNode` | Instruments/NMR | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `BETNode` | Instruments/Particle | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `DLSNode` | Instruments/Particle | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
+| `FWIInversionNode` | Instruments/Seismic | `executable` | `executable` | `internal_approximation` | 是 | — | `models_seismic_fwi` | — |
+| `SeismicForwardNode` | Instruments/Seismic | `executable` | `executable` | `internal_approximation` | 是 | — | `models_seismic_forward` | — |
+| `SeismicSubmissionNode` | Instruments/Seismic | `executable` | `executable` | `internal_approximation` | 是 | — | `models_seismic_submission` | — |
+| `SeismicSurveyNode` | Instruments/Seismic | `executable` | `executable` | `internal_approximation` | 是 | — | `models_seismic_forward` | — |
 | `XASNode` | Instruments/Surface | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
+| `XASSim2RealNode` | Instruments/Surface | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `XPSNode` | Instruments/Surface | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `DMANode` | Instruments/Thermal | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `DSCNode` | Instruments/Thermal | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |

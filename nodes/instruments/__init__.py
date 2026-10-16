@@ -9,12 +9,24 @@ importers are listed in :data:`workflow_engine.parsers.SUPPORTED_EXTENSIONS`.
 from __future__ import annotations
 
 from nodes.instruments._base import InstrumentNode
+from nodes.instruments.desolvation import (
+    DesolvationSieveNode,
+    DoubleSEIEnergeticsNode,
+    ElectrolyteAgingNode,
+    PreDesolvationMechanismNode,
+)
 from nodes.instruments.ms import (
     GCMSNode,
     ICPMSNode,
     LCMSNode,
     MALDINode,
     MassSpectrometryNode,
+)
+from nodes.instruments.seismic import (
+    FWIInversionNode,
+    SeismicForwardNode,
+    SeismicSubmissionNode,
+    SeismicSurveyNode,
 )
 from nodes.instruments.nmr import NMRNode
 from nodes.instruments.vibrational import IRNode, RamanNode
@@ -33,6 +45,14 @@ from nodes.instruments.imaging import (
 from nodes.instruments.fragmentation import FragmentationPathwayNode
 
 __all__ = [
+    "DesolvationSieveNode",
+    "ElectrolyteAgingNode",
+    "PreDesolvationMechanismNode",
+    "DoubleSEIEnergeticsNode",
+    "SeismicSurveyNode",
+    "SeismicForwardNode",
+    "FWIInversionNode",
+    "SeismicSubmissionNode",
     "XASSim2RealNode",
     "InstrumentNode",
     "MassSpectrometryNode",

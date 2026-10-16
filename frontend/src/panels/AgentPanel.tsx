@@ -14,7 +14,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function AgentPanel() {
-  const { lang, pushLog } = useEditor();
+  const { lang, pushLog, credentialCount, setDockTab, setDockOpen } = useEditor();
   const [question, setQuestion] = useState(() =>
     lang === "zh"
       ? "请分析这个未知化合物 C8H10N4O2"
@@ -104,6 +104,27 @@ export default function AgentPanel() {
         </div>
 
         {error && <p className="mt-2 text-[11px] text-bad">{error}</p>}
+
+        {/* Offline notice (v0.7.3): the single most confusing thing about an
+            agent without a key is that it still answers -- just by rules.  Say
+            so here, next to the toggle that caused it, and offer the fix. */}
+        {credentialCount === 0 && (
+          <div className="mt-2 rounded-md border border-warn/40 bg-warn/10 px-2 py-1.5">
+            <p className="text-[10px] leading-relaxed text-[rgb(var(--c-text-dim))]">
+              {translate(lang, "keyMissingBanner")}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (!useEditor.getState().dockOpen) setDockOpen(true);
+                setDockTab("apikey");
+              }}
+              className="mt-1 rounded border border-warn/60 px-2 py-0.5 text-[10px] font-medium text-warn transition hover:bg-warn/15"
+            >
+              {translate(lang, "keyOpenPanel")}
+            </button>
+          </div>
+        )}
 
         {plan && (
           <section className="mt-4">
