@@ -155,6 +155,10 @@
         "to": "app/node_i18n.py"
       },
       {
+        "from": "../solution.py",
+        "to": "app/solution.py"
+      },
+      {
         "from": "../BUILD_INFO.json",
         "to": "app/BUILD_INFO.json"
       },
