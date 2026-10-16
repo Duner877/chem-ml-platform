@@ -20,6 +20,7 @@ from nodes.instruments.nmr import NMRNode
 from nodes.instruments.vibrational import IRNode, RamanNode
 from nodes.instruments.electronic import FluorescenceNode, UVVisNode
 from nodes.instruments.surface import XPSNode, XASNode
+from nodes.instruments.xas_sim2real import XASSim2RealNode
 from nodes.instruments.diffraction import SingleCrystalXRDNode, XRDNode
 from nodes.instruments.microscopy import AFMNode, SEMNode, TEMNode
 from nodes.instruments.thermal import DMANode, DSCNode, TGANode
@@ -32,6 +33,7 @@ from nodes.instruments.imaging import (
 from nodes.instruments.fragmentation import FragmentationPathwayNode
 
 __all__ = [
+    "XASSim2RealNode",
     "InstrumentNode",
     "MassSpectrometryNode",
     "LCMSNode",

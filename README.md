@@ -2,7 +2,7 @@
 
 **节点化科学工作流平台** — ComfyUI 式的图形编排 × KNIME 式的数据处理 × LabVIEW 式的仪器抽象 × AI Scientist 式的自主推理。
 
-> **v0.7.1（本次升级）**：面向**可安装、可运行、可验证、可追溯、可维护**的整改与工程补齐版本，不以新增节点数量为目标。核心变更——**流式分块上传**（`storage/`，边收边校验，字节/超时/并发三重限额，`.part` 原子提交）、**本地 API 会话令牌与权限边界**（`backend/security.py`，只读 / 写入 / 执行 / 外部程序四类权限 + 审计日志 + CORS 白名单）、**Agent 真实执行状态机**（`agent_runtime/tasks.py`，Plan → 审批 → 执行 → 验证 → 完成，幂等指纹防重复提交，支持取消 / 拒绝 / 重试）、**节点能力标签与状态分级**（`capabilities` + implemented/executable/validated/experimental/unavailable，机器可读目录见 `docs/node-catalog.md`）、**受控外部程序执行服务**（`simulations/controlled.py`，固定可执行文件白名单 + 显式 argv + 独立工作目录 + 超时/并发限制，禁止任意 shell 字符串）、**LC-MS/MS 已知答案科学基准**（`scripts/benchmark_lcms.py`）、**依赖许可清单与 SBOM**、**扩展质量门禁**（`scripts/quality_gate.py`）。**90 个科学节点，29 个分类。**
+> **v0.7.1（本次升级）**：面向**可安装、可运行、可验证、可追溯、可维护**的整改与工程补齐版本，不以新增节点数量为目标。核心变更——**流式分块上传**（`storage/`，边收边校验，字节/超时/并发三重限额，`.part` 原子提交）、**本地 API 会话令牌与权限边界**（`backend/security.py`，只读 / 写入 / 执行 / 外部程序四类权限 + 审计日志 + CORS 白名单）、**Agent 真实执行状态机**（`agent_runtime/tasks.py`，Plan → 审批 → 执行 → 验证 → 完成，幂等指纹防重复提交，支持取消 / 拒绝 / 重试）、**节点能力标签与状态分级**（`capabilities` + implemented/executable/validated/experimental/unavailable，机器可读目录见 `docs/node-catalog.md`）、**受控外部程序执行服务**（`simulations/controlled.py`，固定可执行文件白名单 + 显式 argv + 独立工作目录 + 超时/并发限制，禁止任意 shell 字符串）、**LC-MS/MS 已知答案科学基准**（`scripts/benchmark_lcms.py`）、**依赖许可清单与 SBOM**、**扩展质量门禁**（`scripts/quality_gate.py`）。**91 个科学节点，29 个分类。**
 
 **v0.7.0 Desktop Scientific AI OS**：在 v0.6.0 全部功能之上新增——安全存储层（`storage/`）、统一错误模型（14 个错误码 + 密钥脱敏）、全运行溯源（`provenance.json`）、Agent 任务状态机、GPU/PyTorch 节点、三格式报告导出（DOCX / Markdown / HTML）、Electron 桌面外壳（`desktop/`）、安全文件上传 API、质量门禁。版本规划与审计文档见 `docs/V07_*.md`。
 
@@ -12,7 +12,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![React Flow](https://img.shields.io/badge/React%20Flow-12.x-ff4d8d.svg)](https://reactflow.dev/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
-[![nodes](https://img.shields.io/badge/nodes-90-blueviolet.svg)](#节点目录)
+[![nodes](https://img.shields.io/badge/nodes-91-blueviolet.svg)](#节点目录)
 
 ---
 
@@ -66,7 +66,7 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt
 pip install -e ./node_sdk/python                    # 节点 SDK（写插件必需）
 
-# 2. 启动后端（FastAPI，含 90 个科学节点）
+# 2. 启动后端（FastAPI，含 91 个科学节点）
 uvicorn backend.app:app --reload --port 8000
 
 # 3. 启动前端（React Flow 编辑器）
@@ -89,7 +89,7 @@ docker compose up --build
 python scripts/run_demo_workflows.py --list
 python scripts/run_demo_workflows.py
 
-# 全节点冒烟测试（90 个节点逐一实例化并执行）
+# 全节点冒烟测试（91 个节点逐一实例化并执行）
 python scripts/smoke_nodes.py
 ```
 
@@ -114,7 +114,7 @@ Chem-ML-Platform-v0.6.0/
 ├── data_layer/          统一科学数据层 + ★ v0.6 可检索目录 catalog.py（带基座嵌入）
 ├── report_agent/        报告代理：Markdown / HTML / PDF 一键生成
 ├── node_registry/       节点注册中心服务，导出 registry.json 供前端 Node Marketplace
-├── nodes/               90 个科学节点（见下方目录）
+├── nodes/               91 个科学节点（见下方目录）
 ├── models/              计算层：SMILES 解析、描述符、指纹、EHT 量子化学、分子动力学、谱学模拟
 ├── simulations/         Extended Hückel / 紧束缚 / Lennard-Jones MD / 外部程序封装
 ├── databases/           本地分子库（~400 化合物）与材料库（18 种材料）
@@ -153,7 +153,7 @@ React Flow 画布 ──POST /api/workflows/run──▶ WorkflowEngine
 
 ## 节点目录
 
-**90 个科学节点，29 个分类。**（完整机器可读目录见 [`node_registry/registry.json`](node_registry/registry.json)）
+**91 个科学节点，29 个分类。**（完整机器可读目录见 [`node_registry/registry.json`](node_registry/registry.json)）
 
 ### 顶层问题 `Questions`
 
@@ -474,7 +474,7 @@ docker compose --profile db up --build
 # Python 测试（62 项：引擎 / 节点 / 工作流 / REST API / v0.6 基座模型与运行时）
 pytest
 
-# 全节点冒烟测试（逐一实例化并执行 90 个节点）
+# 全节点冒烟测试（逐一实例化并执行 91 个节点）
 python scripts/smoke_nodes.py
 python scripts/smoke_nodes.py --json > smoke.json     # 机器可读报告
 
@@ -513,7 +513,7 @@ cd node_sdk/nodejs && npm test
 ## 路线图
 
 ```
-v0.6.0 Scientific Foundation Model Edition  ← 当前版本：90 节点 · 6 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工作台 Dock
+v0.6.0 Scientific Foundation Model Edition  ← 当前版本：91 节点 · 6 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工作台 Dock
 v0.7           AI Scientist Agent（自主提出假设 → 设计实验 → 分析结果）
 v1.0           Scientific Intelligence Operating System
 ```
