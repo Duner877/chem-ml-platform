@@ -472,13 +472,11 @@ def rdf_na_p(
     # contact distance.  A Debye-Huckel estimate for a 1:1 electrolyte gives
     # kappa in inverse angstrom; inside a 4 A pore the effective dielectric
     # constant drops, which weakens screening and lets ions associate further.
-    debye_a = 3.04 * math.sqrt(eps / max(m, 1e-6))
     eps_eff = eps * (0.62 if confinement else 1.0)
     debye_a = 3.04 * math.sqrt(eps_eff / max(m, 1e-6))
 
-    rc = float(contact_distance_a)
     kappa = 1.0 / max(debye_a, 1e-6)
-    x = kappa * rc
+    x = kappa * float(contact_distance_a)
     # Logistic in the dimensionless screening strength: bounded by construction
     # (never negative, saturates at MAX_COORDINATION) and monotone increasing,
     # which is the physical requirement.  A Debye-length cubed prefactor would
@@ -491,13 +489,13 @@ def rdf_na_p(
         n_coordination *= 1.25
     n_coordination = max(0.05, min(n_coordination, MAX_COORDINATION))
 
-    rc = float(contact_distance_a)
     rmax = float(r_max_a)
     r = [i * rmax / (int(n_points) - 1) for i in range(int(n_points))]
 
     # First peak: a Gaussian at the contact distance whose area equals the
     # coordination, plus a flat background so the integral is well behaved.
     g: List[float] = []
+    rc = float(contact_distance_a)
     sigma_peak = 0.28 * rc
     peak_area = n_coordination * 4.0 * math.pi * (rc ** 2) * rc
     for ri in r:

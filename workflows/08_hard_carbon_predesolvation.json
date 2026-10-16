@@ -51,7 +51,7 @@
         "tau_fill": 20.27,
         "r_initial": 86.2,
         "r_residual": 14.6,
-        "sei_loss": 8.95,
+        "sei_loss": 16.1781,
         "residual_loss": 0.91,
         "max_time": 240.0,
         "language": "zh"

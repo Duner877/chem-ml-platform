@@ -4,14 +4,14 @@
 
 ## [0.7.3] — 2026-10
 
-**三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。
+**三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。发布前对 0.7.3 新增代码做了两轮独立审查，本轮修复的缺陷列在末尾「修复 Fixed」中。
 
 ### 新增 Added
 
 **二维声学全波形反演（赛题：Recover the subsurface structure from a seismic line, starting from a one-dimensional trend）**
 - `simulations/fwi.py`（新增）：二维常密度声学有限差分求解器。正演为二阶时间 / **二阶空间**中心差分——四阶空间格式用镜像闭包处理地表时破坏算子对称性，产生本征模态不稳定，实测在几百步内发散到 1e+20，且阻尼越强越糟；改二阶后在三档阻尼下输出均约 1.7e-07。吸收层只作用于深部与两侧，地表行保留（该采集全部炮点/检波点都在 row 0，浅层阻尼等于把波场乘 0），地表用**对称 Neumann 闭包**。
 - **源子波由最小二乘反演，不做假设**：以 `S = argmin Σ‖d − s*g‖²` 形式在**短滤波器**（L = nt/8 样本）上求解，正规方程由互谱 `Σ|G|²` 与 `Σ conj(G)D` 反变换得到的 Toeplitz 矩阵构成。两种被否掉的写法连同原因记录在 `estimate_wavelet` 的文档字符串里：单道滞后窗反卷积因单道格林函数存在深零点，相关系数只有 0.26；全长分频域相除则因 `R(f)/max(R)` 只在 2049 个频点中的 291 个高于 1e-3，60 Hz 以上格林函数能量不足峰值 1e-4。现版本起点模型下与注入子波相关 **0.873**，模型正确时为 **1.000**。
-- **伴随梯度**取 `−(2/v)·∂²u/∂t²·λ`。原先的一阶时间导数形式与二阶导数形式**符号相反**（沿固定测试方向有限差分给出 `+6.34e-4` 而解析值 `−6.68e7`），且梯度非零、有限、量级合理，只有让误差上升才暴露。修正后误差单调下降、横向结构相关系数转正。
+- **伴随梯度**取 `+(2/v)·∂²u/∂t²·λ`，即函数真正返回 `dJ/dv`，线搜索相应改为减号更新。此前的符号与更新方向**恰好互相抵消**，所以流水线能跑通、误差正常下降——只有把「返回值」与「函数名/文档」三者对齐才能发现。判据是方向导数：沿单位梯度方向实测 `(J(v+εu) − J(v−εu))/(2ε) = +1.542e−16`（误差上升），必须与 `⟨g,u⟩` 同号；在 1 / 20 / 60 / 150 m/s 五个尺度上稳定成立。原先 `−(2/v)` 给出的是下降方向（`run_fwi` 用 `+` 号沿它走），与文档声明的公式矛盾。
 - **线搜索**：固定步长是此前每阶段误差反而上升的直接原因；改为在真实 misfit 上回溯，并按接受比例调节步长上限。
 - **held-out 炮完全不参与梯度**（`Survey.held_out` / `fit_shots`），且起始值与终值用**同一子波**评估——子波在反演中被刷新，用不同子波算的两个数不是同一个问题的 misfit，其差值可能是进步也可能是换了震源。
 - `simulations/fwi_submission.py`（新增）：写出赛题要求的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`，写完立即读回校验；`score_model` 在提供真值时计算**去除每个深度水平均值后的横向相关系数**（该指标下纯深度趋势起点模型恒为 0），并把起点模型的值并列写出。没有真值时相关字段为**显式 null** 而非 0——两者在 JSON 里含义不同。
@@ -21,7 +21,7 @@
 **硬碳预脱溶剂机理（Nat. Commun. 15, 3497 (2024)）**
 - `models/desolvation.py` 与 `nodes/instruments/desolvation.py`：尺寸筛分 / 静置老化 / 双 SEI 能量学三个节点。
 - 引擎数值精确对标论文：CIP / AGG 过孔能垒误差 0.00000 eV，静置阻抗在 4 h / 40 h 两点精确命中（86.200 / 14.600 Ω），活化能取原值，LUMO 位移为平台补充的库仑屏蔽估算（论文断言但未给计算）。
-- `PreDesolvationMechanismNode`（新增）：把三条支路接成一条证据链，并**检查三者是否自洽**。三个独立标定的代理模型即便互相矛盾也各自画得像模像样，说出来比画出来更有用。未连接的支路显示为 `not_connected` 而不是伪装成「没有影响」。
+- `PreDesolvationMechanismNode`（新增）：把三条支路接成一条证据链，并**检查三者是否自洽**。三个独立标定的代理模型即便互相矛盾也各自画得像模像样，说出来比画出来更有用。**未连线（`not_connected`）与上游列名被改（`schema_mismatch`）分别报告**——两者都让用户去查连线，但真正要改的地方不同。
 - `workflows/08_hard_carbon_predesolvation.json` 由三个孤立节点改为 4 节点 / 3 边的连通链路，整链实跑 `completed`，三条判据全 `ok`。
 - `tests/test_v07_3_hard_carbon.py`（新增）21 项回归。
 
@@ -48,12 +48,29 @@
 
 ### 修复 Fixed
 
-- **首效曲线的饱和值被硬编码成 100 %**：`aging_curves` 把「孔填充期间形成的损失」与「填满后仍然存在的损失」折成了一个参数，于是老化到极限的电池报出 100 % 首效——一个论文从未测到、实验也做不出的数字。现拆为 `sei_capacity_loss`（老化期）与 `residual_loss_percent`（满孔残余，默认 `100 − ICE_AT_10D`），曲线同时命中论文两个实测锚点：**12 h 的 90.14 %** 与 **10 天的 99.09 %**。节点说明文本原先还在教用户把 `sei_loss` 设成 `100 − ICE_AT_10D` 才能复现平台值，那个建议在语义拆分后是错的，一并改掉。
-- 汇总节点最初按**列位置**读上游表格，而三张表的列序并无约定，第一版把物种标签当成了半径（`ValueError`）。改为按列名取值——这同时也是「某条支路未连接」能被安全处理的前提。
-- `ai_runtime/credentials.py`：`set_credential` 有一行重复的环境变量赋值；`delete_credential` 的注释声称「只清自己写入的」，代码却无条件清除。注释改成描述真实行为（界面上的「忘记此密钥」必须真的忘记），而不是留一句与代码相矛盾的话。
-- `scripts/version.py`：`TEXT_TARGETS`（README 标题、本地安装说明、requirements 头部、Python SDK README）与 `DESCRIPTION_TARGETS`（package.json description）此前**只被检查、从未被写入**——`--check` 报出漂移，`--write` 却输出「stamped 0 artefact(s)」，随后最自然的反应就是手改五个文件，再往后就是不再信任这个检查。现已补上写入路径，且 `--write` 会明确列出仍需手工处理的项目。
+以下 12 项来自发布前对 0.7.3 新增代码的两轮独立审查，全部已修复并有回归测试。
+
+- **无 OS 密钥环时密钥从不落盘，且谎报存储位置**：`set_credential` 的文件回退接在「keyring 存在但写入失败」的分支上，于是「根本没有 keyring」——正是桌面版的情况——密钥只存在于当前进程的 `os.environ`，`stored_in` 却仍报 `environment`，`list_credentials` 的告警还宣称密钥保存在 `config/credentials.json`，而那个文件并不存在。界面显示「已配置」、重启即丢、AI 运行时静默降级。已把回退判断改为「keyring 是否可用」。
+- **`delete_credential` 会删掉用户自己 export 的环境变量**：无条件 `os.environ.pop`。现只清除本进程经 `set_credential` 写入的变量；继承自 shell 的保留，并在返回值中以 `shell_env_preserved` 告知调用方——否则「已删除」会被理解成「该服务商不可用」。
+- **连通性探测的兜底分支会把供应商错误原文回显给浏览器**：401/403/404/429 都有专门的不回显分支，但 400/402 等状态直接把 `error.message` 拼进 `detail`，而多个供应商会在其中原文引用用户提交的密钥。现统一脱敏。
+- **`agent_runtime/tasks.py` 的 `except KeyError` 是死分支**：`registry.get()` 抛的是 `NodeNotFoundError`（MRO 为 `NodeNotFoundError → ChemMLError → Exception`，并非 `KeyError` 子类）。LLM 规划器不校验节点目录，幻觉节点走到这里会炸掉整个规划阶段，用户看到的是与真实原因无关的错误。已改为同时捕获。
+- **工具守卫漏掉 25 个高危节点**：`requires_external_software`（9 个，ORCA/VASP/GROMACS/LAMMPS…）与 `requires_network`（15 个，PubChem/PDB/LLM…）此前全部判为 `allow`，尽管模块文档承诺「凡是 shell out 或联网都需要显式决策」。改为按**能力**而非类名匹配，新增节点自动继承判定。判定从 3 个 `approval` 增至 28 个。
+- **`get_guard()` 用相对路径读策略文件**：从仓库外启动后端时，用户写在 `config/tool_guard.json` 里的规则被静默忽略，退回默认策略。改为锚定仓库根。
+- **首效曲线的饱和值被硬编码成 100 %**：`aging_curves` 把「孔填充期间形成的损失」与「填满后仍然存在的损失」折成了一个参数，于是老化到极限的电池报出 100 % 首效——一个论文从未测到、实验也做不出的数字。现拆为 `sei_capacity_loss`（老化期）与 `residual_loss_percent`（满孔残余，默认 `100 − ICE_AT_10D`）。
+- **「锚定 12 h 的 90.14 %」实际上把它放在了 t = 0**：曲线是 `ICE(t) = plateau − sei_loss·exp(−t/τ)`，节点文案与工作流都按 `plateau − ICE_AT_12H = 8.95` 设参，而正确值是 `16.1781`（差 `1/exp(−12/τ)` ≈ 1.8 倍），且测试断言 `ice_percent[0]` 等于 12 h 的值，把这个偏差固化了。现由 `sei_loss_for_12h()` 派生，工作流与测试都用它。四个论文锚点（86.20 Ω / 14.60 Ω / 90.14 % / 99.09 %）现在全部精确命中。
+- **老化表的时间栅格跳过了论文的实测时刻**：25 点均匀分布在 240 h 上步长为 10 h，恰好落在 12 h 与 40 h 之间，用户看到的表从未显示它声称复现的数值。改为在均匀栅格上并入 4 h / 12 h / 40 h / 末端四个锚点。
+- **`write_submission` 在无上游反演时把 misfit 写成 `0.0`**：`FWIResult` 的 dataclass 默认值是 `0.0`，无法表达「未测量」，而提交节点恰好绕过 `to_dict()` 直接读字段，于是 `run_summary.json` 会出现 `initial: 0.0, final: 0.0`，读起来像完美拟合。字段改为 `Optional[float] = None`，三处写入点统一为 `null`。
+- **汇总节点把两条不同量纲的曲线插值到同一横轴**：老化曲线以小时为轴、筛分曲线以埃为轴，重采样等于编造数据；原有的「行数不同就丢弃」判据恰好在两者行数**相同**时失效，而这正是用户裁剪某条支路后最常见的配置。改为各自成图（新增 `sieving` 输出端口），并删除已无调用者的 `_resample`。
+- **`tests/check_fwi.py` 的 misfit 口径与被检验的梯度不一致**：只滤波建模、不滤波观测，测的是**另一个目标函数**的导数。这正是伴随梯度符号反了却仍然全绿的直接原因——两个 bug 互相抵消。现两侧同窗，脚本对未修复的符号会真实失败。另修正沿 `+grad` 走的方向（应当沿 `−grad` 下降），并把跨越两个倾斜界面的单块有限差分换成层内子块。
+
+其余修复（首效饱和、列位置索引、`credentials.py` 重复赋值与注释、`version.py` 只检查不写入、监控 misfit 口径、子波刷新阈值）见下方历史条目。
+
+- `ai_runtime/credentials.py`：`delete_credential` 的注释与实现不符，已改为描述真实行为。
+- `scripts/version.py`：`TEXT_TARGETS`（README 标题、本地安装说明、requirements 头部、Python SDK README）与 `DESCRIPTION_TARGETS`（package.json description）此前**只被检查、从未被写入**——`--check` 报出漂移，`--write` 却输出「stamped 0 artefact(s)」。现已补上写入路径。
 - 引擎监控 misfit 曾用**已滤波的建模减去未滤波的观测**，与梯度实际优化的目标不是同一个函数；现两侧用同一零相位窗。
 - 子波刷新阈值原先与一个在本分支内被重新赋值的变量比较，导致每次读数恒为 0、此后不再刷新。
+- **`_sponge` 的深部渐变方向与注释相反**：实际是「上强下弱」，最深行阻尼为零。之所以没出问题，是因为最深行被边界条件恒置为零——即阻尼方向是**偶然**正确的，一旦边界不再置零就成为反射体。已改为最深行阻尼最强。
+- 死代码清理：`nodes/instruments/seismic.py` 的 `json` / `build_survey` / `lateral_correlation` / `SubmissionPaths` 未使用导入，`simulations/fwi_submission.py` 的 `List`，`models/desolvation.py` 中被立即覆盖的 `debye_a` 与重复赋值的 `rc`，`FWIConfig.max_courant_steps`（全仓库无读取处）。
 
 ### 变更 Changed
 

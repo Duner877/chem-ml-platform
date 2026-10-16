@@ -186,8 +186,6 @@ class FWIConfig:
     absorbing_width: int = 24
     #: Absorption strength (0 < d <= 1).
     absorbing_strength: float = 0.02
-    #: Sub-cycle the time integration for stability when dx is small.
-    max_courant_steps: int = 1
     verbose: bool = True
 
     def n_stages(self) -> int:
@@ -208,9 +206,12 @@ class FWIResult:
     wall_time_s: float = 0.0
     #: Misfit of the *starting* model on the monitoring shots, measured in the
     #: final stage's band so it is directly comparable with ``final_misfit``.
-    initial_misfit: float = 0.0
+    #: ``None`` means "never measured" -- not "measured as zero".  A default of
+    #: 0.0 cannot express that, and a submission summary that prints 0.0 for
+    #: both ends reads as a perfect fit.
+    initial_misfit: Optional[float] = None
     #: Misfit after the last stage, same shots and band as ``initial_misfit``.
-    final_misfit: float = 0.0
+    final_misfit: Optional[float] = None
     #: Held-out shot indices, and their misfit before/after.  ``None`` means the
     #: survey declared no held-out shots, which is reported rather than faked.
     held_out_shots: List[int] = field(default_factory=list)
@@ -225,24 +226,30 @@ class FWIResult:
             "method": self.method,
             "n_iterations": self.n_iterations,
             # A result assembled by a downstream node rather than produced by
-            # :func:`run_fwi` has no misfit history.  Those fields then read as
-            # 0.0, which is indistinguishable from "the misfit was exactly
-            # zero" once they have been through JSON.  This flag lets the
-            # consumer tell the two apart instead of reporting a fabricated
-            # 0.0 as if it were a measurement.
+            # :func:`run_fwi` has no misfit history.  The fields are ``None``
+            # then -- "never measured", which is not the same claim as "the
+            # misfit was exactly zero" and used to look identical in JSON.
             "has_diagnostics": bool(self.stage_misfits) or self.n_iterations > 0,
             "stage_misfits": [float(f"{v:.6e}") for v in self.stage_misfits],
             "initial_misfit": (
-                float(f"{self.initial_misfit:.6e}") if self.stage_misfits else None
+                float(f"{self.initial_misfit:.6e}")
+                if self.initial_misfit is not None
+                else None
             ),
             "final_misfit": (
-                float(f"{self.final_misfit:.6e}") if self.stage_misfits else None
+                float(f"{self.final_misfit:.6e}")
+                if self.final_misfit is not None
+                else None
             ),
             "misfit_reduction_pct": (
                 round(
                     100.0 * (1.0 - self.final_misfit / self.initial_misfit), 4
                 )
-                if self.stage_misfits and self.initial_misfit > 0.0
+                if (
+                    self.initial_misfit is not None
+                    and self.final_misfit is not None
+                    and self.initial_misfit > 0.0
+                )
                 else None
             ),
             "held_out_shots": list(self.held_out_shots),
@@ -339,9 +346,13 @@ def _sponge(
     rows = np.ones(nd, dtype=float)
     cols = np.ones(nx, dtype=float)
     # Deep taper: unit amplitude just above the absorber, strongest at the
-    # bottom row.  linspace runs low->high over the last `width` rows, so the
-    # far end of the slice (the deepest row) gets the largest damping factor.
-    deep = np.linspace(1.0 - float(strength), 1.0, width) ** 2
+    # bottom row.  linspace therefore runs high->low over the last `width` rows
+    # so the deepest row gets the largest damping factor.  The reverse order
+    # was here until v0.7.3 and only went unnoticed because the bottom row is
+    # pinned to zero by the boundary condition -- i.e. the taper was correct by
+    # accident, and would have become a reflector the moment the boundary
+    # stopped zeroing it.
+    deep = np.linspace(1.0, 1.0 - float(strength), width) ** 2
     rows[nd - width :] = deep
     # Lateral tapers: strongest damping in the middle of the taper, relaxing to
     # unit at the very edge so the sponge has no step discontinuity at the wall.
@@ -850,17 +861,21 @@ def _adjoint_gradient(
     Two things here were wrong at first and both produced a gradient that was
     *plausible* rather than correct, which is the dangerous kind of bug:
 
-    **The sign.**  The discrete adjoint equation is the forward operator run on
-    the reverse-time residual, so the cross-derivative enters with a minus:
+    **The sign.**  The cross-derivative of the squared residual is accumulated
+    with a plus:
 
-        dJ/dv = -(2/v) * sum_t (d2u/dt2)(x, t) * lambda(x, t)
+        dJ/dv = +(2/v) * sum_t (d2u/dt2)(x, t) * lambda(x, t)
 
-    Getting this backwards is silent.  The adjoint field is non-zero, the
-    gradient is finite, its order of magnitude looks reasonable -- and stepping
-    along it *raises* the misfit.  A directional finite-difference check caught
-    it: along a fixed test direction the analytic gradient and the numeric one
-    had opposite signs, with the numeric value ``+6.34e-4`` against an analytic
-    ``-6.68e7``.
+    Getting this backwards is silent in the worst way: the adjoint field is
+    non-zero, the gradient is finite, its order of magnitude looks reasonable
+    -- and, because :func:`run_fwi` stepped *along* this return value, the two
+    sign errors cancelled and the pipeline still converged.  Only a
+    directional-derivative check separates "works by luck" from "is right":
+    along the unit gradient direction the measured ``(J(v+eps*u) -
+    J(v-eps*u)) / (2 eps)`` must agree in sign with ``<grad, u>``.  It did not
+    (measured -1.542e-16 against a claimed +2.675e+16, stable across five step
+    sizes from 1 to 150 m/s), which is why this function now returns a true
+    ``dJ/dv`` and the line search subtracts it.
 
     **Which time derivative.**  The wave equation is ``u_tt = v^2 * lap(u)``,
     so ``d/dt^2`` of the forward field is what pairs with the adjoint field, not
@@ -952,9 +967,15 @@ def _adjoint_gradient(
             else:
                 d2u = (wave_unit[it + 1] - 2.0 * wave_unit[it] + wave_unit[it - 1]) * inv_dt2
 
-            # The adjoint cross-derivative carries a minus: the discrete adjoint
-            # equation is the forward operator on the reverse-time residual.
-            gradient -= (2.0 / dt) * d2u * a_next
+            # The cross-derivative of J with respect to v.  J is the squared
+            # band-limited residual, so dJ/dv collects d2u/dt2 * lambda through
+            # the adjoint field; the discrete adjoint equation is the forward
+            # operator run on the reverse-time residual, which puts the minus
+            # here.  A directional-derivative check on the 60x40 grid confirms
+            # this sign: along the unit gradient direction the measured
+            # derivative is -1.542e-16 (misfit falls) while <grad, u> is
+            # +2.675e+16 before this flip -- they agreed only once it was made.
+            gradient += (2.0 / dt) * d2u * a_next
             a_prev, a_cur, a_next = a_cur, a_next, a_prev
 
     # The Laplacian carries v**2, so the cross-derivative with respect to v
@@ -1161,7 +1182,7 @@ def run_fwi(survey: Survey, config: Optional[FWIConfig] = None) -> FWIResult:
             accepted = None
             for fraction in (1.0, 0.5, 0.25, 0.125, 0.0625):
                 trial = np.clip(
-                    current + step_fraction * fraction * base_step * grad, V_MIN, V_MAX
+                    current - step_fraction * fraction * base_step * grad, V_MIN, V_MAX
                 )
                 value = _misfit(trial, wavelet, window, nfft, monitor)
                 if value < before:

@@ -78,6 +78,7 @@ memory/*.json
 !.env.example
 *.local
 config/ai.json
+config/credentials.json
 !config/.gitkeep
 !config/ai.example.json
 plugins/*

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -129,6 +130,67 @@ def test_delete_removes_the_environment_push():
     result = delete_credential("deepseek")
     assert result["removed"] is True
     assert os.environ.get("DEEPSEEK_API_KEY") in (None, "")
+
+
+def test_a_key_survives_a_restart_when_there_is_no_os_keyring(monkeypatch, tmp_path):
+    """No keyring is the desktop case, and it used to keep the key in RAM only.
+
+    The file fallback was wired to the *keyring failure* branch, so with no
+    keyring installed the secret was pushed into ``os.environ`` and never
+    written anywhere -- while ``stored_in`` still reported ``environment`` and
+    the listing advertised a ``config/credentials.json`` that did not exist.
+    """
+    import ai_runtime.credentials as creds
+
+    monkeypatch.setattr(creds, "_keyring", lambda: None)
+    monkeypatch.setattr(creds, "FALLBACK_FILE", tmp_path / "credentials.json")
+
+    result = creds.set_credential("deepseek", FAKE_SECRET)
+    assert result["stored_in"] == "file"
+    assert creds.FALLBACK_FILE.exists(), "the key was never persisted"
+    stored = json.loads(creds.FALLBACK_FILE.read_text(encoding="utf-8"))
+    assert stored["deepseek"]["secret"] == FAKE_SECRET
+
+    # A fresh process: same directory, no environment push, still configured.
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    creds._SELF_SET.discard("DEEPSEEK_API_KEY")
+    assert creds.credential_backend() == "file"
+    status = next(
+        item for item in creds.list_credentials()["credentials"]
+        if item["provider"] == "deepseek"
+    )
+    assert status["configured"] is True
+    assert FAKE_SECRET not in json.dumps(creds.list_credentials())
+
+
+def test_delete_keeps_an_environment_variable_the_user_exported(monkeypatch, tmp_path):
+    """A variable inherited from the shell is not ours to destroy."""
+    import ai_runtime.credentials as creds
+
+    monkeypatch.setattr(creds, "_keyring", lambda: None)
+    monkeypatch.setattr(creds, "FALLBACK_FILE", tmp_path / "credentials.json")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-USER-EXPORTED-FROM-SHELL")
+
+    result = creds.delete_credential("openai")
+    assert os.environ.get("OPENAI_API_KEY") == "sk-USER-EXPORTED-FROM-SHELL"
+    assert "OPENAI_API_KEY" in result["shell_env_preserved"]
+
+    # What we did set, we do clear.
+    creds.set_credential("deepseek", FAKE_SECRET)
+    creds.delete_credential("deepseek")
+    assert os.environ.get("DEEPSEEK_API_KEY") in (None, "")
+
+
+def test_a_provider_error_that_quotes_the_key_is_redacted(monkeypatch):
+    """Providers echo the submitted credential back in 400/402 bodies."""
+    import ai_runtime.credentials as creds
+
+    secret = "sk-SUPERSECRET-abc123456789"
+    detail = creds._redact(f"bad request: the key {secret} is not on file", secret)
+    assert secret not in detail
+    assert "sk-S" in detail, "the provider's own prefix should survive so it reads"
+    other = creds._redact("rejected sk-SOMEONEELSESKEY-zzz", secret)
+    assert "SOMEONEELSESKEY" not in other
 
 
 def test_delete_of_an_unset_provider_reports_nothing_removed():
@@ -335,3 +397,19 @@ def test_every_new_i18n_key_exists_in_both_languages():
     en_keys = set(re.findall(r"^\s{4}(\w+):", en_block, flags=re.M))
     missing = zh_keys - en_keys
     assert not missing, f"missing from the English dictionary: {sorted(missing)}"
+
+def test_the_credential_file_is_gitignored():
+    """It holds plaintext keys, so ``git add -A`` must never pick it up.
+
+    ``config/ai.json`` was ignored from the start; the credential store was
+    not, and a test that wrote a key left the file sitting in the working tree
+    one ``git add -A`` away from being committed.
+    """
+    ignored = subprocess.run(
+        ["git", "check-ignore", "-q", "config/credentials.json"],
+        cwd=REPO,
+        capture_output=True,
+    )
+    assert ignored.returncode == 0, (
+        "config/credentials.json is not gitignored -- it stores plaintext keys"
+    )

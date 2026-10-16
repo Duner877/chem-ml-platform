@@ -37,6 +37,7 @@ from workflow_engine.agent_state import (
     TaskStateMachine,
     TERMINAL_STATES,
 )
+from workflow_engine.errors import NodeNotFoundError
 
 __all__ = ["AgentTask", "TaskScheduler", "scheduler", "assess_plan"]
 
@@ -68,7 +69,12 @@ def assess_plan(plan: Any, registry: Any = None) -> Tuple[List[str], List[Dict[s
             try:
                 cls = registry.get(node_type)
                 capabilities = list(getattr(cls, "capabilities", []) or [])
-            except KeyError:
+            except (KeyError, NodeNotFoundError):
+                # A plan the LLM hallucinated a node for has no capabilities to
+                # assess -- but it must not abort the whole planning stage with
+                # an error the user cannot connect to the real cause.  The
+                # downstream stages reject unknown types with a message that
+                # names them.
                 capabilities = []
         for capability in capabilities:
             mapping = _CAPABILITY_MAP.get(capability)

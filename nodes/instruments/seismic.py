@@ -27,7 +27,6 @@ requested, the node says so rather than silently using the built-in one.
 
 from __future__ import annotations
 
-import json
 import math
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -38,14 +37,11 @@ from simulations.fwi import (
     V_MIN,
     FWIConfig,
     FwdResult,
-    build_survey,
     forward_model,
     illumination_weights,
-    lateral_correlation,
     run_fwi,
 )
 from simulations.fwi_submission import (
-    SubmissionPaths,
     load_submission,
     score_model,
     synthetic_benchmark,
@@ -716,13 +712,15 @@ class SeismicSubmissionNode(ScientificNode):
             stage_misfits = [float(v) for v in reported.get("stage_misfits", []) or []]
             iterations = int(reported.get("n_iterations", 0) or 0)
             seconds = float(reported.get("wall_time_s", 0.0) or 0.0)
-            initial = _opt_float(reported.get("initial_misfit")) or 0.0
-            final = _opt_float(reported.get("final_misfit")) or 0.0
+            initial = _opt_float(reported.get("initial_misfit"))
+            final = _opt_float(reported.get("final_misfit"))
             held_initial = _opt_float(reported.get("held_out_initial_misfit"))
             held_final = _opt_float(reported.get("held_out_final_misfit"))
         else:
             stage_misfits, iterations, seconds = [], 0, 0.0
-            initial = final = 0.0
+            # "Not connected to an inversion" is not "the misfit was zero".
+            # 0.0 here would reach run_summary.json and read as a perfect fit.
+            initial = final = None
             held_initial = held_final = None
 
         result = FWIResult(

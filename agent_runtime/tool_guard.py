@@ -51,6 +51,9 @@ __all__ = [
 #: verdicts, ordered from least to most restrictive
 VERDICTS = ("allow", "approval", "deny")
 
+#: Repository root, so the policy file is found no matter where the app starts.
+ROOT = Path(__file__).resolve().parents[1]
+
 
 @dataclass(frozen=True)
 class GuardDecision:
@@ -177,6 +180,27 @@ DEFAULT_RULES: Sequence[ToolRule] = (
         "approval",
         "提交赛题产物会覆盖既有结果。/ "
         "Submission nodes overwrite existing deliverables.",
+    ),
+    # -- capability rules ---------------------------------------------------- #
+    # Matched against the node's declared capabilities, which the caller passes
+    # as ``extra_names``.  Grading by capability rather than by class name is
+    # what makes these two rules survive a rename or a new node: ORCA, VASP,
+    # LLM, PubChem and everything else that shells out or reaches the network
+    # are covered without listing them, and a node added tomorrow inherits the
+    # decision from what it needs rather than from what it is called.
+    ToolRule(
+        "*requires_external_software*",
+        "approval",
+        "外部程序执行节点会启动本机已安装的第三方程序，"
+        "耗时、失败原因与授权范围都超出本平台控制。/ "
+        "External-program nodes launch third-party software whose runtime, "
+        "failure modes and licences are outside this platform's control.",
+    ),
+    ToolRule(
+        "*requires_network*",
+        "approval",
+        "联网节点会把请求发送到外部服务。/ "
+        "Network nodes send requests to external services.",
     ),
     # -- open ---------------------------------------------------------------- #
     ToolRule(
@@ -320,16 +344,54 @@ _GUARD: Optional[ToolGuard] = None
 
 
 def get_guard(refresh: bool = False) -> ToolGuard:
-    """Process-wide guard, loaded from ``config/tool_guard.json`` when present."""
+    """Process-wide guard, loaded from ``config/tool_guard.json`` when present.
+
+    The path is anchored to the repository root rather than the process CWD:
+    the backend is routinely started from the desktop install directory or a
+    double-click shortcut, and a CWD-relative lookup would silently fall back
+    to the default rules -- a security policy quietly reverting to defaults is
+    worse than no policy file at all.
+    """
     global _GUARD
     if _GUARD is None or refresh:
-        path = Path("config") / "tool_guard.json"
+        path = ROOT / "config" / "tool_guard.json"
         _GUARD = ToolGuard.from_file(path) if path.exists() else ToolGuard()
     return _GUARD
+
+
+def _capabilities_of(node_type: str) -> List[str]:
+    """The capabilities the registry declares for ``node_type``, if any.
+
+    Looked up here rather than passed in by every caller so that capability
+    rules cannot be bypassed by a caller that forgets to supply them -- the
+    guard is supposed to be *the* chokepoint, and a chokepoint that the caller
+    can accidentally leave open is not one.
+    """
+    try:
+        from nodes.loader import get_registry
+
+        registry = get_registry()
+        registry.discover_package("nodes")
+        spec = next(
+            (s for s in registry.specs() if s.get("type") == str(node_type)), None
+        )
+        if spec is None:
+            return []
+        caps = spec.get("capabilities") or []
+        return [str(c) for c in caps if c]
+    except Exception:
+        # A guard that raises on an unknown node would turn "is this allowed?"
+        # into a crash.  An empty answer falls through to the name rules.
+        return []
 
 
 def check_tool_call(
     node_type: str, *, approved: bool = False, extra_names: Sequence[str] = ()
 ) -> GuardDecision:
-    """The single chokepoint every caller goes through."""
-    return get_guard().check(node_type, approved=approved, extra_names=extra_names)
+    """The single chokepoint every caller goes through.
+
+    The node's declared capabilities are always added to the candidate names so
+    the capability rules apply without the caller doing anything.
+    """
+    candidates = [*extra_names, *_capabilities_of(node_type)]
+    return get_guard().check(node_type, approved=approved, extra_names=candidates)

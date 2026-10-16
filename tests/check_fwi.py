@@ -30,6 +30,7 @@ from simulations.fwi import (  # noqa: E402
     V_MAX,
     V_MIN,
     _adjoint_gradient,
+    _apply_filter,
     _filter_bank,
     build_survey,
     estimate_wavelet,
@@ -203,12 +204,31 @@ def main() -> int:
     # Wavelet recovery has its own check above; here the question is purely
     # whether the adjoint operator points the right way.
     def normalised_misfit(model: np.ndarray) -> float:
+        # Both sides go through the same filter.  Filtering only the modelled
+        # traces while differencing against raw observations defines a
+        # *different* objective from the one ``run_fwi`` minimises, so the
+        # directional derivative taken here would be the gradient of something
+        # else -- and the check would pass regardless of the sign of the one
+        # that matters.  That is precisely how a reversed adjoint survived a
+        # green run of this script.
         mod = forward_model(
             model, wavelet_true, shot_rc, rec_rc, DT, DX, NT, band=(window, nfft)
         ).modelled
-        energy = sum(float(np.sum(obs[i] ** 2)) for i in survey.fit_shots)
+        energy = sum(
+            float(np.sum(_apply_filter(obs[i], window, nfft) ** 2))
+            for i in survey.fit_shots
+        )
         return sum(
-            float(np.sum((mod[i] - obs[i]) ** 2)) for i in survey.fit_shots
+            float(
+                np.sum(
+                    (
+                        _apply_filter(mod[i], window, nfft)
+                        - _apply_filter(obs[i], window, nfft)
+                    )
+                    ** 2
+                )
+            )
+            for i in survey.fit_shots
         ) / energy
 
     probe = np.zeros((ND, NX), dtype=float)
@@ -220,10 +240,30 @@ def main() -> int:
     m_minus = normalised_misfit(np.clip(start - dv * probe, V_MIN, V_MAX))
     numeric = (m_plus - m_minus) / (2.0 * dv)
     analytic = float(np.sum(grad * probe))
+    # The single 30x60 block spans two dipping interfaces, so its central
+    # difference is contaminated by curvature: the misfit is quartic in dv
+    # there and one block can disagree in sign for reasons that have nothing to
+    # do with the operator.  Sub-blocks of 8x10 cells sit inside a single
+    # homogeneous layer, where the local derivative really is linear.
+    agree = 0
+    disagree = 0
+    for iz in range(16, 44, 8):
+        for ix in range(20, 108, 10):
+            local = np.zeros((ND, NX), dtype=float)
+            local[iz : iz + 8, ix : ix + 10] = 1.0
+            up = normalised_misfit(np.clip(start + dv * local, V_MIN, V_MAX))
+            dn = normalised_misfit(np.clip(start - dv * local, V_MIN, V_MAX))
+            num = (up - dn) / (2.0 * dv)
+            ana = float(np.sum(grad * local))
+            if num == 0.0 or ana == 0.0:
+                continue
+            agree += 1 if num * ana > 0.0 else -1
+            disagree += 0 if num * ana > 0.0 else 1
     check(
         "梯度与有限差分同号",
-        analytic * numeric > 0.0,
-        f"analytic={analytic:+.4e}, numeric={numeric:+.4e}",
+        analytic * numeric > 0.0 and agree > 0,
+        f"large block analytic={analytic:+.4e} numeric={numeric:+.4e}; "
+        f"sub-blocks agreeing={agree} disagreeing={disagree}",
     )
 
     # Absolute magnitude is *not* comparable: the adjoint products are rescaled
@@ -241,7 +281,12 @@ def main() -> int:
     # with the wrong shape still gets its minimum in the wrong place, which the
     # turn-over point exposes.  Measured from zero to well past the optimum, in
     # units of the mean velocity so it transfers across surveys.
-    direction = grad / max(float(np.max(np.abs(grad))), 1e-30)
+    #
+    # The profile is traced along **-grad**: ``_adjoint_gradient`` returns
+    # dJ/dv, so descending means moving against it.  Tracing +grad made every
+    # check here assert "the misfit rises", which is only satisfiable while the
+    # sign is wrong -- the two bugs cancelled and the suite went green.
+    direction = -grad / max(float(np.max(np.abs(grad))), 1e-30)
     mean_v = float(np.mean(start))
     profile: List[Tuple[float, float]] = []
     for fraction in (0.0, 0.005, 0.01, 0.02, 0.05, 0.10, 0.20, 0.35):
@@ -272,17 +317,18 @@ def main() -> int:
     # And the descent it implies must actually hold on the real misfit.
     eps = 0.02 * mean_v
     f0 = profile[0][1]
-    f_plus = normalised_misfit(np.clip(start + eps * direction, V_MIN, V_MAX))
-    f_minus = normalised_misfit(np.clip(start - eps * direction, V_MIN, V_MAX))
+    f_descent = normalised_misfit(np.clip(start + eps * direction, V_MIN, V_MAX))
+    f_ascend = normalised_misfit(np.clip(start - eps * direction, V_MIN, V_MAX))
     check(
-        "沿梯度走误差下降",
-        f_plus < f0,
-        f"misfit {f0:.6e} -> {f_plus:.6e} ({100.0 * (1.0 - f_plus / f0):+.2f}%)",
+        "沿下降方向误差下降",
+        f_descent < f0,
+        f"misfit {f0:.6e} -> {f_descent:.6e} "
+        f"({100.0 * (1.0 - f_descent / f0):+.2f}%)",
     )
     check(
-        "反方向误差上升",
-        f_minus > f0,
-        f"{f0:.6e} -> {f_minus:.6e}",
+        "沿上升方向误差上升",
+        f_ascend > f0,
+        f"{f0:.6e} -> {f_ascend:.6e}",
     )
 
     print("\n=== 4. 反演：误差下降 + 出现横向结构 ===")

@@ -4015,10 +4015,18 @@
         {
           "name": "mechanism",
           "data_type": "Spectrum",
-          "description": "首效 / 孔径比 合并视图",
+          "description": "首效随静置时间的归一化曲线",
           "optional": false,
           "multi": false,
-          "description_en": "首效 / 孔径比 合并视图"
+          "description_en": "首效随静置时间的归一化曲线"
+        },
+        {
+          "name": "sieving",
+          "data_type": "Spectrum",
+          "description": "溶剂化半径比 vs 尺寸筛分（孔径轴）",
+          "optional": false,
+          "multi": false,
+          "description_en": "溶剂化半径比 vs 尺寸筛分（孔径轴）"
         },
         {
           "name": "barriers",

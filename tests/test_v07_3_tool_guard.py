@@ -101,8 +101,34 @@ def test_defaults_end_in_a_catch_all():
 
 
 def test_read_only_compute_is_allowed():
-    for node_type in ("ORCANode", "SMILESNode", "MoleculeNode", "BETNode"):
+    """Nodes that touch neither disk, the network nor external software.
+
+    ``ORCANode`` is deliberately *not* in this list even though it computes a
+    spectrum: it launches a third-party binary, and the module's own promise is
+    that anything shelling out needs an explicit decision.  Calling it
+    "read-only compute" was the gap that let nine external-program nodes and
+    fifteen network nodes through ungraded.
+    """
+    for node_type in ("SMILESNode", "MoleculeNode", "BETNode", "AFMNode"):
         assert check_tool_call(node_type).verdict == "allow", node_type
+
+
+def test_external_program_and_network_nodes_need_approval():
+    """Graded by capability, so a renamed or newly added node inherits the rule."""
+    for node_type in ("ORCANode", "VASPNode", "GROMACSNode", "LAMMPSNode"):
+        assert check_tool_call(node_type).verdict == "approval", node_type
+        assert (
+            check_tool_call(node_type).matched_rule == "*requires_external_software*"
+        ), node_type
+    for node_type in ("PubChemNode", "PDBNode", "LLMNode", "MaterialsProjectNode"):
+        assert check_tool_call(node_type).verdict == "approval", node_type
+        assert check_tool_call(node_type).matched_rule == "*requires_network*", node_type
+
+
+def test_an_unknown_node_type_still_falls_through_to_the_catch_all():
+    """Capability lookup must not raise for a name the registry has never seen."""
+    decision = check_tool_call("TotallyMadeUpNode")
+    assert decision.verdict == "allow"
 
 
 def test_destructive_and_outward_facing_nodes_are_refused():
@@ -128,24 +154,35 @@ def test_guard_patterns_are_checked_against_the_real_node_names():
     """
     from nodes.loader import get_registry
 
-    get_registry().discover_package("nodes")
-    types = [spec["type"] for spec in get_registry().specs()]
+    registry = get_registry()
+    registry.discover_package("nodes")
+    specs = registry.specs()
+    types = [spec["type"] for spec in specs]
 
     for rule in DEFAULT_RULES:
         if rule.pattern == "*":
             continue
-        members = [t for t in types if fnmatch.fnmatch(t, rule.pattern)]
-        if members:
+        by_name = [t for t in types if fnmatch.fnmatch(t, rule.pattern)]
+        # Capability rules are matched against ``extra_names``, so "does this
+        # rule have real members" has to be asked of the catalogue, not of the
+        # class names -- that is precisely what makes them survive a rename.
+        by_capability = [
+            spec["type"]
+            for spec in specs
+            if any(fnmatch.fnmatch(str(c), rule.pattern) for c in (spec.get("capabilities") or []))
+        ]
+        if by_name or by_capability:
             continue
         assert rule.forward_looking, (
-            f"rule {rule.pattern!r} matches none of the {len(types)} registered "
-            f"nodes and is not declared forward_looking -- that is dead policy"
+            f"rule {rule.pattern!r} matches neither a node name nor any "
+            f"declared capability across the {len(types)} registered nodes and "
+            f"is not declared forward_looking -- that is dead policy"
         )
 
     # The classification has to be stable, not merely non-empty.
     assert check_tool_call("SeismicSubmissionNode").verdict == "approval"
     assert check_tool_call("ExportNode").verdict == "approval"
-    assert check_tool_call("ORCANode").verdict == "allow"
+    assert check_tool_call("BETNode").verdict == "allow"
 
 
 def test_forward_looking_flag_survives_a_file_round_trip(tmp_path: Path):

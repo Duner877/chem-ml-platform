@@ -31,6 +31,7 @@ from models.desolvation import (
     PAPER_PORE_DIAMETER_A,
     aging_curves,
 )
+from nodes.instruments.desolvation import sei_loss_for_12h
 from nodes.loader import get_registry
 from workflow_engine.engine import WorkflowEngine
 
@@ -62,10 +63,22 @@ def test_ice_saturates_at_the_measured_plateau():
 
 
 def test_ice_start_and_gain_reproduce_the_reported_pair():
-    """12 h -> 90.14 % and 10 d -> 99.09 % pin the loss split."""
-    result = aging_curves(tau_fill_h=20.27, sei_capacity_loss=8.95)
-    assert result.ice_percent[0] == pytest.approx(ICE_AT_12H, abs=0.01)
-    assert result.ice_percent[-1] - result.ice_percent[0] == pytest.approx(8.95, abs=0.01)
+    """The two measured ICE points pin the loss split -- at the right times.
+
+    The curve is ``ICE(t) = plateau - sei_loss * exp(-t/tau)``, so the naive
+    ``plateau - ICE_AT_12H`` lands the measured 12 h value at t = 0 and misses
+    by a factor of ``1/exp(-12/tau)``.  Asserting on ``ice_percent[0]`` (which
+    is t = 0 on the engine's default grid) accepted exactly that error; this
+    asks for 12 h explicitly and uses the value the node's helper derives.
+    """
+    tau = 20.27
+    plateau = ICE_AT_10D
+    loss = sei_loss_for_12h(tau, plateau)
+    result = aging_curves(
+        tau_fill_h=tau, time_h=[12.0, 240.0], sei_capacity_loss=loss
+    )
+    assert result.ice_percent[0] == pytest.approx(ICE_AT_12H, abs=1e-6)
+    assert result.ice_percent[1] == pytest.approx(ICE_AT_10D, abs=0.01)
 
 
 def test_a_fully_aged_cell_never_reports_perfect_efficiency():
@@ -216,16 +229,74 @@ def test_rollup_barriers_use_the_reported_energies():
     )
 
 
-def test_rollup_drops_and_names_a_branch_it_cannot_resample():
-    """A 4-point sieve curve cannot share a 25-point ICE axis honestly."""
+def test_a_branch_on_a_different_abscissa_gets_its_own_output():
+    """Hours and angstroms cannot share one x axis without inventing data.
+
+    The old behaviour compared *row counts* and merged when they happened to
+    match -- which is exactly the state a user reaches by trimming one branch,
+    and the state in which the silent interpolation was most harmful.
+    """
     sieve, aging, sei = _three_branches()
     out = get_registry().create("PreDesolvationMechanismNode").execute(
         {"sieve": sieve["sieve"], "aging": aging["table"], "energetics": sei["table"]}
     )
     mechanism = out["mechanism"]
-    assert mechanism.metadata["dropped_series"] == ["radius ratio (SolvationState)"]
     assert mechanism.metadata["series_names"] == ["ICE vs rest time"]
+    assert mechanism.x_unit == "h"
     assert len(mechanism.x) == len(mechanism.y)
+    # Named, with the reason and where to look instead.
+    dropped = mechanism.metadata["dropped_series"]
+    assert len(dropped) == 1 and "angstrom" in dropped[0] and "sieving" in dropped[0]
+
+    sieving = out["sieving"]
+    assert sieving.x_unit == "angstrom"
+    assert len(sieving.x) == len(sieve["sieve"].rows)
+    assert sieving.x == [float(v) for v in sieve["sieve"].column("size_angstrom")]
+    assert sieving.metadata["series_names"] == ["radius ratio (SolvationState)"]
+
+
+def test_a_trimmed_aging_branch_still_puts_the_size_curve_where_it_belongs():
+    """The row-count coincidence that used to trigger a silent merge."""
+    sieve, aging, sei = _three_branches()
+    short = aging["table"]
+    short.rows = short.rows[: len(sieve["sieve"].rows)]
+    out = get_registry().create("PreDesolvationMechanismNode").execute(
+        {"sieve": sieve["sieve"], "aging": short, "energetics": sei["table"]}
+    )
+    mechanism = out["mechanism"]
+    sieving = out["sieving"]
+    assert len(mechanism.x) == len(sieve["sieve"].rows)
+    # The size values must stay on the size axis, not be resampled onto hours.
+    assert sieving.x[0] < 3.0, "sieving abscissa was contaminated"
+    assert mechanism.x_unit == "h"
+
+
+def test_an_unconnected_branch_says_not_connected():
+    sieve, aging, sei = _three_branches()
+    out = get_registry().create("PreDesolvationMechanismNode").execute(
+        {"aging": aging["table"], "energetics": sei["table"]}
+    )
+    stages = {row["stage"]: row for row in out["stages"].records()}
+    assert stages["1_size_sieve"]["verdict"] == "not_connected"
+
+
+def test_a_renamed_upstream_column_says_schema_mismatch():
+    """"Not connected" and "connected but renamed" send you to different files."""
+    sieve, aging, sei = _three_branches()
+    renamed = sieve["sieve"]
+    renamed.columns = [
+        "species", "label", "size_A", "radius_ratio", "pf6_coordination"
+    ]
+    out = get_registry().create("PreDesolvationMechanismNode").execute(
+        {"sieve": renamed, "aging": aging["table"], "energetics": sei["table"]}
+    )
+    stages = {row["stage"]: row for row in out["stages"].records()}
+    row = stages["1_size_sieve"]
+    assert row["verdict"] == "schema_mismatch"
+    assert "size_angstrom" in row["value"], "the message must name the missing column"
+    # The other two branches are unaffected.
+    assert stages["2_aging_gain"]["verdict"] == "ok"
+    assert stages["3_double_sei"]["verdict"] == "ok"
 
 
 # --------------------------------------------------------------------------- #
@@ -242,12 +313,46 @@ def test_workflow_declares_the_rollup_and_its_three_edges():
 
 
 def test_workflow_anchors_the_aging_parameters():
+    """The shipped numbers must be the ones that reproduce the reported points.
+
+    ``sei_loss`` is derived, not chosen: it is whatever makes
+    ``ICE(12 h) = ICE_AT_12H`` under the fitted exponential.  Hard-coding the
+    naive ``plateau - ICE_AT_12H`` (8.95) here is what let the workflow ship a
+    parameter that missed its own target by 1.8x.
+    """
     payload = json.loads(WORKFLOW.read_text(encoding="utf-8"))
     aging = next(n for n in payload["nodes"] if n["id"] == "aging")
     params = aging["params"]
-    assert params["sei_loss"] == pytest.approx(8.95)
+    # Derived against the tau the node will actually run with, not the
+    # engine's higher-precision default -- the two differ in the fourth
+    # decimal, which is already larger than the tolerance.
+    assert params["sei_loss"] == pytest.approx(
+        sei_loss_for_12h(params["tau_fill"], ICE_AT_10D), abs=1e-3
+    )
     assert params["residual_loss"] == pytest.approx(100.0 - ICE_AT_10D, abs=0.01)
     assert params["tau_fill"] == pytest.approx(20.27, abs=0.01)
+
+
+def test_workflow_reproduces_every_measured_anchor():
+    """All four reported numbers, read from the table the user actually sees.
+
+    The 25-point uniform grid the node used to sample on steps by 10 h and
+    lands on neither 12 h nor 40 h, so the table displayed the fit without
+    ever showing the values it claims to reproduce.
+    """
+    from backend.routers.workflows import load_workflow
+
+    workflow = asyncio.run(load_workflow(WORKFLOW.name))
+    result = WorkflowEngine(registry=get_registry()).run(workflow)
+    assert result.status == "completed", result.errors
+
+    table = result.output("aging", "table")
+    by_time = {round(float(row["time_h"]), 6): row for row in table.records()}
+
+    assert by_time[4.0]["impedance_ohm"] == pytest.approx(86.2, abs=0.01)
+    assert by_time[40.0]["impedance_ohm"] == pytest.approx(14.6, abs=0.01)
+    assert by_time[12.0]["ice_percent"] == pytest.approx(ICE_AT_12H, abs=0.01)
+    assert by_time[240.0]["ice_percent"] == pytest.approx(ICE_AT_10D, abs=0.01)
 
 
 def test_workflow_runs_end_to_end_with_every_stage_ok():

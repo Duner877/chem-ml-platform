@@ -32,7 +32,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -205,6 +205,11 @@ def write_submission(
         "iterations": int(result.n_iterations),
         "wall_time_s": round(float(result.wall_time_s), 3),
         "misfit": {
+            # Read through ``to_dict`` rather than off the dataclass fields:
+            # the fields default to ``None`` now, but a caller that assembles a
+            # result by hand can still leave them unset, and the summary must
+            # say "not measured" rather than print 0.0 and let it be read as a
+            # perfect fit.
             "initial": _finite_or_none(result.initial_misfit),
             "final": _finite_or_none(result.final_misfit),
             "per_stage": [_finite_or_none(v) for v in result.stage_misfits],
@@ -212,7 +217,11 @@ def write_submission(
                 round(
                     100.0 * (1.0 - result.final_misfit / result.initial_misfit), 4
                 )
-                if result.initial_misfit > 0.0
+                if (
+                    result.initial_misfit is not None
+                    and result.final_misfit is not None
+                    and result.initial_misfit > 0.0
+                )
                 else None
             ),
             "definition": (

@@ -35,6 +35,7 @@ from simulations.fwi import (
     FWIConfig,
     Survey,
     _adjoint_gradient,
+    _apply_filter,
     _filter_bank,
     build_survey,
     estimate_wavelet,
@@ -96,15 +97,30 @@ def test_adjoint_gradient_descends_along_its_own_direction():
     assert np.all(np.isfinite(grad))
     assert float(np.max(np.abs(grad))) > 0.0
 
-    energy = sum(float(np.sum(survey.records[i] ** 2)) for i in survey.fit_shots)
+    energy = sum(
+        float(np.sum(_apply_filter(survey.records[i], window, nfft) ** 2))
+        for i in survey.fit_shots
+    )
 
     def misfit(model: np.ndarray) -> float:
+        # Both sides filtered.  Differencing a filtered model against *raw*
+        # observations measures the derivative of a different objective than
+        # the one being minimised, which is how a reversed adjoint gradient
+        # stayed green for a whole release.
         mod = forward_model(
             model, wavelet, survey.shot_rc, survey.rec_rc, DT, DX, NT,
             band=(window, nfft),
         ).modelled
         return sum(
-            float(np.sum((mod[i] - survey.records[i]) ** 2))
+            float(
+                np.sum(
+                    (
+                        _apply_filter(mod[i], window, nfft)
+                        - _apply_filter(survey.records[i], window, nfft)
+                    )
+                    ** 2
+                )
+            )
             for i in survey.fit_shots
         ) / energy
 
@@ -112,14 +128,17 @@ def test_adjoint_gradient_descends_along_its_own_direction():
     mean_v = float(np.mean(survey.velocity))
     base = misfit(survey.velocity)
     values = [
-        misfit(np.clip(survey.velocity + f * mean_v * direction, V_MIN, V_MAX))
+        misfit(np.clip(survey.velocity - f * mean_v * direction, V_MIN, V_MAX))
         for f in (0.005, 0.01, 0.02, 0.05, 0.10, 0.20)
     ]
-    assert min(values) < base * 0.995, f"no descent along the gradient: {values}"
+    # ``_adjoint_gradient`` returns dJ/dv, so *descending* means moving along
+    # the negated direction.  A test that steps the other way would pass only
+    # while the sign was wrong.
+    assert min(values) < base * 0.995, f"no descent along -dJ/dv: {values}"
     # The profile has to come back up past its own minimum, which pins the
     # optimum rather than just confirming "smaller is better".
     assert values[-1] > min(values)
-    assert misfit(np.clip(survey.velocity - 0.02 * mean_v * direction, V_MIN, V_MAX)) > base
+    assert misfit(np.clip(survey.velocity + 0.02 * mean_v * direction, V_MIN, V_MAX)) > base
 
 
 def test_adjoint_gradient_is_finite_for_every_shot():

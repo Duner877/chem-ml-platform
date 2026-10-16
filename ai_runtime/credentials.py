@@ -33,8 +33,10 @@ which backend it landed on so the GUI can say so out loud.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import platform
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass, field
@@ -59,6 +61,12 @@ FALLBACK_FILE = ROOT / "config" / "credentials.json"
 
 #: Names that must never be echoed back to a client or written to a log.
 _MASK = "*"
+
+#: Shapes that look like a bearer credential, used to scrub provider error text.
+_KEY_SHAPED = re.compile(
+    r"(?:sk|rk|xai|gsk|hf|api)[-_][A-Za-z0-9_\-]{8,}|"
+    r"\b[A-Za-z0-9_\-]{28,}\b"
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -183,6 +191,13 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
 
 _BY_ID: Dict[str, ProviderSpec] = {p.id: p for p in PROVIDERS}
 
+# Environment variables this process pushed via ``set_credential``.  A variable
+# the user exported before launching the app belongs to their shell, and
+# deleting a credential must not destroy it -- see ``delete_credential``.
+_SELF_SET: set = set()
+
+_log = logging.getLogger("chemml.credentials")
+
 
 def provider_spec(provider_id: str) -> Optional[ProviderSpec]:
     """Look up a provider by id (case-insensitive)."""
@@ -286,6 +301,21 @@ def mask_secret(secret: str) -> str:
     if len(text) <= 8:
         return _MASK * len(text)
     return f"{text[:4]}{_MASK * 6}{text[-4:]}"
+
+
+def _redact(text: str, secret: str) -> str:
+    """Strip a secret (and anything shaped like one) out of free-form text.
+
+    Provider error messages are third-party content on their way to the
+    browser.  They routinely quote the credential back at us, so they cannot be
+    forwarded unfiltered.
+    """
+    out = str(text or "")
+    key = str(secret or "")
+    if key:
+        out = out.replace(key, mask_secret(key))
+    # Catch keys the provider may have partially echoed or reformatted.
+    return _KEY_SHAPED.sub(lambda m: m.group(0)[:4] + _MASK * 6, out)
 
 
 @dataclass
@@ -400,12 +430,15 @@ def set_credential(provider_id: str, secret: str, base_url: str = "") -> Dict[st
     if "\n" in value or "\r" in value:
         raise ValueError("the credential contains a line break")
 
-    stored_in = "environment"
-    # The providers read os.environ, not this store: pushing here is what makes
-    # a newly saved key take effect for the AI runtime and the agent.
     os.environ[spec.primary_env] = value
+    _SELF_SET.add(spec.primary_env)
 
-    # Prefer the OS keyring; fall back to the file when there is none.
+    # Prefer the OS keyring; fall back to the file both when there is no keyring
+    # at all and when the keyring refuses the write.  The desktop build is the
+    # case that matters: with no backend installed, a keyring branch that is
+    # simply skipped would leave the secret living only in this process -- the
+    # GUI would report it as configured, ``list_credentials`` would advertise a
+    # file that does not exist, and the key would be gone after a restart.
     keyring = _keyring()
     if keyring is not None:
         try:
@@ -413,6 +446,8 @@ def set_credential(provider_id: str, secret: str, base_url: str = "") -> Dict[st
             stored_in = "keyring"
         except Exception:
             stored_in = "file"
+    else:
+        stored_in = "file"
     if stored_in == "file":
         data = _read_file()
         data[spec.id] = {"secret": value, "env_var": spec.primary_env}
@@ -425,10 +460,14 @@ def set_credential(provider_id: str, secret: str, base_url: str = "") -> Dict[st
             config = get_config()
             config.base_urls[spec.id] = base_url
             save_config(config)
-        except Exception:
+        except Exception as exc:
             # A base-URL that cannot be persisted must not lose the key that
-            # was; report it rather than raising after the fact.
-            pass
+            # was, and must not fail silently either -- the caller needs to know
+            # the endpoint override did not stick, or it will debug the wrong
+            # thing when the provider keeps rejecting requests.
+            _log.warning(
+                "could not persist the base URL for %s: %s", spec.id, exc
+            )
 
     return {
         "provider": spec.id,
@@ -446,12 +485,19 @@ def delete_credential(provider_id: str) -> Dict[str, Any]:
             f"unknown provider {provider_id!r}; known: {', '.join(sorted(_BY_ID))}"
         )
     removed = False
+    preserved: List[str] = []
     if spec.primary_env and os.environ.get(spec.primary_env):
-        # The GUI's "forget this key" button has to actually forget it.  A key
-        # exported by the shell and a key this store wrote look identical from
-        # here, so the button clears both -- and says so, by reporting ``removed``.
-        removed = True
-        os.environ.pop(spec.primary_env, None)
+        if spec.primary_env in _SELF_SET:
+            removed = True
+            os.environ.pop(spec.primary_env, None)
+            _SELF_SET.discard(spec.primary_env)
+        else:
+            # Inherited from the shell that launched us.  Clearing it would
+            # destroy something we never owned and cannot restore, so it stays
+            # -- and the caller is told, because otherwise "deleted" would read
+            # as "this provider can no longer be used" when in fact it still
+            # can.
+            preserved.append(spec.primary_env)
     keyring = _keyring()
     if keyring is not None:
         try:
@@ -467,6 +513,7 @@ def delete_credential(provider_id: str) -> Dict[str, Any]:
     return {
         "provider": spec.id,
         "removed": removed,
+        "shell_env_preserved": preserved,
         "status": list_credentials(),
     }
 
@@ -541,7 +588,14 @@ def _curl_chat(base_url: str, api_key: str, timeout: float = 20.0) -> Tuple[bool
         detail = str((parsed.get("error") or {}).get("message") or "")[:200]
     except json.JSONDecodeError:
         detail = body[:200]
-    return False, f"HTTP {code}{f': {detail}' if detail else ''}"
+    if detail:
+        # Several providers echo the submitted key back inside the error
+        # message, and this string is returned to the browser verbatim.  The
+        # statuses handled above deliberately say nothing provider-supplied;
+        # the fallback has to redact for the same reason.
+        detail = _redact(detail, api_key)
+        return False, f"HTTP {code}: {detail}"
+    return False, f"HTTP {code}: the provider rejected the request"
 
 
 def test_credential(provider_id: str) -> Dict[str, Any]:

@@ -422,8 +422,15 @@ class ElectrolyteAgingNode(ScientificNode):
         max_time = float(self.get_param("max_time", 240.0))
         language = str(self.get_param("language", "zh") or "zh")
 
+        # Sample at the times the paper actually reports (4 h and 40 h impedance,
+        # 12 h and 10 d ICE) rather than on an even grid.  A uniform 25-point
+        # grid over 240 h steps by 10 h and lands on neither 12 h nor 40 h, so
+        # the table the user reads showed the fit without ever showing the
+        # numbers it is supposed to reproduce.
         points = 25
-        times = [max_time * i / (points - 1) for i in range(points)]
+        even = [max_time * i / (points - 1) for i in range(points)]
+        anchors = [t for t in (0.0, 4.0, 12.0, 40.0, max_time) if 0.0 <= t <= max_time]
+        times = sorted(set(round(t, 6) for t in (*even, *anchors)))
         result = aging_curves(
             tau_fill_h=tau,
             time_h=times,
@@ -482,7 +489,7 @@ class ElectrolyteAgingNode(ScientificNode):
 
         self.log(
             f"aging: tau={result.tau_fill_h:.2f} h, "
-            f"R {r0:.1f} -> {rinf:.1f} ohm, ICE plateau {100.0 - loss:.2f}%"
+            f"R {r0:.1f} -> {rinf:.1f} ohm, ICE plateau {100.0 - residual:.2f}%"
         )
         return {
             "curves": spectrum,
@@ -515,7 +522,10 @@ class ElectrolyteAgingNode(ScientificNode):
                 f"因此首效上限 = 100 − residual_loss = {plateau:.2f}%，"
                 f"与论文 10 天实测 {ICE_AT_10D:.2f}% 一致。\n"
                 f"若要复现论文 12 h 的 {ICE_AT_12H:.2f}%，请把 sei_loss 设为 "
-                f"{plateau - ICE_AT_12H:.2f}%。\n\n"
+                f"{sei_loss_for_12h(result.tau_fill_h, plateau):.4f}% —— "
+                f"不是 {plateau - ICE_AT_12H:.2f}%，因为曲线是\n"
+                f"  ICE(t) = {plateau:.2f} − sei_loss · exp(−t/τ)，"
+                f"12 h 时指数因子是 {math.exp(-12.0 / result.tau_fill_h):.4f} 而非 1。\n\n"
                 f"曲线为拟合式，未复现实验散点；数值非第一性原理计算。"
             )
         else:
@@ -535,7 +545,11 @@ class ElectrolyteAgingNode(ScientificNode):
                 f"The ICE ceiling is therefore 100 - residual_loss = {plateau:.2f}%, "
                 f"matching the measured {ICE_AT_10D:.2f}% at 10 days.\n"
                 f"To also reproduce the {ICE_AT_12H:.2f}% at 12 h, set "
-                f"sei_loss = {plateau - ICE_AT_12H:.2f}%.\n\n"
+                f"sei_loss = {sei_loss_for_12h(result.tau_fill_h, plateau):.4f}% -- "
+                f"not {plateau - ICE_AT_12H:.2f}%, because the curve is\n"
+                f"  ICE(t) = {plateau:.2f} - sei_loss * exp(-t/tau), and at 12 h "
+                f"the exponential is {math.exp(-12.0 / result.tau_fill_h):.4f}, "
+                f"not 1.\n\n"
                 f"The curves are fits, not a reproduction of the experimental "
                 f"scatter; the values are not first-principles calculations."
             )
@@ -545,6 +559,18 @@ class ElectrolyteAgingNode(ScientificNode):
             language=language,
             metadata={"engine": result.engine, "citation": _CITATION},
         )
+
+
+def sei_loss_for_12h(tau_fill_h: float, plateau: float) -> float:
+    """The ``sei_loss`` that puts ``ICE_AT_12H`` at **t = 12 h**, not at t = 0.
+
+    The curve is ``ICE(t) = plateau - sei_loss * exp(-t/tau)``, so the obvious
+    ``plateau - ICE_AT_12H`` places the measured 12 h value at t = 0 and is off
+    by a factor of ``1/exp(-12/tau)`` (about 1.8 at tau = 20.27 h).  Quoting the
+    naive difference made the node tell users to set a parameter that does not
+    reproduce the number it was derived from.
+    """
+    return (float(plateau) - ICE_AT_12H) / math.exp(-12.0 / float(tau_fill_h))
 
 
 @register_node
@@ -752,8 +778,51 @@ class DoubleSEIEnergeticsNode(ScientificNode):
         )
 
 
-def _rows_of(value: Any, columns: Sequence[str]) -> Optional[List[Dict[str, Any]]]:
-    """Reorder a ``Table``'s rows into ``columns``, or ``None``.
+class _BranchProblem(str):
+    """Why a branch could not be read, so the report can say which it was."""
+
+    MISSING = "not_connected"
+    SCHEMA = "schema_mismatch"
+
+
+#: Stage ids and labels in one place: the readable path and the failure path
+#: must not be able to drift into naming the same stage differently.
+_STAGE_ID = {
+    "sieve": "1_size_sieve",
+    "aging": "2_aging_gain",
+    "energetics": "3_double_sei",
+}
+_STAGE_LABEL = {
+    "sieve": ("可通过孔口的溶剂化结构", "solvation states that fit"),
+    "aging": ("首效随静置的提升", "ICE gain with rest time"),
+    "energetics": ("孔内 SEI 活化能降幅", "in-pore SEI barrier reduction"),
+}
+
+
+class _Branch:
+    """One upstream branch: its rows, or the reason there are none."""
+
+    def __init__(self, name: str, rows: Any) -> None:
+        self.name = name
+        if isinstance(rows, tuple):
+            self.rows: List[Dict[str, Any]] = []
+            self.reason: str = rows[0]
+            self.detail: str = rows[1]
+        else:
+            self.rows = rows
+            self.reason = ""
+            self.detail = ""
+
+    def __bool__(self) -> bool:
+        return bool(self.rows)
+
+    @property
+    def verdict(self) -> str:
+        return self.reason or "ok"
+
+
+def _rows_of(value: Any, columns: Sequence[str]) -> Any:
+    """Reorder a ``Table``'s rows into ``columns``, or explain why not.
 
     Returns a list of **dicts keyed by column name**, never positional lists.
     Three different upstream tables are consumed here and their column orders
@@ -761,22 +830,29 @@ def _rows_of(value: Any, columns: Sequence[str]) -> Optional[List[Dict[str, Any]
     where a radius was expected.  A name lookup makes that class of bug
     impossible to write.
 
-    ``None`` means "no usable table": either the branch is unconnected or a
-    requested column is absent.  The caller renders that as "not connected"
-    rather than as an empty result, because an empty table reads like "the
-    model ran and found nothing".
+    On failure it returns ``(reason, detail)`` rather than a bare ``None``:
+    "the wire is not connected" and "the wire is connected but the upstream
+    column was renamed" send the user to completely different places, and
+    collapsing both into "not connected" sends them to the wrong one.
     """
     table = getattr(value, "columns", None)
     rows = getattr(value, "rows", None)
-    if not table or rows is None:
-        return None
+    if value is None or not table or rows is None:
+        return _BranchProblem.MISSING, "the branch is not connected"
     index = {str(name): i for i, name in enumerate(table)}
-    if any(name not in index for name in columns):
-        return None
+    absent = [name for name in columns if name not in index]
+    if absent:
+        return (
+            _BranchProblem.SCHEMA,
+            f"upstream table has {list(table)}; missing {absent}",
+        )
     out: List[Dict[str, Any]] = []
     for row in rows:
         if len(row) < len(table):
-            return None
+            return (
+                _BranchProblem.SCHEMA,
+                f"a row has {len(row)} cells but the table declares {len(table)}",
+            )
         out.append({name: row[index[name]] for name in columns})
     return out
 
@@ -830,7 +906,8 @@ class PreDesolvationMechanismNode(ScientificNode):
         Port("energetics", "Table", "双 SEI 活化能", optional=True),
     ]
     output_ports = [
-        Port("mechanism", "Spectrum", "首效 / 孔径比 合并视图"),
+        Port("mechanism", "Spectrum", "首效随静置时间的归一化曲线"),
+        Port("sieving", "Spectrum", "溶剂化半径比 vs 尺寸筛分（孔径轴）"),
         Port("barriers", "Spectrum", "表面 SEI 与孔内 SEI 活化能对比"),
         Port("stages", "Table", "分阶段判据与自洽性检查"),
         Port("text", "Text", "机制证据链与限制说明"),
@@ -847,41 +924,51 @@ class PreDesolvationMechanismNode(ScientificNode):
         language = str(self.get_param("language", "zh") or "zh")
         zh = language == "zh"
 
-        sieve_rows = _rows_of(
+        sieve = _Branch("sieve", _rows_of(
             inputs.get("sieve"),
             ["species", "label", "size_angstrom", "radius_ratio", "pf6_coordination"],
-        )
-        aging_rows = _rows_of(inputs.get("aging"), ["time_h", "impedance_ohm", "ice_percent"])
-        energy_rows = _rows_of(
+        ))
+        aging = _Branch("aging", _rows_of(
+            inputs.get("aging"),
+            ["time_h", "impedance_ohm", "ice_percent"],
+        ))
+        energetics = _Branch("energetics", _rows_of(
             inputs.get("energetics"),
             ["electrolyte", "E_a_S_SEI_kJ", "E_a_I_SEI_kJ", "reduction_percent"],
-        )
+        ))
+        sieve_rows, aging_rows, energy_rows = sieve.rows, aging.rows, energetics.rows
+        branches = (sieve, aging, energetics)
 
         stages: List[List[Any]] = []
         connected: List[str] = []
         missing: List[str] = []
 
+        def unreadable(branch: _Branch) -> List[Any]:
+            """One stage row saying exactly what went wrong with this branch."""
+            missing.append(branch.name)
+            stages.append([
+                _STAGE_ID[branch.name],
+                _STAGE_LABEL[branch.name][zh],
+                branch.detail if branch.reason == _BranchProblem.SCHEMA else "—",
+                branch.reason,
+            ])
+            return []
+
         # -- stage 1: does anything fit through the throat? ----------------- #
         admitted = 0
-        if sieve_rows:
+        if sieve:
             admitted = sum(
                 1 for row in sieve_rows if float(row["radius_ratio"]) < 1.0
             )
             connected.append("sieve")
             stages.append([
-                "1_size_sieve",
+                _STAGE_ID["sieve"],
                 translate_stage(zh, "可通过孔口的溶剂化结构", "solvation states that fit"),
                 f"{admitted}/{len(sieve_rows)}",
                 "ok" if admitted else "blocked",
             ])
         else:
-            missing.append("sieve")
-            stages.append([
-                "1_size_sieve",
-                translate_stage(zh, "可通过孔口的溶剂化结构", "solvation states that fit"),
-                "—",
-                "not_connected",
-            ])
+            unreadable(sieve)
 
         # -- stage 2: does resting time keep paying? ------------------------ #
         ice_gain = None
@@ -895,19 +982,13 @@ class PreDesolvationMechanismNode(ScientificNode):
             values = [float(row["ice_percent"]) for row in aging_rows]
             rising = all(b >= a for a, b in zip(values, values[1:]))
             stages.append([
-                "2_aging_gain",
+                _STAGE_ID["aging"],
                 translate_stage(zh, "首效随静置的提升", "ICE gain with rest time"),
                 f"{ice_gain:+.2f} pp",
                 "ok" if rising and ice_gain > 0 else "non_monotonic",
             ])
         else:
-            missing.append("aging")
-            stages.append([
-                "2_aging_gain",
-                translate_stage(zh, "首效随静置的提升", "ICE gain with rest time"),
-                "—",
-                "not_connected",
-            ])
+            unreadable(aging)
 
         # -- stage 3: is the in-pore path actually cheaper? ------------------ #
         reduction = None
@@ -915,27 +996,23 @@ class PreDesolvationMechanismNode(ScientificNode):
             connected.append("energetics")
             reduction = float(energy_rows[0]["reduction_percent"])
             stages.append([
-                "3_double_sei",
+                _STAGE_ID["energetics"],
                 translate_stage(zh, "孔内 SEI 活化能降幅", "in-pore SEI barrier reduction"),
                 f"{reduction:+.1f} %",
                 "ok" if reduction > 0 else "contradicts",
             ])
         else:
-            missing.append("energetics")
-            stages.append([
-                "3_double_sei",
-                translate_stage(zh, "孔内 SEI 活化能降幅", "in-pore SEI barrier reduction"),
-                "—",
-                "not_connected",
-            ])
+            unreadable(energetics)
 
         # -- the combined view ---------------------------------------------- #
-        # Spectrum carries one abscissa in ``x``/``y`` and further series in
-        # ``z``, so a merged view is only honest when every branch is resampled
-        # onto one axis.  Each branch is normalised to its own first point: the
-        # shape is the message, and the absolute numbers stay in the tables.
-        # A branch that cannot be resampled without inventing data is dropped
-        # and named, rather than padded into a plateau that was never measured.
+        # A Spectrum has exactly one abscissa, so merging branches means putting
+        # them all on one axis.  The aging curve is in hours and the sieving
+        # curve is in angstroms: resampling one onto the other invents data,
+        # and comparing row counts does not detect it -- it fails exactly when
+        # the two happen to have the same number of rows, which is the case a
+        # user is most likely to hit by trimming one branch.  So the size
+        # branch gets its own output, and this merged view carries only the
+        # branches that genuinely share an axis.
         curves: List[Tuple[str, List[float], List[float]]] = []
 
         if aging_rows:
@@ -946,33 +1023,23 @@ class PreDesolvationMechanismNode(ScientificNode):
                 hours,
                 _normalise(ice),
             ))
-        if sieve_rows:
-            curves.append((
-                "radius ratio (SolvationState)",
-                [float(row["size_angstrom"]) for row in sieve_rows],
-                _normalise([float(row["radius_ratio"]) for row in sieve_rows]),
-            ))
 
         dropped: List[str] = []
-        if aging_rows and sieve_rows and len(aging_rows) != len(sieve_rows):
-            dropped.append("radius ratio (SolvationState)")
-            curves = [c for c in curves if c[0] != "radius ratio (SolvationState)"]
+        if sieve_rows:
+            dropped.append(
+                "radius ratio (SolvationState): different abscissa (angstrom "
+                "vs hours) -- see the 'sieving' output"
+            )
 
         if curves:
-            # Resample onto the longest abscissa with linear interpolation; a
-            # branch that does not span the axis is left at its own end value
-            # and flagged, because extrapolating a mechanism curve is worse
-            # than showing it truncated.
             axis = curves[0][1]
-            z: List[List[float]] = []
-            for name, own_x, own_y in curves:
-                z.append(_resample(own_x, own_y, axis))
+            z: List[List[float]] = [list(curves[0][2])]
             mechanism = Spectrum(
                 name="pre-desolvation mechanism",
                 x=list(axis),
                 y=z[0],
                 z=z,
-                x_unit="normalized",
+                x_unit="h",
                 y_unit="normalized to first point",
                 metadata={
                     "engine": _ENGINE,
@@ -995,6 +1062,34 @@ class PreDesolvationMechanismNode(ScientificNode):
                     "series_names": [],
                     "dropped_series": dropped,
                     "note": "no branch delivered a plottable series",
+                },
+            )
+
+        # The size-sieving branch, on its own axis in its own unit.
+        if sieve_rows:
+            sieving = Spectrum(
+                name="size sieving",
+                x=[float(row["size_angstrom"]) for row in sieve_rows],
+                y=_normalise([float(row["radius_ratio"]) for row in sieve_rows]),
+                x_unit="angstrom",
+                y_unit="normalized to first point",
+                metadata={
+                    "engine": _ENGINE,
+                    "citation": _CITATION,
+                    "series_names": ["radius ratio (SolvationState)"],
+                    "admitted_species": admitted,
+                },
+            )
+        else:
+            sieving = Spectrum(
+                name="size sieving",
+                x=[],
+                y=[],
+                metadata={
+                    "engine": _ENGINE,
+                    "citation": _CITATION,
+                    "series_names": [],
+                    "note": "the sieving branch is not connected",
                 },
             )
 
@@ -1047,6 +1142,7 @@ class PreDesolvationMechanismNode(ScientificNode):
 
         return {
             "mechanism": mechanism,
+            "sieving": sieving,
             "barriers": barriers,
             "stages": stages_table,
             "text": Text(
@@ -1082,38 +1178,6 @@ def _normalise(values: Sequence[float]) -> List[float]:
         return []
     base = abs(float(values[0])) or 1.0
     return [float(v) / base for v in values]
-
-
-def _resample(
-    own_x: Sequence[float], own_y: Sequence[float], axis: Sequence[float]
-) -> List[float]:
-    """Linear resample onto ``axis``, clamped at the ends.
-
-    Clamping rather than extrapolating is deliberate: outside the measured range
-    the model has nothing to say, and a flat extension would draw as if it did.
-    """
-    if not own_x or not axis:
-        return []
-    if len(own_x) == 1:
-        return [float(own_y[0])] * len(axis)
-    out: List[float] = []
-    cursor = 0
-    for target in axis:
-        t = float(target)
-        while cursor < len(own_x) - 2 and float(own_x[cursor + 1]) < t:
-            cursor += 1
-        x0, x1 = float(own_x[cursor]), float(own_x[cursor + 1])
-        y0, y1 = float(own_y[cursor]), float(own_y[cursor + 1])
-        if t <= x0:
-            out.append(y0)
-        elif t >= x1:
-            out.append(y1)
-        elif x1 == x0:
-            out.append(y0)
-        else:
-            frac = (t - x0) / (x1 - x0)
-            out.append(y0 + frac * (y1 - y0))
-    return out
 
 
 def _mechanism_text(
