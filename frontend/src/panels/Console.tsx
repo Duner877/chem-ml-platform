@@ -8,7 +8,7 @@ import type { RunResult } from "../types";
 function statusColor(status: string): string {
   if (status === "completed") return "text-good";
   if (status === "failed") return "text-bad";
-  if (status === "skipped") return "text-slate-500";
+  if (status === "skipped") return "text-[rgb(var(--c-text-faint))]";
   return "text-warn";
 }
 
@@ -21,13 +21,13 @@ function RunSummary({ result }: { result: RunResult }) {
         <span className={`font-semibold ${statusColor(result.status)}`}>
           {result.status}
         </span>
-        <span className="text-slate-400">
+        <span className="text-[rgb(var(--c-text-faint))]">
           {result.nodes} {translate(lang, "nodes")}
         </span>
-        <span className="text-slate-400">
+        <span className="text-[rgb(var(--c-text-faint))]">
           {translate(lang, "duration")} {result.duration_ms.toFixed(0)} ms
         </span>
-        <span className="text-slate-400">
+        <span className="text-[rgb(var(--c-text-faint))]">
           {translate(lang, "artifacts")}: {result.artifacts.length}
         </span>
         {result.errors.length > 0 && (
@@ -39,13 +39,13 @@ function RunSummary({ result }: { result: RunResult }) {
       <div className="mt-1 max-h-24 overflow-y-auto">
         {records.map((record) => (
           <div key={record.node_id} className="flex gap-2 text-[10px]">
-            <span className="w-40 shrink-0 truncate font-mono text-slate-300">
+            <span className="w-40 shrink-0 truncate font-mono text-[rgb(var(--c-text-dim))]">
               {record.node_id}
             </span>
             <span className={`w-20 shrink-0 ${statusColor(record.status)}`}>
               {record.status}
             </span>
-            <span className="shrink-0 text-slate-500">
+            <span className="shrink-0 text-[rgb(var(--c-text-faint))]">
               {record.duration_ms.toFixed(1)} ms
             </span>
             {record.error && (
@@ -115,7 +115,7 @@ export default function Console() {
           <p className="text-[rgb(var(--c-text-faint))]">{translate(lang, "idle")}</p>
         ) : (
           logs.map((line, index) => (
-            <div key={index} className="whitespace-pre-wrap break-all text-slate-300">
+            <div key={index} className="whitespace-pre-wrap break-all text-[rgb(var(--c-text-dim))]">
               {line}
             </div>
           ))

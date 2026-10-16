@@ -684,3 +684,56 @@ ipcMain.handle("window-control", (_event, action) => {
 ipcMain.handle("window-state", () => ({
   maximized: Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isMaximized()),
 }));
+
+/**
+ * Native file picker for ``file`` typed node parameters (v0.7.2).
+ *
+ * The renderer cannot open a dialog itself (``contextIsolation`` is on and
+ * Node integration is off), and a browser ``<input type=file>`` deliberately
+ * hides the path -- but the node needs a real path, because the backend runs
+ * in a *separate process* and must be able to open the file itself.  So the
+ * dialog is raised here, in the main process, and only the chosen path crosses
+ * the bridge.
+ *
+ * The returned path is absolute by construction; every importer node tries
+ * ``Path(raw)`` before falling back to "relative to the repository root", so it
+ * is consumed unchanged.
+ */
+ipcMain.handle("pick-file", async (_event, options = {}) => {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return { canceled: true, path: "", name: "" };
+  }
+  const requested = Array.isArray(options.filters) ? options.filters : [];
+  const filters = requested
+    .filter((entry) => entry && Array.isArray(entry.extensions) && entry.extensions.length)
+    .map((entry) => ({
+      name: String(entry.name || "Files"),
+      // Electron rejects an empty list; ``*`` is its "all files" wildcard.
+      extensions: entry.extensions.map((ext) => String(ext).replace(/^\*?\.?/, "")),
+    }));
+
+  const properties = ["openFile"];
+  if (requested.length === 0) properties.push("multiSelections");
+
+  let result;
+  try {
+    result = await dialog.showOpenDialog(mainWindow, {
+      title: String(options.title || "选择文件 / Choose a file"),
+      defaultPath: options.defaultPath || undefined,
+      // An empty ``filters`` array makes some Windows builds show no dialog at
+      // all, so always offer a catch-all.
+      filters: filters.length ? filters : [{ name: "All files", extensions: ["*"] }],
+      properties,
+    });
+  } catch (err) {
+    logLine(`pick-file failed: ${err && err.message ? err.message : err}`);
+    return { canceled: true, path: "", name: "" };
+  }
+
+  if (result.canceled || !result.filePaths || !result.filePaths.length) {
+    return { canceled: true, path: "", name: "" };
+  }
+  const chosen = result.filePaths[0];
+  logLine(`pick-file: ${chosen}`);
+  return { canceled: false, path: chosen, name: path.basename(chosen) };
+});

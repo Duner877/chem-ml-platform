@@ -153,6 +153,13 @@ ROUTE_RULES: List[RouteRule] = [
 
     # -- diagnostics (v0.7.2 P1-02): never a public debug surface --------- #
     _rule("GET", r"^/api/ws/sessions$", EXECUTE, "websocket diagnostics"),
+
+    # -- v0.7.2 file-parameter picker ------------------------------------- #
+    # ``GET /api/files/browse`` enumerates arbitrary directories, so it is
+    # listed explicitly rather than falling through to the default READ: the
+    # rule exists so the audit trail names the capability.  It still requires
+    # the session token in a packaged build (mode="token" -> fail closed).
+    _rule("GET", r"^/api/files/", READ, "local filesystem browsing"),
 ]
 
 

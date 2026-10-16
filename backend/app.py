@@ -25,6 +25,7 @@ Layout
 ``backend/routers/simulations.py`` simulation back-ends & job queue
 ``backend/routers/foundation.py`` scientific foundation models
 ``backend/routers/storage.py``   secure upload / workspace browsing
+``backend/routers/files.py``     local file browsing (file-parameter picker)
 """
 
 from __future__ import annotations
@@ -99,7 +100,8 @@ def create_app() -> FastAPI:
     )
 
     from backend.routers import (
-        ai, agent, data, foundation, nodes, runs, simulations, storage, workflows, ws,
+        ai, agent, data, files, foundation, nodes, runs, simulations, storage,
+        workflows, ws,
     )
 
     app.include_router(nodes.router, prefix="/api")
@@ -112,6 +114,7 @@ def create_app() -> FastAPI:
     app.include_router(simulations.router, prefix="/api")
     app.include_router(foundation.router, prefix="/api")
     app.include_router(storage.router, prefix="/api")
+    app.include_router(files.router, prefix="/api")
 
     @app.get("/api/health", tags=["meta"])
     async def health() -> dict:

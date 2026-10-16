@@ -2,6 +2,7 @@
 
 import { useEditor } from "../store";
 import { translate } from "../i18n";
+import FilePickerField from "../components/FilePickerField";
 import type { NodeParamSpec } from "../types";
 
 /** Localized enum option (backend mirrors ``(value, label)`` pairs). */
@@ -90,13 +91,12 @@ function ParamField({
   }
 
   if (spec.type === "file") {
+    // v0.7.2: click-to-browse instead of a bare path box.
     return (
-      <input
-        type="text"
-        value={String(value ?? "")}
-        placeholder="path/to/file"
-        onChange={(event) => onChange(event.target.value)}
-        className={`${base} font-mono`}
+      <FilePickerField
+        value={value}
+        description={lang === "en" ? spec.description_en || spec.description : spec.description}
+        onChange={onChange}
       />
     );
   }
@@ -206,9 +206,19 @@ export default function Inspector() {
           <ul className="space-y-0.5">
             {spec.inputs.map((port) => (
               <li key={port.name} className="flex items-center gap-2 text-[11px]">
+                {/* Solid dot = required, hollow ring = optional.  The old
+                    version distinguished them by hue alone, which the
+                    monochrome palette removed. */}
                 <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    port.optional ? "bg-[rgb(var(--c-text-faint))]" : "bg-accent"
+                  title={
+                    port.optional
+                      ? translate(lang, "optional")
+                      : translate(lang, "required")
+                  }
+                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                    port.optional
+                      ? "border border-[rgb(var(--c-text-faint))]"
+                      : "bg-[rgb(var(--c-text))]"
                   }`}
                 />
                 <span className="font-mono text-[rgb(var(--c-text))]">{port.name}</span>
@@ -219,6 +229,11 @@ export default function Inspector() {
                 {port.multi && (
                   <span className="rounded bg-panel2 px-1 text-[9px] text-[rgb(var(--c-text-dim))]">
                     {translate(lang, "multi")}
+                  </span>
+                )}
+                {port.optional && (
+                  <span className="shrink-0 rounded-sm border border-line px-1 text-[9px] leading-[11px] text-[rgb(var(--c-text-faint))]">
+                    {translate(lang, "optional")}
                   </span>
                 )}
               </li>

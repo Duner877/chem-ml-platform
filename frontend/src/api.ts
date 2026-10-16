@@ -9,7 +9,10 @@ import type {
   AgentPlanResult,
   CatalogEntry,
   CatalogStats,
+  FileListing,
+  FileProbe,
   FoundationModel,
+  FragmentationResult,
   NodeCategory,
   NodeSpec,
   RegistryPayload,
@@ -165,6 +168,30 @@ export const api = {
     request<{ count: number; stats: Record<string, unknown>; jobs: SimulationJob[] }>(
       `/simulations/jobs?limit=${limit}`
     ),
+
+  // ---- v0.7.2: local file browsing (file-parameter picker) --------------- //
+  browseFiles: (path = "") =>
+    request<FileListing>(`/files/browse?path=${encodeURIComponent(path)}`),
+
+  probeFile: (path: string) =>
+    request<FileProbe>(`/files/exists?path=${encodeURIComponent(path)}`),
+
+  // ---- v0.7.2: fragmentation pathway deduction -------------------------- //
+  fragmentationPathway: (payload: {
+    spectrum: unknown;
+    molecule?: unknown;
+    smiles?: string;
+    tolerance_ppm?: number;
+    max_steps?: number;
+    max_depth?: number;
+    min_relative?: number;
+    use_ai?: boolean;
+    language?: string;
+  }) =>
+    request<FragmentationResult>("/agent/fragmentation", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 
   // ---- v0.6: foundation models ------------------------------------------- //
   foundationModels: () =>

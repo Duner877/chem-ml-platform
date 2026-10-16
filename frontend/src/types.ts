@@ -280,3 +280,86 @@ export interface SimilarityResult {
   metric: string;
   similarity: number;
 }
+
+// --------------------------------------------------------------------------- //
+// v0.7.2 — local file browsing + fragmentation pathway deduction
+// --------------------------------------------------------------------------- //
+
+/** ``GET /api/files/exists`` result. */
+export interface FileProbe {
+  path: string;
+  exists: boolean;
+  is_dir: boolean;
+  size: number | null;
+}
+
+/** One entry of ``GET /api/files/browse``. */
+export interface FileEntry {
+  name: string;
+  path: string;
+  size?: number | null;
+  /** False for a file no importer node can open (shown greyed out). */
+  readable?: boolean;
+}
+
+/** One directory listing. */
+export interface FileListing {
+  path: string;
+  name: string;
+  /** Empty string when the directory is a filesystem root. */
+  parent: string;
+  directories: FileEntry[];
+  files: FileEntry[];
+  truncated: boolean;
+}
+
+/** One step of a deduced fragmentation pathway. */
+export interface FragmentationStep {
+  step: number;
+  /** Cleavage class or neutral loss, e.g. ``benzylic C–C`` / ``-H2O``. */
+  rule: string;
+  rationale: string;
+  /** Formula of the fragment ion (empty for a structure-free deduction). */
+  fragment_formula?: string;
+  theoretical_mz: number;
+  observed_mz: number;
+  loss_da: number;
+  relative_intensity: number;
+  mass_error_ppm: number;
+  confidence: number;
+}
+
+/** ``POST /api/agent/fragmentation`` response. */
+export interface FragmentationResult {
+  /** Rows aligned with ``columns``. */
+  pathway: unknown[][];
+  columns: string[];
+  metadata: {
+    engine?: string;
+    confidence?: number;
+    precursor_mz?: number | null;
+    precursor_source?: string;
+    precursor_neutral?: number | null;
+    structure_known?: boolean;
+    matched_peaks?: number;
+    observed_peaks?: number;
+    /** The de-adducted neutral molecule ion, when it was observed.  It breaks
+     *  no bond, so the engine reports it separately rather than as a step. */
+    de_adducted?: {
+      rule?: string;
+      theoretical_mz?: number;
+      observed_mz?: number;
+      mass_error_ppm?: number;
+      relative_intensity?: number;
+    } | null;
+  };
+  /** The deterministic rule engine's own account. */
+  rules_text: string;
+  /** AI interpretation, or the rule text with an explicit offline note. */
+  narrative: string;
+  /** Which engine produced the pathway. */
+  engine: string;
+  /** Which engine produced the narrative (``external:<provider>`` when a model). */
+  ai_engine: string;
+  confidence: number;
+}

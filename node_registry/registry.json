@@ -1,6 +1,6 @@
 {
   "package": "nodes",
-  "modules_scanned": 52,
+  "modules_scanned": 53,
   "modules": [
     "nodes._helpers",
     "nodes.agent",
@@ -26,6 +26,7 @@
     "nodes.instruments.diffraction",
     "nodes.instruments.electro",
     "nodes.instruments.electronic",
+    "nodes.instruments.fragmentation",
     "nodes.instruments.imaging",
     "nodes.instruments.mass_spectrometry",
     "nodes.instruments.mass_spectrometry.parsers",
@@ -1294,6 +1295,86 @@
       "validation_evidence": [],
       "limitations": [],
       "reproducibility_level": "deterministic"
+    },
+    {
+      "node_name": "Fragmentation Pathway",
+      "type": "FragmentationPathwayNode",
+      "version": "0.7.2",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "待解析的质谱图",
+          "optional": true,
+          "multi": true,
+          "description_en": "待解析的质谱图"
+        },
+        {
+          "name": "molecule",
+          "data_type": "Molecule",
+          "description": "候选结构（可选，决定是否做结构化推导）",
+          "optional": true,
+          "multi": true,
+          "description_en": "候选结构（可选，决定是否做结构化推导）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pathway",
+          "data_type": "Table",
+          "description": "裂解链路各步（规则 / 碎片式/ m/z / 误差 / 置信度）",
+          "optional": false,
+          "multi": false,
+          "description_en": "裂解链路各步（规则 / 碎片式/ m/z / 误差 / 置信度）"
+        },
+        {
+          "name": "steps",
+          "data_type": "Text",
+          "description": "规则引擎的推导说明",
+          "optional": false,
+          "multi": false,
+          "description_en": "规则引擎的推导说明"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "AI 助手对证据链的解读（无模型时为规则引擎说明）",
+          "optional": false,
+          "multi": false,
+          "description_en": "AI 助手对证据链的解读（无模型时为规则引擎说明）"
+        }
+      ],
+      "author": "",
+      "description": "由实测质谱推导裂解链路：按 CID 规则枚举中性丢失与结构可行的键断裂位点，与观测峰按质量容差匹配并给出每步置信度；可再由 AI 助手解读证据链。",
+      "name_zh": "裂解链路推导",
+      "category_zh": "分析 / 质谱",
+      "description_en": "Fragmentation pathway deduction: a deterministic rule engine matches neutral losses and structure-permitted bond cleavages against the observed peaks, and the AI assistant interprets the resulting evidence chain.",
+      "category": "Analysis/Mass Spectrometry",
+      "tags": [
+        "ms",
+        "msms",
+        "fragmentation",
+        "cid",
+        "pathway",
+        "neutral-loss"
+      ],
+      "module": "nodes.instruments.fragmentation",
+      "capabilities": [
+        "deduces_fragmentation_pathway"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
     },
     {
       "node_name": "Functional Groups",
@@ -6181,6 +6262,10 @@
       "count": 11
     },
     {
+      "category": "Analysis/Mass Spectrometry",
+      "count": 1
+    },
+    {
       "category": "Databases/Chemical",
       "count": 4
     },
@@ -6265,13 +6350,14 @@
       "count": 4
     }
   ],
-  "total_nodes": 89,
+  "total_nodes": 90,
   "availability_summary": {
-    "executable": 76,
+    "executable": 77,
     "experimental": 5,
     "unavailable": 8
   },
   "capability_summary": {
+    "deduces_fragmentation_pathway": 1,
     "experimental": 13,
     "nondeterministic": 2,
     "requires_external_software": 9,
@@ -6291,17 +6377,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 76,
+    "executable": 77,
     "experimental": 1,
     "unavailable": 8,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 89
+    "internal_approximation": 90
   },
   "reproducibility_summary": {
-    "deterministic": 87,
+    "deterministic": 88,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 84
+  "nodes_without_validation_evidence": 85
 }

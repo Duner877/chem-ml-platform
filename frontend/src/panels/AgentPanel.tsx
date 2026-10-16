@@ -10,7 +10,7 @@ const STATUS_COLOR: Record<string, string> = {
   completed: "text-good",
   failed: "text-bad",
   running: "text-accent",
-  skipped: "text-slate-500",
+  skipped: "text-[rgb(var(--c-text-faint))]",
 };
 
 export default function AgentPanel() {
@@ -62,7 +62,7 @@ export default function AgentPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-line px-3 py-3">
-        <h2 className="text-sm font-semibold text-slate-200">{translate(lang, "agentPanel")}</h2>
+        <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">{translate(lang, "agentPanel")}</h2>
       </header>
 
       <div className="flex-1 overflow-y-auto px-3 py-3">
@@ -71,10 +71,10 @@ export default function AgentPanel() {
           onChange={(event) => setQuestion(event.target.value)}
           rows={3}
           placeholder={translate(lang, "agentQuestionHint")}
-          className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-200 outline-none focus:border-accent"
+          className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
         />
 
-        <label className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
+        <label className="mt-2 flex items-center gap-2 text-[11px] text-[rgb(var(--c-text-faint))]">
           <input
             type="checkbox"
             checked={useLlm}
@@ -97,7 +97,7 @@ export default function AgentPanel() {
             type="button"
             onClick={planOnly}
             disabled={busy !== ""}
-            className="rounded-md border border-line px-3 py-1.5 text-[11px] text-slate-300 hover:border-accent disabled:opacity-40"
+            className="rounded-md border border-line px-3 py-1.5 text-[11px] text-[rgb(var(--c-text-dim))] hover:border-accent disabled:opacity-40"
           >
             {translate(lang, "agentPlanOnly")}
           </button>
@@ -110,7 +110,7 @@ export default function AgentPanel() {
             <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-accent/80">
               {translate(lang, "agentPlan")}
             </h3>
-            <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-slate-300">
+            <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-[rgb(var(--c-text-dim))]">
               {plan}
             </pre>
           </section>
@@ -124,7 +124,7 @@ export default function AgentPanel() {
               <Row
                 label={translate(lang, "agentStatus")}
                 value={answer.status}
-                className={STATUS_COLOR[answer.status] ?? "text-slate-300"}
+                className={STATUS_COLOR[answer.status] ?? "text-[rgb(var(--c-text-dim))]"}
               />
               <Row
                 label={translate(lang, "agentNodes")}
@@ -138,7 +138,7 @@ export default function AgentPanel() {
               </h3>
               <ol className="space-y-0.5">
                 {answer.nodes.map((node, index) => (
-                  <li key={`${node}-${index}`} className="font-mono text-[10px] text-slate-400">
+                  <li key={`${node}-${index}`} className="font-mono text-[10px] text-[rgb(var(--c-text-faint))]">
                     {index + 1}. {node}
                   </li>
                 ))}
@@ -146,7 +146,7 @@ export default function AgentPanel() {
               {answer.notes.length > 0 && (
                 <ul className="mt-1 space-y-0.5">
                   {answer.notes.map((note, index) => (
-                    <li key={index} className="text-[10px] text-slate-500">
+                    <li key={index} className="text-[10px] text-[rgb(var(--c-text-faint))]">
                       - {note}
                     </li>
                   ))}
@@ -158,21 +158,21 @@ export default function AgentPanel() {
               <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-accent/80">
                 {translate(lang, "agentConclusion")}
               </h3>
-              <pre className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-slate-300">
+              <pre className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-[rgb(var(--c-text-dim))]">
                 {answer.conclusion || "—"}
               </pre>
             </section>
 
             {answer.findings.length > 0 && (
               <section className="mt-4">
-                <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--c-text-faint))]">
                   {answer.findings.length} findings
                 </h3>
                 <ul className="space-y-1">
                   {answer.findings.slice(0, 12).map((finding, index) => (
                     <li
                       key={index}
-                      className="rounded border border-line bg-canvas px-2 py-1 text-[10px] leading-snug text-slate-400"
+                      className="rounded border border-line bg-canvas px-2 py-1 text-[10px] leading-snug text-[rgb(var(--c-text-faint))]"
                     >
                       {finding.text}
                     </li>
@@ -190,7 +190,7 @@ export default function AgentPanel() {
 function Row({
   label,
   value,
-  className = "text-slate-200",
+  className = "text-[rgb(var(--c-text))]",
 }: {
   label: string;
   value: string;
@@ -198,7 +198,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-[rgb(var(--c-text-faint))]">{label}</span>
       <span className={`truncate font-mono ${className}`}>{value || "—"}</span>
     </div>
   );

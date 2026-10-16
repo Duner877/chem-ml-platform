@@ -1,128 +1,78 @@
 /** Dock "Spectra" tab — plots every Spectrum produced by the last run.
  *
- * The mass-spectrum variant renders a ComfyUI-style stick plot (centroid
- * spectra draw vertical lines from zero, profile spectra draw a polyline),
- * everything else falls back to a connected line chart.  Colours come from the
- * active theme tokens, so the chart follows the wb-dark / wb-light switch.
+ * Layout top→bottom: spectrum selector, the plot (click to enlarge), the major
+ * peak table, and — for mass spectra — the fragmentation-pathway deduction
+ * window driven by the AI assistant.
+ *
+ * The plot itself lives in :mod:`../components/SpectrumLightbox` so the dock
+ * and the full-window lightbox render exactly the same trace.
  */
 
 import { useMemo, useState } from "react";
 import { useEditor } from "../store";
 import { translate } from "../i18n";
 import { extractSpectra, isMassSpectrum, type SpectrumLike } from "../spectra";
+import SpectrumLightbox, { SpectrumPlot } from "../components/SpectrumLightbox";
+import FragmentationPanel from "../components/FragmentationPanel";
+import { IconZoom } from "../components/Icons";
+import type { RunResult } from "../types";
 
-const W = 720;
-const H = 320;
-const M = { top: 14, right: 16, bottom: 34, left: 56 };
-
-function niceTicks(min: number, max: number, count = 8): number[] {
-  if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) {
-    return [min];
+/** Pull the best available candidate SMILES out of a run result. */
+function candidateSmiles(result: RunResult | null): string {
+  if (!result?.records) return "";
+  let best = "";
+  let bestScore = -1;
+  for (const record of Object.values(result.records)) {
+    for (const value of Object.values(record.outputs ?? {})) {
+      const stack: unknown[] = [value];
+      while (stack.length) {
+        const item = stack.pop();
+        if (Array.isArray(item)) {
+          stack.push(...item);
+          continue;
+        }
+        if (typeof item !== "object" || item === null) continue;
+        const payload = item as Record<string, unknown>;
+        if (payload.type === "Molecule") {
+          const smiles = String(payload.smiles ?? "").trim();
+          const properties = (payload.properties ?? {}) as Record<string, unknown>;
+          const score = Number(properties.confidence ?? 0) || 0;
+          if (smiles && score >= bestScore) {
+            bestScore = score;
+            best = smiles;
+          }
+        }
+        for (const nested of Object.values(payload)) {
+          if (Array.isArray(nested) || (typeof nested === "object" && nested !== null)) {
+            stack.push(nested);
+          }
+        }
+      }
+    }
   }
-  const span = max - min;
-  const step0 = span / count;
-  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
-  const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= step0) ?? mag * 10;
-  const first = Math.ceil(min / step) * step;
-  const ticks: number[] = [];
-  for (let v = first; v <= max + step * 1e-6; v += step) ticks.push(Number(v.toPrecision(12)));
-  return ticks;
+  return best;
 }
 
-function SpectrumPlot({ spectrum }: { spectrum: SpectrumLike }) {
-  const { theme } = useEditor();
-  const dark = theme === "wb-dark";
-
-  const model = useMemo(() => {
-    const xs = (spectrum.x ?? []).filter((v) => Number.isFinite(v));
-    const ysRaw = (spectrum.y ?? []).filter((v) => Number.isFinite(v));
-    const n = Math.min(xs.length, ysRaw.length);
-    const xsN = xs.slice(0, n);
-    const ysN = ysRaw.slice(0, n);
-    const xmax = xsN.length ? Math.max(...xsN) : 1;
-    const xmin = xsN.length ? Math.min(...xsN) : 0;
-    const ymax = ysN.length ? Math.max(...ysN) : 1;
-    const padX = (xmax - xmin) * 0.02 || 1;
-    return {
-      xs: xsN,
-      ys: ysN,
-      xmin: Math.max(0, xmin - padX),
-      xmax: xmax + padX,
-      ymax: ymax || 1,
-      centroid: (spectrum.peaks?.length ?? 0) > 0 && xsN.length < 2000,
-    };
-  }, [spectrum]);
-
-  const px = (v: number) =>
-    M.left + ((v - model.xmin) / (model.xmax - model.xmin || 1)) * (W - M.left - M.right);
-  const py = (v: number) =>
-    H - M.bottom - (v / model.ymax) * (H - M.top - M.bottom);
-
-  const xTicks = niceTicks(model.xmin, model.xmax);
-  const yTicks = niceTicks(0, model.ymax, 4);
-  const axis = dark ? "rgb(var(--c-text-dim))" : "rgb(var(--c-text-dim))";
-  const stroke = "rgb(var(--c-accent))";
-
-  const paths = useMemo(() => {
-    if (!model.xs.length) return { sticks: "", profile: "" };
-    if (model.centroid) {
-      let d = "";
-      for (let i = 0; i < model.xs.length; i += 1) {
-        const x = px(model.xs[i]);
-        d += `M${x.toFixed(1)} ${py(0).toFixed(1)} L${x.toFixed(1)} ${py(model.ys[i]).toFixed(1)} `;
-      }
-      return { sticks: d.trim(), profile: "" };
-    }
-    const pts = model.xs.map((x, i) => `${px(x).toFixed(1)},${py(model.ys[i]).toFixed(1)}`);
-    return { sticks: "", profile: `M${pts.join(" L")}` };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, theme]);
-
-  const xUnit = spectrum.x_unit || (isMassSpectrum(spectrum) ? "m/z" : "");
-  const yUnit = spectrum.y_unit || "";
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="img">
-      {/* grid + axes */}
-      {yTicks.map((t) => (
-        <g key={`y${t}`}>
-          <line x1={M.left} x2={W - M.right} y1={py(t)} y2={py(t)} stroke={axis} strokeOpacity={0.18} />
-          <text x={M.left - 6} y={py(t) + 3} textAnchor="end" fontSize="9" fill={axis}>
-            {model.ymax > 1000 ? `${(t / 1000).toFixed(t % 1000 ? 1 : 0)}k` : t.toPrecision(3)}
-          </text>
-        </g>
-      ))}
-      {xTicks.map((t) => (
-        <g key={`x${t}`}>
-          <line x1={px(t)} x2={px(t)} y1={py(0)} y2={py(0) - 4} stroke={axis} />
-          <text x={px(t)} y={H - M.bottom + 14} textAnchor="middle" fontSize="9" fill={axis}>
-            {Math.abs(t) >= 1000 ? t.toFixed(0) : Number(t.toPrecision(4))}
-          </text>
-        </g>
-      ))}
-      <line x1={M.left} x2={W - M.right} y1={py(0)} y2={py(0)} stroke={axis} />
-      <line x1={M.left} x2={M.left} y1={M.top} y2={py(0)} stroke={axis} />
-      <text x={W - M.right} y={H - 4} textAnchor="end" fontSize="9" fill={axis}>
-        {xUnit}
-      </text>
-      <text x={10} y={M.top + 4} fontSize="9" fill={axis}>
-        {yUnit}
-      </text>
-
-      {paths.profile && (
-        <path d={paths.profile} fill="none" stroke={stroke} strokeWidth={1.4} />
-      )}
-      {paths.sticks && (
-        <path d={paths.sticks} fill="none" stroke={stroke} strokeWidth={1.1} strokeLinecap="round" />
-      )}
-    </svg>
-  );
+function header(active: SpectrumLike, lang: "zh" | "en") {
+  const parts = [
+    active.name || "—",
+    // v0.7.2: this used to fall back to a bare "?" when the mode was unset,
+    // which read as an error.  An explicit "unlabelled" says what it means.
+    active.mode || translate(lang, "unlabelled"),
+    `${(active.x ?? []).length} pts`,
+  ];
+  if (active.ms_level) parts.push(`MS${active.ms_level}`);
+  if (active.polarity) parts.push(active.polarity);
+  if (active.precursor_mz) parts.push(`precursor ${active.precursor_mz}`);
+  return parts.join(" · ");
 }
 
 export default function PlotPanel() {
   const { lang, runResult, setDockTab } = useEditor();
   const spectra = useMemo(() => extractSpectra(runResult), [runResult]);
+  const smiles = useMemo(() => candidateSmiles(runResult), [runResult]);
   const [selected, setSelected] = useState(0);
+  const [enlarged, setEnlarged] = useState(false);
 
   if (!runResult) {
     return (
@@ -160,7 +110,8 @@ export default function PlotPanel() {
     );
   }
 
-  const active = spectra[Math.min(selected, spectra.length - 1)].spectrum;
+  const index = Math.min(selected, spectra.length - 1);
+  const active = spectra[index].spectrum;
   const ms = isMassSpectrum(active);
   const topPeaks = [...(active.peaks ?? [])]
     .sort((a, b) => (b.y ?? 0) - (a.y ?? 0))
@@ -170,43 +121,59 @@ export default function PlotPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-line px-3 py-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">
             {translate(lang, "dockPlot")}
           </h2>
           <select
-            value={Math.min(selected, spectra.length - 1)}
+            value={index}
             onChange={(event) => setSelected(Number(event.target.value))}
             className="cml-widget max-w-44 font-mono text-[10px]"
           >
-            {spectra.map((item, index) => (
-              <option key={index} value={index}>
+            {spectra.map((item, position) => (
+              <option key={position} value={position}>
                 {item.source}
               </option>
             ))}
           </select>
         </div>
         <p className="mt-1 truncate text-[10px] text-[rgb(var(--c-text-faint))]">
-          {active.name || "—"} · {active.mode || "?"} · {(active.x ?? []).length} pts
+          {header(active, lang)}
         </p>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-        <div className="rounded border border-line bg-canvas p-1">
-          <SpectrumPlot spectrum={active} />
+        {/* click-to-enlarge ------------------------------------------------ */}
+        <div className="group relative rounded border border-line bg-canvas p-1">
+          <button
+            type="button"
+            onClick={() => setEnlarged(true)}
+            title={translate(lang, "plotEnlarge")}
+            className="block w-full cursor-zoom-in"
+          >
+            <SpectrumPlot spectrum={active} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setEnlarged(true)}
+            title={translate(lang, "plotEnlarge")}
+            className="absolute right-2 top-2 flex items-center gap-1 rounded border border-line bg-panel px-1.5 py-0.5 text-[9px] text-[rgb(var(--c-text-dim))] opacity-0 transition group-hover:opacity-100 hover:text-[rgb(var(--c-text))]"
+          >
+            <IconZoom size={11} />
+            {translate(lang, "plotEnlarge")}
+          </button>
         </div>
 
+        {/* major peaks ------------------------------------------------------ */}
         <section className="mt-3">
-          <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-accent">
+          <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--c-text-dim))]">
             {translate(lang, "plotTopPeaks")}
           </h3>
           <table className="w-full text-left text-[10px]">
             <thead>
               <tr className="text-[rgb(var(--c-text-faint))]">
                 <th className="py-0.5 pr-2 font-medium">#</th>
-                <th className="py-0.5 pr-2 font-medium">
-                  {ms ? "m/z" : active.x_unit || "x"}
-                </th>
+                <th className="py-0.5 pr-2 font-medium">{ms ? "m/z" : active.x_unit || "x"}</th>
                 <th className="py-0.5 pr-2 font-medium">
                   {ms ? translate(lang, "plotIntensity") : active.y_unit || "y"}
                 </th>
@@ -214,17 +181,29 @@ export default function PlotPanel() {
               </tr>
             </thead>
             <tbody className="font-mono text-[rgb(var(--c-text-dim))]">
-              {topPeaks.map((peak, index) => (
-                <tr key={index} className="border-t border-line/60">
-                  <td className="py-0.5 pr-2">{index + 1}</td>
+              {topPeaks.map((peak, peakIndex) => (
+                <tr key={peakIndex} className="border-t border-line/60">
+                  <td className="py-0.5 pr-2">{peakIndex + 1}</td>
                   <td className="py-0.5 pr-2">{(peak.x ?? 0).toFixed(4)}</td>
                   <td className="py-0.5 pr-2">{(peak.y ?? 0).toFixed(1)}</td>
                   <td className="py-0.5">{(((peak.y ?? 0) / base) * 100).toFixed(1)}</td>
                 </tr>
               ))}
+              {topPeaks.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-2 text-[rgb(var(--c-text-faint))]">
+                    {translate(lang, "plotNoPeaks")}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>
+
+        {/* fragmentation pathway (mass spectra only) ----------------------- */}
+        {ms && (
+          <FragmentationPanel spectrum={active} smiles={smiles} />
+        )}
 
         <button
           type="button"
@@ -234,6 +213,16 @@ export default function PlotPanel() {
           {translate(lang, "plotBackToInspector")}
         </button>
       </div>
+
+      {enlarged && (
+        <SpectrumLightbox
+          spectrum={active}
+          title={`${spectra[index].source} — ${
+            active.name || translate(lang, "dockPlot")
+          }`}
+          onClose={() => setEnlarged(false)}
+        />
+      )}
     </div>
   );
 }

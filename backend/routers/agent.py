@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -42,6 +42,27 @@ class PlanPayload(BaseModel):
     question: str
     language: str = "zh"
     max_nodes: int = 12
+
+
+class FragmentationPayload(BaseModel):
+    """Request for the mass-spectrum fragmentation pathway deduction.
+
+    ``spectrum`` is the *serialised* Spectrum exactly as the GUI already holds
+    it (``{type: "Spectrum", x: [...], y: [...], peaks: [...]}``), so the panel
+    can ask without re-running the workflow.
+    """
+
+    spectrum: Dict[str, Any]
+    #: Optional candidate structure (serialised Molecule) or a bare SMILES.
+    molecule: Optional[Dict[str, Any]] = None
+    smiles: str = ""
+    adduct: str = "[M+H]+"
+    tolerance_ppm: float = 20.0
+    max_steps: int = 8
+    max_depth: int = 2
+    min_relative: float = 0.01
+    use_ai: bool = True
+    language: str = "zh"
 
 
 def _task_or_404(task_id: str):
@@ -87,6 +108,71 @@ async def plan(payload: PlanPayload) -> Dict[str, Any]:
     return {
         "workflow": getattr(outputs.get("workflow"), "text", ""),
         "explanation": getattr(outputs.get("text"), "text", ""),
+    }
+
+
+@router.post("/fragmentation")
+async def fragmentation(payload: FragmentationPayload) -> Dict[str, Any]:
+    """Deduce the fragmentation pathway of a measured spectrum.
+
+    Runs the node through the real registry (rather than re-implementing its
+    logic here) so the panel and a workflow node always agree.  The response
+    separates the two engines honestly:
+
+    * ``engine``   -- the rule engine that produced the pathway;
+    * ``ai_engine``-- the model that wrote the narrative, or
+      ``internal:fragmentation-rules`` when no provider answered.
+    """
+    from nodes.loader import get_registry
+
+    spectrum_data = dict(payload.spectrum or {})
+    if spectrum_data.get("type") not in (None, "Spectrum"):
+        raise HTTPException(
+            status_code=422,
+            detail=f"expected a serialized Spectrum, got {spectrum_data.get('type')!r}",
+        )
+
+    smiles = str(payload.smiles or "").strip()
+    if not smiles and isinstance(payload.molecule, dict):
+        smiles = str(payload.molecule.get("smiles", "") or "").strip()
+
+    node = get_registry().create("FragmentationPathwayNode")
+    node.params.update(
+        {
+            "adduct": payload.adduct,
+            "tolerance_ppm": payload.tolerance_ppm,
+            "max_steps": payload.max_steps,
+            "max_depth": payload.max_depth,
+            "min_relative": payload.min_relative,
+            "use_ai": payload.use_ai,
+            "language": payload.language,
+        }
+    )
+
+    from workflow_engine.objects import Molecule, Spectrum
+
+    spectrum = Spectrum(**{k: v for k, v in spectrum_data.items() if k != "type"})
+    inputs: Dict[str, Any] = {"spectrum": spectrum}
+    if smiles:
+        # The molecule only supplies a SMILES; building a full descriptor set
+        # here would be wasted work, so the node takes the string directly.
+        inputs["molecule"] = Molecule(name="candidate", smiles=smiles, formula="")
+
+    outputs = node.process(inputs, ctx=None)
+    table = outputs.get("pathway")
+    steps_text = getattr(outputs.get("steps"), "text", "")
+    narrative = getattr(outputs.get("text"), "text", "")
+    narrative_data = getattr(outputs.get("text"), "data", {}) or {}
+
+    return {
+        "pathway": list(getattr(table, "rows", []) or []),
+        "columns": list(getattr(table, "columns", []) or []),
+        "metadata": dict(getattr(table, "metadata", {}) or {}),
+        "rules_text": steps_text,
+        "narrative": narrative,
+        "engine": str((getattr(table, "metadata", {}) or {}).get("engine", "internal:fragmentation-rules")),
+        "ai_engine": str(narrative_data.get("engine", "internal:fragmentation-rules")),
+        "confidence": float(narrative_data.get("confidence", 0.0) or 0.0),
     }
 
 

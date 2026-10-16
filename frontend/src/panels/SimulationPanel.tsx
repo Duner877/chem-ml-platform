@@ -62,8 +62,8 @@ export default function SimulationPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-line px-3 py-3">
-        <h2 className="text-sm font-semibold text-slate-200">{translate(lang, "simPanel")}</h2>
-        <p className="mt-0.5 text-[10px] text-slate-500">
+        <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">{translate(lang, "simPanel")}</h2>
+        <p className="mt-0.5 text-[10px] text-[rgb(var(--c-text-faint))]">
           {translate(lang, "simAvailable")}:{" "}
           {backends.filter((item) => item.available).map((item) => item.name).join(", ") || "—"}
         </p>
@@ -77,7 +77,7 @@ export default function SimulationPanel() {
             {translate(lang, "simRun")}
           </h3>
           <label className="mb-2 block">
-            <span className="mb-1 block text-[10px] text-slate-500">
+            <span className="mb-1 block text-[10px] text-[rgb(var(--c-text-faint))]">
               {translate(lang, "simFamily")}
             </span>
             <select
@@ -86,7 +86,7 @@ export default function SimulationPanel() {
                 setFamily(event.target.value);
                 setBackend("");
               }}
-              className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-200 outline-none focus:border-accent"
+              className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
             >
               {FAMILIES.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -96,13 +96,13 @@ export default function SimulationPanel() {
             </select>
           </label>
           <label className="mb-2 block">
-            <span className="mb-1 block text-[10px] text-slate-500">
+            <span className="mb-1 block text-[10px] text-[rgb(var(--c-text-faint))]">
               {translate(lang, "simBackend")}
             </span>
             <select
               value={backend}
               onChange={(event) => setBackend(event.target.value)}
-              className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-200 outline-none focus:border-accent"
+              className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
             >
               <option value="">auto</option>
               {familyBackends.map((item) => (
@@ -117,7 +117,7 @@ export default function SimulationPanel() {
             value={smiles}
             onChange={(event) => setSmiles(event.target.value)}
             placeholder={translate(lang, "simSmiles")}
-            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 font-mono text-[11px] text-slate-200 outline-none focus:border-accent"
+            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 font-mono text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
           />
           <button
             type="button"
@@ -134,14 +134,14 @@ export default function SimulationPanel() {
             {translate(lang, "simJobs")} ({jobs.length})
           </h3>
           {jobs.length === 0 ? (
-            <p className="text-[11px] text-slate-500">{translate(lang, "simEmpty")}</p>
+            <p className="text-[11px] text-[rgb(var(--c-text-faint))]">{translate(lang, "simEmpty")}</p>
           ) : (
             <ul className="space-y-1.5">
               {jobs.map((job) => (
                 <li key={job.id} className="rounded-md border border-line bg-canvas px-2 py-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-slate-200">{job.family}</span>
-                    <span className="rounded bg-line px-1 text-[9px] text-slate-400">
+                    <span className="text-[11px] font-medium text-[rgb(var(--c-text))]">{job.family}</span>
+                    <span className="rounded bg-line px-1 text-[9px] text-[rgb(var(--c-text-faint))]">
                       {job.backend || "auto"}
                     </span>
                     <span
@@ -156,7 +156,7 @@ export default function SimulationPanel() {
                       {job.status}
                     </span>
                   </div>
-                  <p className="mt-0.5 font-mono text-[9px] text-slate-500">
+                  <p className="mt-0.5 font-mono text-[9px] text-[rgb(var(--c-text-faint))]">
                     {job.engine || "—"} · {job.duration_ms.toFixed(0)} ms
                     {job.error ? ` · ${job.error}` : ""}
                   </p>

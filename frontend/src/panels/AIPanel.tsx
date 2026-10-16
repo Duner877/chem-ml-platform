@@ -75,8 +75,8 @@ export default function AIPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-line px-3 py-3">
-        <h2 className="text-sm font-semibold text-slate-200">{translate(lang, "aiPanel")}</h2>
-        <p className="mt-0.5 text-[10px] text-slate-500">
+        <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">{translate(lang, "aiPanel")}</h2>
+        <p className="mt-0.5 text-[10px] text-[rgb(var(--c-text-faint))]">
           {translate(lang, "aiMode")}: <span className="text-accent">{mode}</span>
         </p>
       </header>
@@ -97,7 +97,7 @@ export default function AIPanel() {
                 className={`rounded-md border px-2 py-1 text-[11px] transition ${
                   mode === item
                     ? "border-accent bg-accent/15 text-accent"
-                    : "border-line text-slate-300 hover:border-accent"
+                    : "border-line text-[rgb(var(--c-text-dim))] hover:border-accent"
                 }`}
               >
                 {item}
@@ -120,21 +120,21 @@ export default function AIPanel() {
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      provider.available ? "bg-good" : "bg-slate-600"
+                      provider.available ? "bg-good" : "bg-line"
                     }`}
                   />
-                  <span className="text-[11px] font-medium text-slate-200">
+                  <span className="text-[11px] font-medium text-[rgb(var(--c-text))]">
                     {provider.name}
                   </span>
-                  <span className="rounded bg-line px-1 text-[9px] text-slate-400">
+                  <span className="rounded bg-line px-1 text-[9px] text-[rgb(var(--c-text-faint))]">
                     {provider.family}
                   </span>
-                  <span className="ml-auto font-mono text-[9px] text-slate-500">
+                  <span className="ml-auto font-mono text-[9px] text-[rgb(var(--c-text-faint))]">
                     {provider.model}
                   </span>
                 </div>
                 {!provider.available && provider.reason && (
-                  <p className="mt-0.5 pl-3.5 text-[9px] text-slate-500">{provider.reason}</p>
+                  <p className="mt-0.5 pl-3.5 text-[9px] text-[rgb(var(--c-text-faint))]">{provider.reason}</p>
                 )}
               </li>
             ))}
@@ -150,7 +150,7 @@ export default function AIPanel() {
             onChange={(event) => setPrompt(event.target.value)}
             rows={2}
             placeholder={translate(lang, "aiPromptHint")}
-            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-200 outline-none focus:border-accent"
+            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
           />
           <button
             type="button"
@@ -161,7 +161,7 @@ export default function AIPanel() {
             {busy ? translate(lang, "aiSending") : translate(lang, "aiTest")}
           </button>
           {reply && (
-            <pre className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-slate-300">
+            <pre className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-canvas p-2 text-[10px] leading-relaxed text-[rgb(var(--c-text-dim))]">
               {reply}
             </pre>
           )}
@@ -179,15 +179,15 @@ export default function AIPanel() {
               >
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-good" />
-                  <span className="text-[11px] font-medium text-slate-200">{model.name}</span>
-                  <span className="rounded bg-line px-1 text-[9px] text-slate-400">
+                  <span className="text-[11px] font-medium text-[rgb(var(--c-text))]">{model.name}</span>
+                  <span className="rounded bg-line px-1 text-[9px] text-[rgb(var(--c-text-faint))]">
                     {model.modality}
                   </span>
-                  <span className="ml-auto font-mono text-[9px] text-slate-500">
+                  <span className="ml-auto font-mono text-[9px] text-[rgb(var(--c-text-faint))]">
                     {model.dimension} {translate(lang, "foundationDim")}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[9px] leading-snug text-slate-500">
+                <p className="mt-0.5 text-[9px] leading-snug text-[rgb(var(--c-text-faint))]">
                   {model.family}
                   {model.requires_weights
                     ? ` · ${translate(lang, "foundationWeights")}`

@@ -11,6 +11,7 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 import { useEditor, useThemeTokens, type NodeStatus } from "../store";
 import { portColor } from "../theme";
+import FilePickerField from "../components/FilePickerField";
 import type { NodeParamSpec, NodeSpec } from "../types";
 
 const STATUS_STYLE: Record<NodeStatus, { dot: string; border: string; ring: string }> = {
@@ -29,25 +30,59 @@ const STATUS_STYLE: Record<NodeStatus, { dot: string; border: string; ring: stri
   },
 };
 
-/** Category accent colours (dots + header tint), shared by all themes. */
-const CATEGORY_ACCENTS: Array<[string, string]> = [
-  ["Instruments", "#56b6c2"],
-  ["Databases", "#c678dd"],
-  ["Simulation", "#d19a66"],
-  ["AI", "#e5c07b"],
-  ["Agent", "#e06c75"],
-  ["Report", "#d19a66"],
-  ["Questions", "#e06c9f"],
-  ["Analysis", "#61afef"],
-  ["IO", "#98c379"],
-  ["GPU", "#7f8aa3"],
+/**
+ * Category accents (header dot + category chip).
+ *
+ * v0.7.2: these used to be One Dark accents (cyan / purple / orange / ...).
+ * Under the monochrome WorkBuddy language they became greyscale steps keyed by
+ * the *position* of the category in this table, so the chip still separates
+ * categories from each other without reintroducing a rainbow.
+ *
+ * The steps come from the **active theme's** greyscale ramp, so the dot stays
+ * visible: near-black on the white theme, near-white on the black one.
+ */
+const CATEGORY_ACCENTS: Array<[string, number]> = [
+  ["Instruments", 0],
+  ["Databases", 2],
+  ["Simulation", 4],
+  ["AI", 5],
+  ["Agent", 1],
+  ["Report", 4],
+  ["Questions", 1],
+  ["Analysis", 3],
+  ["IO", 6],
+  ["GPU", 2],
 ];
 
-function categoryAccent(category: string): string {
-  for (const [prefix, color] of CATEGORY_ACCENTS) {
-    if (category.startsWith(prefix)) return color;
+/** Greyscale ramp per theme: light runs dark→light, dark runs light→dark. */
+const CATEGORY_RAMP: Record<string, readonly string[]> = {
+  "wb-light": [
+    "26 30 40",
+    "58 65 77",
+    "90 98 111",
+    "122 131 144",
+    "154 163 175",
+    "186 194 205",
+    "212 218 226",
+  ],
+  "wb-dark": [
+    "240 242 246",
+    "206 211 220",
+    "172 179 190",
+    "138 146 159",
+    "104 112 125",
+    "72 79 90",
+    "44 49 58",
+  ],
+};
+
+/** Accent for ``category`` under ``theme`` (falls back to a neutral step). */
+function categoryAccent(category: string, theme: string): string {
+  const ramp = CATEGORY_RAMP[theme] ?? CATEGORY_RAMP["wb-dark"];
+  for (const [prefix, step] of CATEGORY_ACCENTS) {
+    if (category.startsWith(prefix)) return ramp[step] ?? ramp[3];
   }
-  return "#8b93a7";
+  return ramp[3];
 }
 
 interface NodeData {
@@ -139,6 +174,18 @@ function Widget({
     );
   }
 
+  // v0.7.2: a file parameter is a path the user should not have to type.
+  if (spec.type === "file") {
+    return (
+      <FilePickerField
+        compact
+        value={value}
+        description={spec.description_en || spec.description || spec.name}
+        onChange={onChange}
+      />
+    );
+  }
+
   return (
     <input
       type="text"
@@ -156,7 +203,7 @@ function ScientificNodeCard({ data, selected, id }: NodeProps) {
   const status: NodeStatus = nodeData.status ?? "idle";
   const style = STATUS_STYLE[status];
   const tokens = useThemeTokens();
-  const { lang, updateParams } = useEditor();
+  const { lang, theme, updateParams } = useEditor();
 
   const onParamChange = useCallback(
     (name: string, value: unknown) => {
@@ -169,7 +216,7 @@ function ScientificNodeCard({ data, selected, id }: NodeProps) {
   const outputs = spec?.outputs ?? [];
   const widgets = (spec?.parameters ?? []).filter((param) => !param.advanced).slice(0, 4);
   const hiddenWidgets = (spec?.parameters ?? []).filter((param) => !param.advanced).length - widgets.length;
-  const accent = categoryAccent(spec?.category ?? "");
+  const accent = categoryAccent(spec?.category ?? "", theme);
 
   const title = lang === "zh" ? nodeData.label ?? spec?.name : nodeData.label_en ?? spec?.name;
   const description =
@@ -262,8 +309,17 @@ function ScientificNodeCard({ data, selected, id }: NodeProps) {
                 }}
               />
               <span className="truncate">{port.name}</span>
+              {/* v0.7.2: this used to be a bare "?".  A question mark reads
+                  as "something is missing/broken", which is the opposite of
+                  what an optional port means.  It is now an explicit
+                  "可选 / opt" chip (full wording in the inspector). */}
               {port.optional && (
-                <span className="text-[8px] text-[rgb(var(--c-text-faint))]">?</span>
+                <span
+                  title={lang === "zh" ? "可选输入端口" : "optional input port"}
+                  className="shrink-0 rounded-sm border border-line px-1 text-[7px] leading-[9px] text-[rgb(var(--c-text-faint))]"
+                >
+                  {lang === "zh" ? "可选" : "opt"}
+                </span>
               )}
             </div>
           ))}

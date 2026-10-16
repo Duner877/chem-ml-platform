@@ -29,6 +29,7 @@ from nodes.instruments.imaging import (
     HyperspectralNode,
     RamanMappingNode,
 )
+from nodes.instruments.fragmentation import FragmentationPathwayNode
 
 __all__ = [
     "InstrumentNode",
@@ -57,4 +58,5 @@ __all__ = [
     "RamanMappingNode",
     "FTIRImagingNode",
     "HyperspectralNode",
+    "FragmentationPathwayNode",
 ]

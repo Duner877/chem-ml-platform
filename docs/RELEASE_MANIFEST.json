@@ -1,9 +1,9 @@
 {
   "version": "0.7.2",
   "codename": "Trusted Delivery Release",
-  "commit": "8e6f601",
+  "commit": "dd92bab",
   "python": "3.13.14",
-  "generated_at": "2026-10-14T14:52:57+00:00",
+  "generated_at": "2026-10-16T07:28:22+00:00",
   "summary": {
     "declared": 21,
     "built": 21,
@@ -25,10 +25,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "cee38b7eecbac5dfecf11a6865a62114acad96a2b0946a2abc374df7158f8be3",
-      "size_bytes": 1126363,
-      "modified_at": "2026-10-14T14:52:56+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "a98102dcad992b5a3498d2ad878fffe52a2421f8dc8eed9b1d3a7641092c28c1",
+      "size_bytes": 1301975,
+      "modified_at": "2026-10-16T07:28:21+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "windows-installer",
@@ -43,10 +43,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "e556cec96689f4389237f53f69183c94a2e3c8da0ad190da072b9eb15de50f9c",
-      "size_bytes": 78963083,
-      "modified_at": "2026-10-14T12:25:16+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "87c323dcc750aee3d1e757dcd96c66c8f38f813e8abbefaa3f4c8a3a4b374214",
+      "size_bytes": 79039458,
+      "modified_at": "2026-10-16T07:28:15+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "installer-blockmap",
@@ -61,10 +61,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "fc5ae79deeb20019a26b5f0584814e9de776595e7ead51a0756db6c8ebc04054",
-      "size_bytes": 83462,
-      "modified_at": "2026-10-14T12:25:17+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "fd2faef9aa5c8d7e832fe08b27d14f1da304237558bb6d9967ee2efab2b7bada",
+      "size_bytes": 83575,
+      "modified_at": "2026-10-16T07:28:17+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "sbom",
@@ -79,10 +79,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "b37d4658f88cf10b20281765a161cb6781aca732887f50a4b9af392469a5e975",
-      "size_bytes": 110505,
-      "modified_at": "2026-10-14T14:45:41+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "71ed6e52e72abe52325404049ae1f8264c4ebb9016276fbb90f420f532517941",
+      "size_bytes": 112030,
+      "modified_at": "2026-10-16T07:24:52+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "quality-gate-json",
@@ -97,10 +97,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "0e08da19255b7b67154f591404f148b7df79cc087ba5557140a2fa3d6d03647c",
-      "size_bytes": 14040,
-      "modified_at": "2026-10-14T14:46:57+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "5b9bfc6e36aa2aaaeb47f349d53a6a3aadc513617cc1b6384ef9a3122d621e90",
+      "size_bytes": 14186,
+      "modified_at": "2026-10-16T07:27:04+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "quality-gate-md",
@@ -115,10 +115,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "7693cb2abc99873ceda7e54e0ce4926eecbd66333b234d7f3e26174e6294eafd",
-      "size_bytes": 10755,
-      "modified_at": "2026-10-14T14:46:57+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "9ca4288e4b8c2f2dd3a9da22ea7846ed0c64fc713cde15df74af0cfe5244d524",
+      "size_bytes": 10973,
+      "modified_at": "2026-10-16T07:27:04+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "ci-pipeline-json",
@@ -133,10 +133,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "4fd8cd954c2845d49333e001cfaec324fa377de751b540afd674b6c146ae4d77",
-      "size_bytes": 2181,
-      "modified_at": "2026-10-14T12:35:52+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "0b514aa13b9344372956106121e28489aed86a2f0dcda01c583f882d553cce53",
+      "size_bytes": 14605,
+      "modified_at": "2026-10-14T18:08:49+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "third-party-licences",
@@ -151,10 +151,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "e7a0d017ef2a4820eb2dbe676293a153c3bc2a7ed3ca016dbc717068b28c23fe",
-      "size_bytes": 12404,
-      "modified_at": "2026-10-14T14:45:41+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "571bd751868fff9ed9615225f3874447269293893266b42deb264ebf72bed581",
+      "size_bytes": 12700,
+      "modified_at": "2026-10-16T07:24:52+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "provenance-record",
@@ -172,7 +172,7 @@
       "sha256": "eb551da2c6832034ecc937558adb8801d61b8b24715fe128f4193ab08ccb5c75",
       "size_bytes": 11682,
       "modified_at": "2026-10-14T12:06:15+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "notice",
@@ -189,8 +189,8 @@
       "volatile": false,
       "sha256": "4371c042f414de29903351ef979f063f934928afbe7d400392692e799d825f04",
       "size_bytes": 7667,
-      "modified_at": "2026-10-14T14:45:41+00:00",
-      "build_commit": "8e6f601"
+      "modified_at": "2026-10-16T07:24:52+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "synthetic-benchmark-report",
@@ -208,7 +208,7 @@
       "sha256": "3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661",
       "size_bytes": 8813,
       "modified_at": "2026-10-14T12:05:04+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "node-capability-catalogue",
@@ -223,10 +223,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "c5e6fd3edbdb3928074a8168deeeeb0b38dcbfc1b60cbe52593a5d20b37841c2",
-      "size_bytes": 14772,
-      "modified_at": "2026-10-14T14:33:33+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "6e208a6823f7263df0d1dea52d9155f8fc13189ed964769a82cc9c6259176e2b",
+      "size_bytes": 14983,
+      "modified_at": "2026-10-16T07:19:26+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "python-dependency-lock",
@@ -244,7 +244,7 @@
       "sha256": "7f010d168c157323eed364bb5c005aab1c8bb7e846e675ddfc3f2a8a6da40da6",
       "size_bytes": 1526,
       "modified_at": "2026-10-14T12:19:16+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "frontend-dependency-lock",
@@ -262,7 +262,7 @@
       "sha256": "a640cde957d121f9bde72cf3070fcfca3c8c23b34443221528cfdce901790ade",
       "size_bytes": 47329,
       "modified_at": "2026-10-14T11:51:23+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "desktop-runtime-probe",
@@ -280,7 +280,7 @@
       "sha256": "347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6",
       "size_bytes": 21712,
       "modified_at": "2026-10-14T11:58:56+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "reproducibility-report",
@@ -297,8 +297,8 @@
       "volatile": true,
       "sha256": "da673516abbb428c318ee9933e8808143f29ae3280555b2b1f15ca0a33cacff3",
       "size_bytes": 2026,
-      "modified_at": "2026-10-14T14:46:39+00:00",
-      "build_commit": "8e6f601"
+      "modified_at": "2026-10-16T07:26:28+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "plugin-spec",
@@ -316,7 +316,7 @@
       "sha256": "2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a",
       "size_bytes": 10003,
       "modified_at": "2026-10-14T12:38:33+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     },
     {
       "id": "release-report",
@@ -331,10 +331,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "aa5243833cef466a59ca80bc8be53325f33536147103d519272a52ff2b2f7872",
-      "size_bytes": 32924,
-      "modified_at": "2026-10-14T13:26:59+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "133832427ec333eac049109264a49a352f34d7484128bc003329e87ad117da98",
+      "size_bytes": 38124,
+      "modified_at": "2026-10-14T19:24:45+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "issue-log",
@@ -349,10 +349,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "0589eb43d198a8685d59646145055b856861d29d4d5b602693f537fcb056f2b9",
-      "size_bytes": 23383,
-      "modified_at": "2026-10-14T14:40:06+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "ea0c905bdcdeddd011cfa8a759488bd0fcd88729127dc1dcbb0ef2f3e3584105",
+      "size_bytes": 37522,
+      "modified_at": "2026-10-14T19:18:29+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "clean-env-test-record",
@@ -367,10 +367,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "a5fd18f450c52654251a39d0a320ef620c0eb1cc1b0b5b97273708611d2d2aac",
-      "size_bytes": 2422,
-      "modified_at": "2026-10-14T12:01:32+00:00",
-      "build_commit": "8e6f601"
+      "sha256": "89b7b543cf1d305d86842b01c7b3dba77aa761690c7a3e646385db6a43303d5f",
+      "size_bytes": 2488,
+      "modified_at": "2026-10-14T18:57:50+00:00",
+      "build_commit": "dd92bab"
     },
     {
       "id": "real-data-validation-plan",
@@ -388,7 +388,7 @@
       "sha256": "226e588b50068abd8bebe004d114b5691e36da48411ce6a476167fc8b32e37fd",
       "size_bytes": 5914,
       "modified_at": "2026-10-14T12:05:18+00:00",
-      "build_commit": "8e6f601"
+      "build_commit": "dd92bab"
     }
   ]
 }

@@ -1,13 +1,14 @@
 {
-  "total_nodes": 89,
-  "categories": 28,
-  "modules_scanned": 52,
+  "total_nodes": 90,
+  "categories": 29,
+  "modules_scanned": 53,
   "availability_summary": {
-    "executable": 76,
+    "executable": 77,
     "experimental": 5,
     "unavailable": 8
   },
   "capability_summary": {
+    "deduces_fragmentation_pathway": 1,
     "experimental": 13,
     "nondeterministic": 2,
     "requires_external_software": 9,
@@ -27,17 +28,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 76,
+    "executable": 77,
     "experimental": 1,
     "unavailable": 8,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 89
+    "internal_approximation": 90
   },
   "reproducibility_summary": {
-    "deterministic": 87,
+    "deterministic": 88,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 84
+  "nodes_without_validation_evidence": 85
 }

@@ -29,6 +29,9 @@ contextBridge.exposeInMainWorld("chemmlDesktop", {
   // Custom window chrome: min / max / close driven by the web top bar.
   windowControl: (action) => ipcRenderer.invoke("window-control", action),
   windowState: () => ipcRenderer.invoke("window-state"),
+  // v0.7.2: native file picker for `file` typed node parameters.  The dialog
+  // is raised in the main process; only the chosen absolute path comes back.
+  pickFile: (options) => ipcRenderer.invoke("pick-file", options || {}),
   onBackendStatus: (cb) => ipcRenderer.on("backend-status", (_e, data) => cb(data)),
   onBackendReady: (cb) => ipcRenderer.on("backend-ready", (_e, data) => cb(data)),
   onBackendExited: (cb) => ipcRenderer.on("backend-exited", (_e, data) => cb(data)),

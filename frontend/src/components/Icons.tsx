@@ -236,3 +236,37 @@ export function IconPanelRight({ size = 16, className }: IconProps) {
     </svg>
   );
 }
+
+/** A single file -- used by the browse dialog and the file picker button. */
+export function IconFile({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M13.5 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z" />
+      <path d="M13.5 3.5V9H19" />
+    </svg>
+  );
+}
+
+/** Branching arrow chain -- the fragmentation-pathway affordance. */
+export function IconBranch({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <circle cx="6" cy="5.5" r="2" />
+      <circle cx="6" cy="18.5" r="2" />
+      <circle cx="18" cy="12" r="2" />
+      <path d="M6 7.5v9" />
+      <path d="M8 12h8" />
+    </svg>
+  );
+}
+
+/** Enlarge glyph -- opens the spectrum lightbox. */
+export function IconZoom({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-3.6-3.6" />
+      <path d="M11 8.5v5M8.5 11h5" />
+    </svg>
+  );
+}

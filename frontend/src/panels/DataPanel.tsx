@@ -55,9 +55,9 @@ export default function DataPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-line px-3 py-3">
-        <h2 className="text-sm font-semibold text-slate-200">{translate(lang, "dataPanel")}</h2>
+        <h2 className="text-sm font-semibold text-[rgb(var(--c-text))]">{translate(lang, "dataPanel")}</h2>
         {stats && (
-          <p className="mt-0.5 text-[10px] text-slate-500">
+          <p className="mt-0.5 text-[10px] text-[rgb(var(--c-text-faint))]">
             {stats.count} {translate(lang, "dataEntries")} · {stats.embedded}{" "}
             {translate(lang, "dataEmbedded")}
           </p>
@@ -75,13 +75,13 @@ export default function DataPanel() {
             value={path}
             onChange={(event) => setPath(event.target.value)}
             placeholder={translate(lang, "dataPath")}
-            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 font-mono text-[11px] text-slate-200 outline-none focus:border-accent"
+            className="w-full rounded-md border border-line bg-canvas px-2 py-1.5 font-mono text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
           />
           {datasets.length > 0 && (
             <select
               onChange={(event) => setPath(event.target.value)}
               defaultValue=""
-              className="mt-1.5 w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-300 outline-none focus:border-accent"
+              className="mt-1.5 w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text-dim))] outline-none focus:border-accent"
             >
               <option value="">{translate(lang, "dataSamples")}…</option>
               {datasets.map((item) => (
@@ -112,10 +112,10 @@ export default function DataPanel() {
               refresh(event.target.value);
             }}
             placeholder={translate(lang, "dataSearchHint")}
-            className="mb-2 w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-slate-200 outline-none focus:border-accent"
+            className="mb-2 w-full rounded-md border border-line bg-canvas px-2 py-1.5 text-[11px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
           />
           {entries.length === 0 ? (
-            <p className="text-[11px] text-slate-500">{translate(lang, "dataEmpty")}</p>
+            <p className="text-[11px] text-[rgb(var(--c-text-faint))]">{translate(lang, "dataEmpty")}</p>
           ) : (
             <ul className="space-y-1.5">
               {entries.map((entry) => (
@@ -124,10 +124,10 @@ export default function DataPanel() {
                   className="rounded-md border border-line bg-canvas px-2 py-1.5"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-slate-200">
+                    <span className="text-[11px] font-medium text-[rgb(var(--c-text))]">
                       {entry.sample || entry.type}
                     </span>
-                    <span className="rounded bg-line px-1 text-[9px] text-slate-400">
+                    <span className="rounded bg-line px-1 text-[9px] text-[rgb(var(--c-text-faint))]">
                       {entry.type}
                     </span>
                     {entry.embedding_dim ? (
@@ -136,7 +136,7 @@ export default function DataPanel() {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-0.5 truncate font-mono text-[9px] text-slate-500">
+                  <p className="mt-0.5 truncate font-mono text-[9px] text-[rgb(var(--c-text-faint))]">
                     {entry.data_pointer || entry.source || "—"}
                   </p>
                   {entry.tags.length > 0 && (
@@ -144,7 +144,7 @@ export default function DataPanel() {
                       {entry.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded bg-line px-1 py-0.5 text-[8px] text-slate-400"
+                          className="rounded bg-line px-1 py-0.5 text-[8px] text-[rgb(var(--c-text-faint))]"
                         >
                           {tag}
                         </span>

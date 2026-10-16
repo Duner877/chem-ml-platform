@@ -88,11 +88,26 @@
       }
     },
     {
+      "id": "fragmentation",
+      "type": "FragmentationPathwayNode",
+      "label": "裂解链路推导",
+      "label_en": "Fragmentation pathway",
+      "position": { "x": 860, "y": -180 },
+      "params": {
+        "adduct": "[M+H]+",
+        "tolerance_ppm": 20.0,
+        "max_steps": 8,
+        "min_relative": 0.01,
+        "use_ai": true,
+        "language": "zh"
+      }
+    },
+    {
       "id": "report",
       "type": "ReportAgentNode",
       "label": "鉴定报告生成",
       "label_en": "Identification report agent",
-      "position": { "x": 860, "y": 40 },
+      "position": { "x": 1180, "y": 40 },
       "params": {
         "title": "未知物质谱鉴定报告 / Unknown Compound MS Identification Report",
         "summary": "基于 mzML 单次扫描（scan=18081, DHB 基质 MALDI 正离子模式）的峰检测、AI 辅助解析与候选库检索鉴定结果。",
@@ -155,6 +170,30 @@
     {
       "source": "ms_peaks",
       "source_port": "table",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "ms_file",
+      "source_port": "spectrum",
+      "target": "fragmentation",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "identify",
+      "source_port": "molecule",
+      "target": "fragmentation",
+      "target_port": "molecule"
+    },
+    {
+      "source": "fragmentation",
+      "source_port": "pathway",
+      "target": "report",
+      "target_port": "data"
+    },
+    {
+      "source": "fragmentation",
+      "source_port": "text",
       "target": "report",
       "target_port": "data"
     }

@@ -3,10 +3,10 @@
 > 本文件由 `scripts/node_catalog.py` 自动生成，请勿手工编辑。
 > 数据来源：`node_registry/registry.json`（节点注册表扫描结果）。
 
-- 节点总数：**89**
-- 分类数：**28**
-- 扫描模块：**52**
-- 尚无验证证据的节点：**84**（未验证 ≠ 不可用，但**不得**宣传为已验证）
+- 节点总数：**90**
+- 分类数：**29**
+- 扫描模块：**53**
+- 尚无验证证据的节点：**85**（未验证 ≠ 不可用，但**不得**宣传为已验证）
 
 ## 能力标签说明
 
@@ -44,7 +44,7 @@
 
 | 状态 | 节点数 |
 | --- | --- |
-| `executable` | 76 |
+| `executable` | 77 |
 | `experimental` | 5 |
 | `unavailable` | 8 |
 
@@ -52,7 +52,7 @@
 
 | capability_status | 节点数 |
 | --- | --- |
-| `executable` | 76 |
+| `executable` | 77 |
 | `experimental` | 1 |
 | `unavailable` | 8 |
 | `verified` | 4 |
@@ -61,19 +61,20 @@
 
 | execution_mode | 节点数 |
 | --- | --- |
-| `internal_approximation` | 89 |
+| `internal_approximation` | 90 |
 
 ## 可复现级别汇总（v0.7.2）
 
 | reproducibility_level | 节点数 |
 | --- | --- |
-| `deterministic` | 87 |
+| `deterministic` | 88 |
 | `nondeterministic` | 2 |
 
 ## 能力汇总
 
 | 能力标签 | 节点数 |
 | --- | --- |
+| `deduces_fragmentation_pathway` | 1 |
 | `experimental` | 13 |
 | `nondeterministic` | 2 |
 | `requires_external_software` | 9 |
@@ -109,6 +110,7 @@
 | `SmoothingNode` | Analysis | `executable` | `verified` | `internal_approximation` | 是 | 1 | — | — |
 | `SpectrumMathNode` | Analysis | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `SubstructureSearchNode` | Analysis | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
+| `FragmentationPathwayNode` | Analysis/Mass Spectrometry | `executable` | `executable` | `internal_approximation` | 是 | — | `deduces_fragmentation_pathway` | — |
 | `ChEMBLNode` | Databases/Chemical | `executable` | `executable` | `internal_approximation` | 是 | — | `requires_network` | — |
 | `PDBNode` | Databases/Chemical | `executable` | `executable` | `internal_approximation` | 是 | — | `requires_network` | — |
 | `PubChemNode` | Databases/Chemical | `executable` | `executable` | `internal_approximation` | 是 | — | `requires_network` | — |
