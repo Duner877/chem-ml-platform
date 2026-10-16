@@ -134,6 +134,30 @@ def _snapshot_files(app: Path) -> set[Path]:
     }
 
 
+#: Directories an installed copy writes into while the user works.  Files here
+#: belong to the user, not to the build, so they are neither stale payload nor
+#: anything this script may delete.
+RUN_TIME_ROOTS = ("output", "memory", "config")
+
+#: Directory names that are deliberately kept at an older version.  A backup
+#: taken before an upgrade is *supposed* to disagree with the source, so
+#: reporting it as stale would train the reader to ignore the report.
+_BACKUP_MARKERS = (".bak", "backup", ".old")
+
+
+def _is_run_time_artifact(rel: Path) -> bool:
+    """True for files the running app produced, not for files the build copied."""
+    parts = rel.parts
+    if not parts:
+        return False
+    if parts[0] in RUN_TIME_ROOTS:
+        return True
+    # ``config/`` ships with defaults but the app rewrites single files in it
+    # (e.g. ``ai.json`` after an API key is entered), so treat the whole
+    # directory as user state rather than risk deleting a saved setting.
+    return False
+
+
 def _inside(app: Path, pairs: list[tuple[Path, Path]]) -> list[tuple[Path, Path]]:
     """Pairs whose destination lives inside ``app``.
 
@@ -183,10 +207,17 @@ def refresh(app: Path = DEFAULT_APP) -> tuple[int, int, int]:
             copied += 1
 
     # Anything the plan does not name is payload the builder never shipped:
-    # drop it, or a deleted module keeps shadowing its replacement.
+    # drop it, or a deleted module keeps shadowing its replacement.  Run-time
+    # output is exempt -- a user who ran workflows in the installed copy has
+    # results in ``output/`` and ``memory/`` there, and this tool must not be
+    # the thing that deletes them.
     wanted = {dst.relative_to(app) for _, dst in _inside(app, pairs)}
     wanted.add(Path("BUILD_INFO.json"))
-    stale = sorted(_snapshot_files(app) - wanted)
+    stale = sorted(
+        rel
+        for rel in _snapshot_files(app) - wanted
+        if not _is_run_time_artifact(rel)
+    )
     for rel in stale:
         (app / rel).unlink(missing_ok=True)
     for directory in sorted((p for p in app.rglob("*") if p.is_dir()), reverse=True):
@@ -214,12 +245,15 @@ def verify(app: Path = DEFAULT_APP) -> int:
             differing.append(str(rel))
     wanted = {dst.relative_to(app) for _, dst in _inside(app, pairs)}
     wanted.add(Path("BUILD_INFO.json"))
-    stale = sorted(_snapshot_files(app) - wanted)
+    everything = _snapshot_files(app) - wanted
+    runtime = sorted(rel for rel in everything if _is_run_time_artifact(rel))
+    stale = sorted(rel for rel in everything if not _is_run_time_artifact(rel))
     stamp = app / "BUILD_INFO.json"
     print(f"payload entries expected : {len(pairs)}")
     print(f"missing from snapshot    : {len(missing)}")
     print(f"differing from source    : {len(differing)}")
     print(f"stale (not in plan)      : {len(stale)}")
+    print(f"run-time output (kept)   : {len(runtime)}")
     print(f"build stamp present      : {stamp.exists()}")
     for label, items in (("missing", missing), ("differing", differing), ("stale", stale)):
         for item in items[:10]:
@@ -246,11 +280,86 @@ def _stamp_names_current_commit(stamp: Path) -> bool:
     return recorded == git_commit(short=False)
 
 
+def _candidate_install_dirs() -> list[Path]:
+    """Every ``resources/app`` a launcher on this machine could actually start.
+
+    ``DEFAULT_APP`` is only the repo's own build output.  The app the user
+    double-clicks lives somewhere else entirely -- in v0.7.2 the desktop
+    shortcut pointed at ``Desktop/0.5/Chem ML Platform/``, a directory this
+    script had never looked at, so it happily reported ``AGREES`` about a
+    snapshot nobody was running.  A verification that cannot see the thing the
+    user launches is worse than none, so candidates are discovered rather than
+    assumed.
+    """
+    here = ROOT.parent
+    seen: dict[str, Path] = {}
+
+    def offer(path: Path) -> None:
+        if not path.is_dir():
+            return
+        lowered = str(path).lower()
+        if any(marker in lowered for marker in _BACKUP_MARKERS):
+            return
+        seen[lowered] = path
+
+    # The repo lives inside a working folder (``Desktop/0.5 - 副本/``) while the
+    # launcher often lives in a *sibling* of that folder (``Desktop/0.5/``).
+    # Both levels are searched, plus the desktop itself, because guessing wrong
+    # here is what let a stale install survive.
+    roots = {here, here.parent}
+    for base in roots:
+        # The repo's own build output and its install copy.
+        for child in sorted(base.glob("*")):
+            offer(child / "desktop" / "dist" / "win-unpacked" / "resources" / "app")
+            # A plain unpacked install (what the NSIS installer writes).
+            if child.is_dir():
+                offer(child / "resources" / "app")
+        # One level deeper, so ``Desktop/0.5/Chem ML Platform/`` is reachable.
+        for child in sorted(base.glob("*/*")):
+            if child.is_dir():
+                offer(child / "resources" / "app")
+    # The repo's own build output is always in the list.
+    offer(DEFAULT_APP)
+    return [seen[key] for key in sorted(seen)]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--verify", action="store_true", help="report only, change nothing")
     parser.add_argument("--app", default=str(DEFAULT_APP), help="path to resources/app")
+    parser.add_argument(
+        "--all-installed",
+        action="store_true",
+        help="verify every installed resources/app found next to the repo",
+    )
+    parser.add_argument(
+        "--refresh-all",
+        action="store_true",
+        help="refresh every installed resources/app found next to the repo",
+    )
     args = parser.parse_args()
+
+    if args.all_installed or args.refresh_all:
+        targets = _candidate_install_dirs()
+        if not targets:
+            print("[ERROR] no packaged app found", file=sys.stderr)
+            return 2
+        print(f"found {len(targets)} installed app director(ies)\n")
+        failures = 0
+        for target in targets:
+            marker = "repo" if target.resolve() == DEFAULT_APP.resolve() else "installed"
+            print(f"--- {marker}: {target}")
+            if args.all_installed:
+                failures += verify(target)
+            else:
+                copied, stale, total = refresh(target)
+                print(f"  updated {copied}/{total}, removed {stale}")
+            print()
+        if failures:
+            print(f"{failures} of {len(targets)} snapshot(s) STALE")
+            return 1
+        return 0
+
     app = Path(args.app)
     if not app.is_dir():
         print(f"[ERROR] no packaged app at {app}", file=sys.stderr)

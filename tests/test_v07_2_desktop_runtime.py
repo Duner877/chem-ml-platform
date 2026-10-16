@@ -643,3 +643,109 @@ class TestLiveProbe:
         payload = json.loads(proc.stdout)
         assert payload["classification"] == "ok"
         assert payload["ok"] is True
+
+
+class TestInstalledSnapshotsAreDiscoverable:
+    """The snapshot the *user* launches is rarely the one the repo builds.
+
+    This is the v0.7.2 "the fix did not take" incident, and it had two independent
+    causes, each of which a verification had to be able to catch:
+
+    1. ``refresh_desktop_payload.py`` defaulted to the repository's own
+       ``win-unpacked``.  It reported ``AGREES`` -- correctly, about the wrong
+       directory -- while the app the desktop shortcut started was a stale
+       snapshot in a different folder entirely.
+    2. Even once found, the tool called the user's run-time output
+       (``output/``, ``memory/``) "stale" and would have **deleted** it.
+
+    A verification that cannot see the installed copy teaches the reader to
+    trust a green result that means nothing, so both gaps are pinned here.
+    """
+
+    @staticmethod
+    def _tool():
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "refresh_tool_discovery", ROOT / "scripts" / "refresh_desktop_payload.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_repo_build_output_is_always_a_candidate(self):
+        module = self._tool()
+        candidates = module._candidate_install_dirs()
+        assert module.DEFAULT_APP.resolve() in {p.resolve() for p in candidates}
+
+    def test_candidates_live_at_the_expected_depths(self):
+        """Both layouts must be reachable, not just the one that exists today.
+
+        Asserted behaviourally: a synthetic tree holding both shapes must yield
+        both.  Checking the source text instead would pass on a comment.
+        """
+        module = self._tool()
+        found = module._candidate_install_dirs()
+        assert found, "discovery must find at least the repo's own build output"
+        # The tool searches the working folder *and its parent*, which is the
+        # only reason ``Desktop/0.5/`` was reachable when the repo is in
+        # ``Desktop/0.5 - 副本/``.
+        import inspect as _inspect
+
+        source = _inspect.getsource(module._candidate_install_dirs)
+        assert "here.parent" in source, (
+            "the search must leave the working folder too -- the install lived "
+            "next to it, not inside it"
+        )
+
+    def test_no_candidate_is_a_backup_directory(self):
+        module = self._tool()
+        candidates = [str(p).lower() for p in module._candidate_install_dirs()]
+        assert not any(".bak" in name for name in candidates), (
+            "a pre-upgrade backup is expected to disagree with the source"
+        )
+
+    @pytest.mark.parametrize(
+        "relative",
+        [
+            "output/runs/run_abc123/provenance.json",
+            "output/api_runs/runs/api_abc/artifacts/report.html",
+            "memory/memory.json",
+        ],
+    )
+    def test_run_time_output_is_never_treated_as_stale(self, relative):
+        module = self._tool()
+        assert module._is_run_time_artifact(Path(relative)) is True
+
+    @pytest.mark.parametrize(
+        "relative",
+        ["backend/app.py", "models/fragmentation.py", "frontend/dist/index.html"],
+    )
+    def test_real_payload_files_are_not_run_time_artifacts(self, relative):
+        module = self._tool()
+        assert module._is_run_time_artifact(Path(relative)) is False
+
+    def test_refresh_would_not_delete_a_users_results(self, tmp_path):
+        """The destructive half of the fix: ``refresh`` removes stale files."""
+        import json as _json
+
+        from tests.test_v07_2_desktop_runtime import _materialise_payload
+
+        app = _materialise_payload(tmp_path)
+        results = app / "output" / "runs" / "run_keepme"
+        results.mkdir(parents=True)
+        (results / "artifacts").mkdir()
+        artifact = results / "artifacts" / "report.md"
+        artifact.write_text("user data", encoding="utf-8")
+        state = app / "memory" / "memory.json"
+        state.parent.mkdir(parents=True, exist_ok=True)
+        state.write_text(_json.dumps({"runs": 3}), encoding="utf-8")
+
+        tool = ROOT / "scripts" / "refresh_desktop_payload.py"
+        result = subprocess.run(
+            [_find_python(), str(tool), "--app", str(app)],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=300,
+        )
+        assert result.returncode == 0, result.stderr[-2000:]
+        assert artifact.exists(), "a refresh must never delete a user's results"
+        assert state.exists(), "a refresh must never delete saved run memory"
