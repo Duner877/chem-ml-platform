@@ -40,7 +40,7 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 | 编号 | 审计指出的问题 | 处置 | 回归测试 |
 | --- | --- | --- | --- |
 | **P0-1** | `package.py` 用 `endswith("ai.json")` 冒充白名单，`config/credentials.json`、`config/session.json`、`.env*`、`plugins/` 会进公开归档 | 改为**正向白名单** `CONFIG_ALLOWLIST`；补 `.env*` / 私钥 / 顶层 `plugins/` 排除；**打包后重扫归档**，命中即删除并非零退出 | `tests/test_v07_3_packaging_secrets.py`（41 项，含种入哨兵密钥的端到端打包与真实仓库树扫描） |
-| **P0-2** | 全量测试与 FWI 验收在审计容器内超时 | 本机**实际跑完**（见 §2），报告只记录真实退出码 | 全量 pytest + `tests/check_fwi.py` |
+| **P0-2** | 全量测试与 FWI 验收在审计容器内超时 | 本机**实际跑完**：689/689 测试通过 · `check_fwi.py` `all checks passed` · 门禁 PASSED（见 §2）。报告只记录真实退出码，**超时从未被计入 PASS** | 全量 pytest + `tests/check_fwi.py` |
 | **P0-3** | `tool_guard.py` 文档声称「所有入口共用一个判定点」，但引擎从不调用它 | 守卫接入 `WorkflowEngine._tool_guard_refusal`，三入口共用同一决定；`deny` 绝对拒绝，`approval` 按 origin 区分；守卫缺失时**如实声明降级** | `tests/test_v07_3_engine_tool_guard.py`（13 项） |
 | **P0-4** | 注册表把 99/99 节点统一登记为 `internal_approximation`，与 `requires_network` / `requires_external_software` 自相矛盾 | 注册表拆出 `supported_execution_modes`（由能力推导）与 `default_execution_mode`；**实际**执行模式、`engine_name`、`fallback_reason` 记入 provenance | `tests/test_v07_3_execution_modes.py`（11 项） |
 | **P1-1** | 连通性探测对所有服务商硬编码 `gpt-4o-mini`，把有效 Key 报成无效；且不读 `base_url` 覆盖 | 每 provider 独立的 `probe_model` / `probe_path` / `probe_style`；Anthropic 走原生 Messages API；本地 provider 探测服务地址；新增 `outcome` 分类并在界面按**失败原因**着色 | `tests/test_v07_3_credential_probe.py`（23 项，真实本地 HTTP 服务） |
@@ -66,17 +66,18 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 
 | 检查 | 结果 | 说明 |
 | --- | --- | --- |
-| `python -m pytest tests/ -q` | 见 §2.1 | 全量套件 |
-| `tests/check_fwi.py` | 见 §2.2 | FWI 合成验收 |
-| `python scripts/quality_gate.py` | 见 §2.3 | 质量门禁 |
+| `python -m pytest tests/ -q` | **689/689 通过**，见 §2.1 | 全量套件 |
+| `tests/check_fwi.py` | **`all checks passed`**，见 §2.2 | FWI 合成验收 |
+| `python scripts/quality_gate.py` | **PASSED**（26/0/1/0/0），见 §2.3 | 质量门禁 |
 | `python scripts/version.py --check` | `OK: every artefact agrees on 0.7.3` | 已扩展覆盖发布文档 |
-| `python scripts/license_report.py --check` | 见 §2.4 | 第三方许可证 |
-| `python scripts/dataset_governance.py --check` | 见 §2.4 | 数据集治理 |
+| `python scripts/license_report.py --check` | `[PASS]`，见 §2.4 | 第三方许可证 |
+| `python scripts/dataset_governance.py --check` | `OK: 10 dataset metadata records are consistent` | 数据集治理 |
 | `python -m node_registry --write` + `scripts/node_catalog.py --check` | `99 nodes / 30 categories` · `OK` | 注册表与 README 同步 |
-| `python scripts/package.py` | `scan : clean` | 归档后密钥扫描 |
-| 前端 `npm run build`（tsc + vite） | 见 §2.5 | 生产构建 |
-| `scripts/refresh_desktop_payload.py --verify` | 见 §2.5 | 桌面载荷一致性 |
-| 工作流 08 / 09 在**无 torch** 的宿主机实跑 | 见 §2.6 | 桌面版真实依赖 |
+| `python scripts/package.py` | 420 文件 · `scan : clean` | 归档后密钥扫描 |
+| 前端 `npm run build`（tsc + vite） | `tsc clean` · 3 files，见 §2.5 | 生产构建 |
+| `desktop` 构建（NSIS） | `Setup 0.7.3.exe` · 75.5 MiB，见 §2.5 | 安装包 |
+| `scripts/refresh_desktop_payload.py --verify --all-installed` | 2/3 STALE → **3/3 AGREES**，见 §2.5 | 桌面载荷一致性 |
+| 工作流 09 在**用户实际启动的那一份**、**无 torch** 宿主机实跑 | `completed` · 0 失败，见 §2.6 | 桌面版真实依赖 |
 
 ### 2.1 全量测试
 
@@ -111,28 +112,45 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 | 4. 泛化 | **held-out 炮误差 2.0829e-12 → 1.9542e-12**（未参与梯度的炮也下降） |
 | 4. 结构恢复 | 横向相关系数 **0.1247**；速度范围 [1500, 2321] m/s；子波已估计 |
 
+> §2.2 与 §2.6 的数字**不同，这是预期的**：§2.2 是隔离 venv（`chemml`，有 torch）里
+> `check_fwi.py` 的验收结果；§2.6 是**无 torch 宿主机**上跑真实工作流的产物。
+> 两者是不同机器、不同依赖面下的独立运行，只有「误差下降且 held-out 炮同样下降」
+> 这一**定性结论**应当一致，具体数值不要求相同。
+
 ### 2.3 质量门禁
 
-`python scripts/quality_gate.py` → 27 阶段，**首轮实测 pass=24 · fail=1 · error=1 · timeout=0**。
-两处失败均已定位并修复，修复后的最终结果见本节末。
+`python scripts/quality_gate.py` → 27 阶段，最终 **PASSED：pass=26 · fail=0 · skip=1 · timeout=0 · error=0**
+（门禁自报 `tests collected across stages: 696`）。
 
-| 阶段 | 首轮结果 | 说明 |
-| --- | --- | --- |
-| `release_manifest` | FAIL | 清单记录 `0.7.3@ffa8585`，工作树已到 `0.7.3@a59201c`。**预期行为**：清单记录的是上一次提交，必须在本轮源码提交后重新生成（见项目发布顺序：安装包 → 归档 → 清单 → 门禁） |
-| `credential_scan` | ERROR | **本轮引入的真 bug**：给该阶段加豁免集时把 `patterns`（`re.Pattern` 列表）当成 `(pattern, label)` 元组用，`matched.group(...)` 抛 `AttributeError`。已改为直接取 `p.search(text)` 的 match 对象 |
+首轮实测为 pass=24 · fail=1 · error=1，两处失败均已定位并修复：
 
-其余 25 阶段全部 PASS，含：`python_compile` 244 个一方文件 · `unit_tests` 303/303 ·
-`integration_tests` 187/187 · `security_tests` 135/135 · `benchmark_tests` 18/18 ·
-`desktop_tests` 45/45 · `host_dependent_tests` 7/7 · `demo_workflows_dry_run` 9/9 ·
-`reproducibility_verification` 2 工作流 × 2 次 · `frontend_typescript` `tsc clean` ·
-`frontend_production_build` · `electron_installer_artefact`（75.5 MiB）·
-`version_consistency` · `dependency_licenses` · `license_sbom_report` ·
-`release_cleanliness`。唯一 SKIP 为 `host_gpu_status`（本机无 CUDA，属环境事实）。
+| 阶段 | 首轮 | 最终 | 处置 |
+| --- | --- | --- | --- |
+| `release_manifest` | FAIL | **PASS** | 清单记录 `0.7.3@ffa8585`，工作树已到 `0.7.3@ab803b7`。**预期行为**：清单记录的是上一次提交，必须在本轮源码提交后重新生成（见项目发布顺序：安装包 → 归档 → 清单 → 门禁）。修复后 `OK: manifest matches 0.7.3@ab803b7 (21/21 built)` |
+| `credential_scan` | ERROR | **PASS** | **本轮引入的真 bug**：给该阶段加豁免集时把 `patterns`（`re.Pattern` 列表）当成 `(pattern, label)` 元组用，`matched.group(...)` 抛 `AttributeError`。改为直接取 `p.search(text)` 的 match 对象 |
 
-> 门禁过程中真实发现并修掉的一处**自我阻断**：`scripts/quality_gate.py` 加入私钥块
-> 正则后，归档扫描器在 `scripts/quality_gate.py` 自身命中该形状并拒绝发布
-> （`REFUSING TO PUBLISH … 1 secret/leak finding(s)`）。三个扫描器因此都必然包含
-> 密钥形状，豁免集改为**逐文件精确列举**，并加测试锁定「每个扫描器都在两个豁免集里」，
+最终 PASS 的 26 个阶段中与本轮相关者：`python_compile` 244 个一方文件 ·
+`unit_tests` 304/304 · `integration_tests` 187/187 · `security_tests` 135/135 ·
+`benchmark_tests` 18/18 · `desktop_tests` 45/45 · `host_dependent_tests` 7/7 ·
+`demo_workflows_dry_run` 9/9 · `reproducibility_verification` 2 工作流 × 2 次 ·
+`frontend_typescript` `tsc clean` · `frontend_production_build` ·
+`electron_installer_artefact`（75.5 MiB）· `version_consistency` ·
+`dependency_licenses` · `license_sbom_report` · `release_cleanliness`。
+
+唯一 SKIP 为 `host_gpu_status`：`torch 2.14.1+cpu present, CUDA not available on this host`
+——本机无 GPU，属环境事实而非跳过未做。
+
+`credential_scan` 的回显包含豁免明细，因此豁免不是静默的：
+`no hardcoded credentials in shipped sources (3 fake keys in redaction fixtures, excluded by design) (2 scanners exempt by exact filename: …)`。
+实测 3 个扫描器中 `scripts/package.py` 与 `scripts/quality_gate.py` 因含私钥块字面量而命中自己；
+`scripts/license_report.py` 当前未命中（它用自己的 `_SECRET_ALLOW_FILES`），保留在豁免集中是
+**防御性冗余**——规则集一旦改动就会命中自己。
+
+> 门禁过程中真实发现并修掉的一处**自我阻断**：给 `scripts/quality_gate.py` 加私钥块正则后，
+> 归档扫描器在它自身命中该形状并**拒绝发布**（`REFUSING TO PUBLISH … 1 secret/leak finding(s)`），
+> 3 项归档测试因此失败。扫描器必须写出它要找的形状，于是每个扫描器都会命中自己——
+> 豁免集改为**逐文件精确列举**（目录级豁免会放过同目录的真实密钥），并加测试锁定
+> 「每个扫描器都同时出现在打包器与门禁的豁免集里」「豁免项不得互为目录前缀」，
 > 以及一条**扫描真实仓库树**的测试（合成夹具无法发现这类问题）。
 
 ### 2.4 许可证与数据集治理
@@ -151,18 +169,38 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 | --- | --- |
 | `npm run build`（`tsc -b && vite build`） | `tsc clean` · `dist built with 3 files` |
 | `scripts/version.py --check` | `OK: every artefact agrees on 0.7.3` |
-| 安装包产物 | `Chem ML Platform Setup 0.7.3.exe`（75.5 MiB）已在 `desktop/dist` |
-| `scripts/refresh_desktop_payload.py --verify --all-installed` | 见下方说明 |
+| 安装包 | `Chem ML Platform Setup 0.7.3.exe` · 79 147 833 B（75.5 MiB）· 重新构建于本次提交之后 |
+| `scripts/refresh_desktop_payload.py --verify --all-installed` | 修复前 **2 of 3 STALE** → 刷新后 **3 of 3 AGREES** |
 
-`ApiKeyPanel.tsx` 的改动（探测结果按**失败原因**着色：成功 / 可恢复 /
-失败三档，并显示实际探测的 `base_url`）已通过 `tsc` 类型检查。
+`ApiKeyPanel.tsx` 的改动（探测结果按**失败原因**着色：成功 / 可恢复 / 失败三档，
+并显示实际探测的 `base_url`）已通过 `tsc` 类型检查与生产构建。
 
-### 2.6 无 torch 宿主实跑
+**载荷刷新不是形式检查**：`--verify --all-installed` 在刷新前明确报出用户实际启动的
+那一份（`C:\Users\hanku\Desktop\0.5\Chem ML Platform\resources\app`）有
+**14 个文件与源码不一致 + 1 个缺失 + 构建印章指向旧提交**——本轮 11 处改动在那份副本里
+全部没有生效。这正是 v0.7.2 交付「改了但没生效」的同一个坑。刷新后该副本
+`updated 16/236, removed 1`，并保留了 33 项运行期产物（`output/` / `memory/` / `config/`
+属用户数据，不作为构建产物清除）。
 
-宿主解释器 `D:/python 3.13.6/python.exe`（已确认**无 torch**，即桌面版实际使用的
-依赖面）上实跑工作流 08（硬碳预脱溶剂）与 09（二维声学 FWI）：两者均
-`completed`，无错误节点。这条比任何单元测试都更能说明「桌面版真的能用」——
-它证明平台在**不依赖 torch** 的最小依赖集上完成了完整科学工作流。
+### 2.6 无 torch 宿主实跑（**在用户实际启动的那一份上**）
+
+宿主解释器 `D:/python 3.13.6/python.exe`（已确认 `torch present: False`，即桌面版实际
+使用的依赖面），工作目录为 `C:\Users\hanku\Desktop\0.5\Chem ML Platform\resources\app`
+——**不是仓库副本**。实跑工作流 09「二维声学全波形反演（赛题）」：
+
+| 项 | 实测值 |
+| --- | --- |
+| 状态 | `completed`，4 节点，**0 失败** |
+| `forward_qc.connected` | `True` · 8 炮 · `dead_shots = 0` |
+| CFL | `cfl_dt_limit_s = 2.7159e-03` · `requested_dt_s = 1.5e-03` · `cfl_margin = 1.8106` · `cfl_admissible = True` |
+| 各炮能量 | min 1.4660e-12 · median 6.0740e-12 · max 8.9036e-12 |
+| 误差 | 8.905595e-12 → **5.109689e-12**（−42.62%），12 次迭代 |
+| held-out 炮 | `[1, 6]` 未参与梯度；误差 2.083164e-12 → **1.997502e-12**（`held_out_improved = True`） |
+
+`forward_qc` 的存在本身就是 P1-6 的验收证据：正演节点的输出**第一次被真正消费**，
+且 `cfl_margin = 1.81` 证明反演是在一个数值上可接受的起始模型上开始的——此前
+「误差下降」缺少可比对的基线。这条比任何单元测试都更能说明交付有效，因为它跑在
+用户双击打开的那一份上，且该机器**没有 torch**。
 
 ---
 
