@@ -1,15 +1,15 @@
 # SHA256SUMS — Chem ML Platform v0.7.3 (Trusted Delivery Release)
-# commit ffa8585 · generated 2026-10-16T14:03:47+00:00
+# commit 534a92e · generated 2026-10-17T15:35:49+00:00
 # verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
-3cfdd42e0e78904ae17859e1af304bad057af2b359132fae62a47e66aa4ca50f  C:/Users/hanku/Desktop/0.5 - 副本/Chem-ML-Platform-v0.7.3.zip
-2ec6f19a6ad54c77dfa1020b0bc3a6d33f6a3c005b777483d6bb28bfec869386  desktop/dist/Chem ML Platform Setup 0.7.3.exe
-070740880c2cd4fd337fc23b822ca2d73fb79cad32428805dd2cba3b1751bc80  desktop/dist/Chem ML Platform Setup 0.7.3.exe.blockmap
+4897cd5b111cbd0aa30d5356b6a4e8cba77f63a684c27dc94c2df09a0d3cd4c6  C:/Users/hanku/Desktop/0.5 - 副本/Chem-ML-Platform-v0.7.3.zip
+36f18c0dd8bb48ea2af7b16516ba81b3dbc63e7d31da791dec63c672e8bf5574  desktop/dist/Chem ML Platform Setup 0.7.3.exe
+0b4ce09807140b35683532f0617011c5a198e1ca34786e2c6b011f87e8c52f75  desktop/dist/Chem ML Platform Setup 0.7.3.exe.blockmap
 8e8a9abb11b242cee4ce189dda0f35baf5f9fb61e25983384e9401a38244ea98  sbom.json
-3edc15c2a82ba62039c5f78eff8290bb64fe76189f524dfc04d1cb35277b01e9  output/quality_gate.json
-7abdef9a77586414e63b3a6a671ea121459d8fa99997b0c82046e6eac25639f0  output/quality_gate.md
+8a147d66f4f9498b7952a6d9c577ee3a2a2e2f00f7174306314f358990790afd  output/quality_gate.json
+8d71250dc05303cf303c925e07009f69dd0ff3fc3b45837b0c4b5ac0b8866e63  output/quality_gate.md
 0b514aa13b9344372956106121e28489aed86a2f0dcda01c583f882d553cce53  output/ci_pipeline.json
 d663a914e0debea06ea550d6a865ec192fbf78c46b8e8514744f14f8370075cf  docs/THIRD_PARTY_LICENSES.md
-eb551da2c6832034ecc937558adb8801d61b8b24715fe128f4193ab08ccb5c75  docs/PROVENANCE.md
+6dfaa4c6a103be6cbeb89d0758d804d18ca8414eb3f94270f1532820041e4ccf  docs/PROVENANCE.md
 7b046f8ecb7509ff379b16a2173621d943d3d695a82f3784e7160ffd2cf65ec1  NOTICE
 3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661  docs/V07_2_SYNTHETIC_BENCHMARK.md
 d16834e8936412037f8d1d034becbd5c3eac57179f4dedcd872a559df704bce2  docs/node-catalog.md
