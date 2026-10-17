@@ -29,6 +29,31 @@ function pick(map: Record<string, string> | undefined, lang: "zh" | "en"): strin
   return map[lang] || map.en || "";
 }
 
+/**
+ * Colour a probe result by *what went wrong*, not merely by `ok` (v0.7.3).
+ *
+ * `invalid_key` is the user's key and gets the error colour.  A model the
+ * endpoint does not carry, a rate limit and an unreachable host are all
+ * failures the user cannot fix by re-typing the key, so they get the warning
+ * colour instead -- otherwise a correct key behind a corporate proxy looks
+ * exactly like a typo, and users learn to distrust the whole panel.
+ *
+ * Unknown outcomes fall back to `text-bad`: an unrecognised failure class is
+ * not a reason to look calmer.
+ */
+function probeClass(probe: CredentialProbe): string {
+  if (probe.ok) return "text-good";
+  switch (probe.outcome) {
+    case "model_unsupported":
+    case "rate_limited":
+    case "network_unreachable":
+    case "timeout":
+      return "text-warn";
+    default:
+      return "text-bad";
+  }
+}
+
 export default function ApiKeyPanel() {
   const { lang, pushLog, setCredentialStatus } = useEditor();
   const [store, setStore] = useState<CredentialStore | null>(null);
@@ -262,11 +287,18 @@ export default function ApiKeyPanel() {
           {probe && (
             <p
               className={`mt-1.5 text-[10px] leading-snug ${
-                probe.ok ? "text-good" : "text-bad"
+                probeClass(probe)
               }`}
             >
+              {/* v0.7.3: colour by failure class, not by ok/false. A rejected
+                  key and an unreachable host are both "not ok", but only one
+                  of them is fixed by editing the key -- painting both red
+                  taught users to ignore the red. */}
               {probe.ok ? translate(lang, "keyTestOk") : probe.detail}
               {probe.ok && probe.model ? ` · ${probe.model}` : ""}
+              {!probe.ok && probe.base_url ? (
+                <span className="ml-1 opacity-70">{probe.base_url}</span>
+              ) : null}
             </p>
           )}
         </section>

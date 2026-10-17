@@ -157,6 +157,20 @@ class ProvenanceRecord:
     #: class declares.  ``external`` / ``internal_approximation`` /
     #: ``synthetic_demo`` -- see ``workflow_engine.node_base``.
     execution_mode: str = ""
+    #: v0.7.3 (audit P0-4): the modes this node could have used, and which one
+    #: it uses when nothing overrides it.  A node can legitimately run several
+    #: ways -- an LLM node goes to the network with a key and to the internal
+    #: engine without one -- so the registry cannot publish a single answer,
+    #: and ``execution_mode`` above is only the declaration.
+    supported_execution_modes: List[str] = field(default_factory=list)
+    default_execution_mode: str = ""
+    #: v0.7.3 (audit P0-4): the concrete engine or program that did the work
+    #: in *this* run ("ORCA 5.0", "internal:eht", "openai:gpt-4o-mini").  The
+    #: mode says which kind of computation ran; this says which one.  A report
+    #: that shows only the mode can say "internal_approximation" without ever
+    #: naming the approximation that produced the numbers.
+    engine_name: str = ""
+    engine_version: str = ""
     #: v0.7.2 (task P1-06): declared capability level of the node class.
     capability_status: str = ""
     warnings: List[str] = field(default_factory=list)

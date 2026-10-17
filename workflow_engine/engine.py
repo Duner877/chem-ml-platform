@@ -13,7 +13,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 import networkx as nx
 
@@ -189,6 +189,15 @@ class ExecutionContext:
         # can cite the exact execution context instead of guessing.
         self.provenance: Any = None
         self.workflow_meta: Dict[str, Any] = {}
+        # v0.7.3 (audit P0-3): ``"agent"`` marks a run the agent initiated, so
+        # an ``approval``-class node still needs its explicit approval token,
+        # while a run the user started in the GUI is that user's own decision
+        # and proceeds.  ``None`` means "no information" and is treated like a
+        # manual run -- a guard that refused everything on a missing flag would
+        # break the platform rather than protect it.
+        self.origin: Optional[str] = None
+        #: Node types the user (or agent task) has explicitly approved.
+        self.approved_node_types: set = set()
 
     # -- events -------------------------------------------------------------- #
     def emit(
@@ -247,6 +256,8 @@ class WorkflowEngine:
         use_cache: bool = False,
         event_listeners: Optional[List[Callable[[Event], None]]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
+        origin: Optional[str] = None,
+        approved_node_types: Optional[Iterable[str]] = None,
     ):
         self.registry = registry or global_registry
         self.max_workers = max(1, int(max_workers))
@@ -257,6 +268,12 @@ class WorkflowEngine:
         #: generations so a cancelled task stops *scheduling* further work and
         #: records exactly which nodes never ran.
         self.cancel_check = cancel_check
+        # v0.7.3 (audit P0-3): who asked for this run, and which node types
+        # were pre-approved.  An agent-initiated run holds an approval-class
+        # node to the same standard the agent runtime does; a run the user
+        # started themselves is that user's decision and passes through.
+        self.origin = origin
+        self.approved_node_types = set(approved_node_types or ())
 
     # -- validation ---------------------------------------------------------- #
     def validate(self, workflow: Workflow | Dict[str, Any]) -> List[str]:
@@ -294,6 +311,10 @@ class WorkflowEngine:
             max_workers=self.max_workers,
         )
         ctx.cache = ResultCache(ctx.cache_dir, enabled=self.use_cache)
+        # v0.7.3 (audit P0-3): carry the run's provenance-relevant origin down
+        # to the per-node tool-guard decision.
+        ctx.origin = self.origin
+        ctx.approved_node_types = set(self.approved_node_types)
         for listener in self._listeners:
             ctx.bus.subscribe(listener)
         if event_listener:
@@ -413,6 +434,71 @@ class WorkflowEngine:
         return result
 
     # -- internals ----------------------------------------------------------- #
+    def _tool_guard_refusal(self, node, ctx: ExecutionContext) -> Optional[str]:
+        """Return a refusal message if the tool guard blocks ``node``, else None.
+
+        The engine is the lowest layer in the dependency graph and must not
+        import ``agent_runtime`` at module scope, so the import happens here
+        and is allowed to fail.  It fails **closed for ``deny`` and open for
+        everything else only when the guard itself is broken**, and that state
+        is reported in the run rather than hidden -- see the comment below.
+        """
+        try:
+            from agent_runtime.tool_guard import check_tool_call
+        except Exception as exc:  # noqa: BLE001
+            # No guard available at all (partial install, stripped package).
+            # Refusing every node would make the platform unusable and is not
+            # a security posture anybody can act on; running unguarded is the
+            # pre-0.7.3 behaviour, which is what this degrades to.  Say so out
+            # loud so the run's provenance does not imply a check that never
+            # happened.
+            ctx.emit(
+                NODE_LOG,
+                f"tool guard unavailable ({exc}); node executed without policy check",
+                node_id=node.id,
+                node_type=node.type,
+            )
+            return None
+
+        approved = node.type in ctx.approved_node_types
+        try:
+            decision = check_tool_call(node.type, approved=approved)
+        except Exception as exc:  # noqa: BLE001
+            return f"tool guard could not classify {node.type}: {exc}"
+
+        if decision.allowed and not decision.requires_approval:
+            return None
+
+        # ``deny`` is absolute: no origin and no approval token overrides it.
+        if not decision.allowed:
+            return (
+                f"tool guard denied {node.type}: {decision.reason} "
+                f"(matched rule: {decision.matched_rule or 'default'})"
+            )
+
+        # From here on it is an ``approval``-class node.  Whether that needs an
+        # explicit token depends on who asked for the run.
+        #
+        # An *agent* run must carry the approval explicitly -- an agent
+        # choosing its own tools is exactly the case a guard exists for.
+        # A *manual* run is the authenticated local user pressing Run on a
+        # workflow they opened and read: that click **is** the approval, and
+        # demanding a second confirmation for every report export would train
+        # users to click through the prompt, which is the failure mode an
+        # approval gate is supposed to prevent.
+        origin = ctx.origin or "manual"
+        if origin == "manual":
+            return None
+
+        approved = node.type in ctx.approved_node_types
+        if approved:
+            return None
+        return (
+            f"tool guard refused {node.type}: {decision.reason} "
+            f"(matched rule: {decision.matched_rule or 'default'}) -- the agent "
+            "may not run this node without an explicit approval"
+        )
+
     def _execute_node(
         self,
         node,
@@ -486,6 +572,29 @@ class WorkflowEngine:
             node_type=node.type,
             params=dict(node.params),
         )
+
+        # -- tool guard ------------------------------------------------------ #
+        # v0.7.3 audit P0-3.  ``agent_runtime.tool_guard`` classified node types
+        # for the *agent* path only, while its own docstring claimed "every
+        # surface (agent node, agent REST endpoint, workflow run) reaches the
+        # same check_tool_call".  A direct workflow run -- the GUI's Run
+        # button, the REST execute endpoint, a CLI script -- therefore walked
+        # straight past a policy the module documented as universal.  The
+        # guard is checked here, immediately before the node runs, so all three
+        # entry points share one decision.
+        #
+        # The engine is a *dependency-free* layer by design (``nodes/`` may
+        # import ``workflow_engine``, never the reverse), so the import is
+        # local and guarded: a missing or broken ``agent_runtime`` must not
+        # take the whole engine down, and must not silently become a pass.
+        guard_error = self._tool_guard_refusal(node, ctx)
+        if guard_error is not None:
+            record.status = STATUS_FAILED
+            record.error = guard_error
+            record.finished_at = now_iso()
+            result.errors.append({"node_id": node.id, "error": guard_error})
+            ctx.emit(NODE_FAILED, guard_error, node_id=node.id, node_type=node.type)
+            return
 
         instance = node_cls(node_id=node.id, params=dict(node.params))
         # v0.7.2 (task P1-06): hand the live instance to the provenance

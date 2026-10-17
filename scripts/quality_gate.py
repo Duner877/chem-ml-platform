@@ -900,6 +900,20 @@ def stage_docs_mojibake(log_dir: Path) -> Tuple[str, str, dict]:
     return PASS, f"{len(list((ROOT / 'docs').glob('*.md')))} docs clean", {}
 
 
+#: 扫描器必须包含它所查找的形状，否则写不出来：``scripts/package.py`` 的
+#: 归档内容扫描、``scripts/license_report.py`` 的清洁度检查，以及**本文件**的
+#: 这一阶段，其正则源码里必然出现 ``-----BEGIN PRIVATE KEY-----`` / ``sk-``
+#: 这些字面量，于是必然命中自己。
+#:
+#: 豁免是**逐文件精确列举**，不是目录级规则 —— 目录级豁免会把同目录下的真实
+#: 密钥一起放过。命中数量会写进阶段 detail：静默豁免等于隐藏。
+_SCAN_SELF_EXEMPT = {
+    "scripts/package.py",
+    "scripts/license_report.py",
+    "scripts/quality_gate.py",
+}
+
+
 def stage_credentials(log_dir: Path) -> Tuple[str, str, dict]:
     patterns = [
         re.compile(r"sk-[A-Za-z0-9]{20,}"),
@@ -907,7 +921,7 @@ def stage_credentials(log_dir: Path) -> Tuple[str, str, dict]:
         re.compile(r"-----BEGIN (RSA |EC )?PRIVATE KEY-----"),
     ]
     skip_dirs = {".venv", "node_modules", "__pycache__", ".git", "output", "dist", "static"}
-    hits, fixture_hits = [], 0
+    hits, fixture_hits, exempted = [], 0, []
     for path in ROOT.rglob("*"):
         if not path.is_file() or path.suffix not in {
             ".py", ".js", ".ts", ".json", ".md", ".bat", ".yml", ".yaml", ".toml",
@@ -915,23 +929,32 @@ def stage_credentials(log_dir: Path) -> Tuple[str, str, dict]:
             continue
         if any(part in skip_dirs for part in path.parts):
             continue
+        rel = path.relative_to(ROOT).as_posix()
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        for pattern in patterns:
-            match = pattern.search(text)
-            if match:
-                entry = f"{path.relative_to(ROOT)}: {match.group(0)[:12]}..."
-                if "tests" in path.parts:
-                    fixture_hits += 1
-                else:
-                    hits.append(entry)
+        hit = next((m for m in (p.search(text) for p in patterns) if m), None)
+        if hit is None:
+            continue
+        if rel in _SCAN_SELF_EXEMPT:
+            exempted.append(rel)
+            continue
+        entry = f"{rel}: {hit.group(0)[:12]}..."
+        if "tests" in path.parts:
+            fixture_hits += 1
+        else:
+            hits.append(entry)
     if hits:
         return FAIL, "; ".join(hits[:5]), {}
     detail = "no hardcoded credentials in shipped sources"
     if fixture_hits:
         detail += f" ({fixture_hits} fake keys in redaction fixtures, excluded by design)"
+    if exempted:
+        detail += (
+            f" ({len(exempted)} scanner(s) exempt by exact filename: "
+            f"{', '.join(sorted(exempted))})"
+        )
     return PASS, detail, {}
 
 

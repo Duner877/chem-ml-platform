@@ -9,8 +9,13 @@ What is borrowed
 ----------------
 * **One chokepoint.**  A tool call is classified *before* it runs, not after it
   has already touched the filesystem.  Octop routes every surface (Web, IM,
-  cron) through a single processor; here every surface (agent node, agent REST
-  endpoint, workflow run) reaches the same :func:`check_tool_call`.
+  cron) through a single processor.  v0.7.3 made that literal here: the engine
+  checks every node immediately before execution
+  (``WorkflowEngine._tool_guard_refusal``), so the GUI's Run button, the REST
+  execute endpoint, a CLI script and the agent all reach the same decision.
+  Before this release only the agent runtime called into this module, while
+  this paragraph already claimed the rest -- a documented boundary that was
+  not enforced, which is the kind of thing people rely on.
 * **Risk classes, not a boolean.**  ``allow`` / ``approval`` / ``deny`` -- a
   delete and a read are not the same decision, and collapsing them into
   "allowed or not" forces the caller to re-derive the distinction anyway.
@@ -21,8 +26,10 @@ What is deliberately *not* borrowed
 -----------------------------------
 Octop is a multi-user server with JWT isolation and interactive approval UI.  A
 single-user desktop workflow engine has no second party to approve anything, so
-``approval`` here means "the caller must pass ``approved=True``", and the agent
-node surfaces that as an explicit refusal rather than silently proceeding.
+``approval`` here means "the caller must pass ``approved=True``".  For an agent
+run that means the agent may not proceed on its own initiative.  For a run the
+local user started in the GUI, the click *is* the approval -- re-prompting for
+every report export is how approval prompts get learned away from.
 Inventing a fake approval dialog would be worse than saying no.
 
 The rule set is applied to *node types*, not to shell strings: the platform

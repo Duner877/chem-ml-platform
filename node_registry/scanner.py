@@ -104,6 +104,14 @@ def collect_records() -> List[Dict[str, Any]]:
                 # -- v0.7.2 task P0-05: execution provenance --------------- #
                 "capability_status": status["capability_status"],
                 "execution_mode": status["execution_mode"],
+                # -- v0.7.3 audit P0-4: the declaration above cannot describe a
+                # run, so the modes the node *may* use and the one it uses by
+                # default travel separately.  What a specific run used is
+                # recorded in provenance, not here.
+                "supported_execution_modes": status["supported_execution_modes"],
+                "default_execution_mode": status["default_execution_mode"],
+                "execution_mode_source": status["execution_mode_source"],
+                "execution_mode_note": status["execution_mode_note"],
                 "required_dependencies": status["required_dependencies"],
                 "input_constraints": status["input_constraints"],
                 "validation_evidence": status["validation_evidence"],

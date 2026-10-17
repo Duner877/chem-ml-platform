@@ -658,9 +658,25 @@ class SeismicSubmissionNode(ScientificNode):
     input_ports = [
         Port("velocity", "Image", "反演速度模型（必需）"),
         Port("survey", "Survey", "采集对象（含起始模型，必需）"),
-        Port("report", "Text", "上游反演节点的完整结果（JSON），提供后才有误差与验证数据"),
+        Port("report", "Text", "上游反演节点的完整结果（JSON），提供后才有误差与验证数据",
+             optional=True),
         Port("wavelet", "Spectrum", "上游估计的震源子波（必需，否则 wavelet.npy 为全零）"),
-        Port("truth", "Image", "可选真值剖面（Image；提供后才计算评分）"),
+        # v0.7.3 (audit P1-6): marked optional at the *port* level, not only in
+        # the prose.  Real survey data has no ground truth, so a workflow for a
+        # real dataset could not even be validated if this were mandatory --
+        # which made a synthetic, truth-scored chain look like the only
+        # supported path.  The execute() path already handles its absence by
+        # leaving every score null and setting truth_available=false.
+        Port("truth", "Image", "可选真值剖面（Image；提供后才计算评分）", optional=True),
+        # v0.7.3 (audit P1-6): the forward node used to sit in the demo
+        # workflow with every output dangling -- it cost a full modelling run
+        # and made the user believe its gather participated in the inversion.
+        # Giving it a real job (CFL margin + per-shot energy sanity check on
+        # the *starting* model, before inversion touches it) makes the node
+        # earn its place and gives the run a diagnostic it otherwise lacks.
+        Port("forward_qc", "Table",
+             "可选正演 QC（SeismicForwardNode.energy：各炮能量与 CFL 裕度）",
+             optional=True),
     ]
     output_ports = [
         Port("summary", "Table", "评分与验证指标"),
@@ -746,9 +762,22 @@ class SeismicSubmissionNode(ScientificNode):
             or survey.fit_shots,
         )
         directory = str(self.get_param("output_dir", "output/fwi_submission") or "output/fwi_submission")
+
+        # v0.7.3 (audit P1-6): consume the forward node's QC table.  Its
+        # numbers describe the *starting* model, before inversion, so they are
+        # exactly the baseline a misfit reduction should be read against -- and
+        # the CFL margin is the one check that says the forward solver was
+        # numerically admissible at all.
+        qc = _forward_qc_from_inputs(inputs)
+        if qc:
+            extra_qc = qc
+        else:
+            extra_qc = {"connected": False}
+
         extra = {
             "assembled_from": "SeismicSubmissionNode",
             "upstream_report_connected": bool(reported),
+            "forward_qc": extra_qc,
             "note": (
                 "misfit and validation fields are null when the upstream "
                 "inversion's 'report' output was not connected; connect it to "
@@ -1170,6 +1199,57 @@ def _image_to_array(value: Any) -> Optional[np.ndarray]:
     if lo is None or hi is None:
         return grid
     return float(lo) + grid * (float(hi) - float(lo))
+
+
+def _forward_qc_from_inputs(inputs: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Summarise the forward node's per-shot energy table for the run summary.
+
+    Returns ``None`` when nothing is connected, so the caller can record that
+    plainly instead of writing zeros -- "no QC was run" and "QC found an energy
+    of zero" are different facts and must not share a field.
+    """
+    value = inputs.get("forward_qc")
+    if value is None:
+        return None
+    meta = dict(getattr(value, "metadata", {}) or {})
+    rows = getattr(value, "rows", None)
+    if not rows:
+        return {"connected": True, "shots": 0}
+
+    # ``Table.rows`` is a list of lists plus a ``columns`` header -- not a list
+    # of dicts (see the Table contract).  Read positionally via the header so
+    # a column reorder cannot silently shift the meaning of the numbers.
+    columns = list(getattr(value, "columns", []) or [])
+    energies: List[float] = []
+    if "gather_energy" in columns:
+        idx = columns.index("gather_energy")
+        for row in rows:
+            try:
+                energies.append(float(row[idx]))
+            except (TypeError, ValueError, IndexError):
+                continue
+    energies_arr = np.asarray([e for e in energies if np.isfinite(e)], dtype=float)
+
+    margin = _opt_float(meta.get("cfl_margin"))
+    qc: Dict[str, Any] = {
+        "connected": True,
+        "shots": int(len(rows)),
+        "cfl_dt_limit_s": _opt_float(meta.get("cfl_dt_limit_s")),
+        "requested_dt_s": _opt_float(meta.get("requested_dt_s")),
+        "cfl_margin": margin,
+        "cfl_admissible": None if margin is None else bool(margin >= 1.0),
+    }
+    if energies_arr.size:
+        qc["gather_energy_min"] = float(energies_arr.min())
+        qc["gather_energy_max"] = float(energies_arr.max())
+        # A shot whose modelled energy collapses relative to the median is the
+        # signature of a dead trace; surfaced rather than silently averaged.
+        median = float(np.median(energies_arr))
+        qc["gather_energy_median"] = median
+        qc["dead_shots"] = int(
+            np.count_nonzero(energies_arr <= max(median * 1e-6, 1e-30))
+        )
+    return qc
 
 
 def _truth_from_inputs(inputs: Dict[str, Any]) -> Optional[np.ndarray]:

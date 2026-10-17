@@ -93,6 +93,28 @@ ALL_TEXT_TARGETS: List[Tuple[str, str, str, bool]] = [
     ("docker compose header", "docker/docker-compose.yml", r"^#\s*Chem ML Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
     ("docker compose image tag", "docker/docker-compose.yml", r"chem-ml-platform:([0-9]+\.[0-9]+\.[0-9]+)", True),
     ("Electron shell description", "desktop/package.json", r"Platform v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    # v0.7.3 audit P1-3: the release documents are versioned claims about the
+    # current build, and they drifted silently -- ``docs/PROVENANCE.md`` still
+    # titled itself v0.7.2 while the product reported 0.7.3, and this script
+    # said ``OK`` because the file was not in the sweep.  Same failure mode as
+    # ISSUE-18: a version assertion that only inspects the places you
+    # remembered converts an unknown state into a false clean bill of health.
+    ("provenance record", "docs/PROVENANCE.md", r"来源与许可证记录（v([0-9]+\.[0-9]+\.[0-9]+)", True),
+    ("provenance version table", "docs/PROVENANCE.md", r"\|\s*版本\s*\|\s*([0-9]+\.[0-9]+\.[0-9]+)", True),
+    # Only the *first* changelog entry is a claim about the current build;
+    # older ones are history and must keep their own numbers, so this target
+    # is checked separately (see CHANGELOG_TOP below) rather than swept.
+    ("release report", "docs/V07_3_RELEASE_REPORT.md", r"^\s*-\s*\*\*版本\*\*.*?([0-9]+\.[0-9]+\.[0-9]+)", False),
+]
+
+#: (label, relative path, regex) checked against the **first** match only.
+#:
+#: Used for documents that legitimately quote several versions -- a changelog's
+#: newest entry is a claim about the build being released, while its older
+#: entries are history that must keep its own numbers.  Sweeping every match
+#: would demand the project delete its own past.
+CHANGELOG_TOP: List[Tuple[str, str, str]] = [
+    ("changelog top entry", "CHANGELOG.md", r"^##\s*\[([0-9]+\.[0-9]+\.[0-9]+)\]"),
 ]
 
 #: (label, relative path, json path) -- the value at ``json path`` must equal VERSION.
@@ -202,6 +224,18 @@ def collect_drift() -> List[str]:
                 f"{label} ({rel}): {', '.join(stale)} != {VERSION} "
                 f"({len(stale)} distinct of {len(found)} occurrence(s))"
             )
+
+    # 3c. Documents where only the *first* match must agree (v0.7.3, audit P1-3).
+    for label, rel, pattern in CHANGELOG_TOP:
+        path = ROOT / rel
+        if not path.exists():
+            drift.append(f"{label}: missing file {rel}")
+            continue
+        match = re.search(pattern, _read(path), re.M)
+        if not match:
+            drift.append(f"{label}: no version found by pattern {pattern!r}")
+        elif match.group(1) != VERSION:
+            drift.append(f"{label}: {match.group(1)} != {VERSION}")
 
     # 4. JSON manifests.
     for label, rel, jpath in JSON_TARGETS:

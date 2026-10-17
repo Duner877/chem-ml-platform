@@ -122,6 +122,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -197,6 +204,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -263,6 +276,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -330,6 +349,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -399,6 +424,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -458,6 +490,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -526,6 +564,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -608,6 +653,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "orca >= 5.0",
         "gaussian (g16/g09)",
@@ -685,6 +737,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -753,6 +811,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -822,6 +887,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -889,6 +960,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -956,6 +1033,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1024,6 +1107,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1094,12 +1183,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Double SEI Energetics",
@@ -1156,12 +1250,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "EIS",
@@ -1224,6 +1323,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1285,12 +1390,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Export Result",
@@ -1346,6 +1456,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1421,6 +1537,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1515,12 +1637,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Fluorescence",
@@ -1583,6 +1710,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1662,12 +1795,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Functional Groups",
@@ -1722,6 +1860,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1789,6 +1933,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1858,6 +2008,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -1939,6 +2096,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "gromacs >= 2022",
         "lammps >= 2022",
@@ -2018,6 +2182,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2100,6 +2270,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "orca >= 5.0",
         "gaussian (g16/g09)",
@@ -2162,6 +2339,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2231,6 +2414,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2300,6 +2489,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2375,6 +2571,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2442,6 +2644,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2510,6 +2718,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2577,6 +2792,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2621,6 +2842,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2665,6 +2892,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2746,6 +2979,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "gromacs >= 2022",
         "lammps >= 2022",
@@ -2822,6 +3062,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2894,6 +3140,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -2961,6 +3214,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3030,6 +3289,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3130,6 +3396,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3171,6 +3443,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3239,6 +3517,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3307,6 +3592,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3351,6 +3643,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3418,6 +3716,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3459,6 +3763,12 @@
       "missing_software": [],
       "capability_status": "verified",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [
@@ -3533,6 +3843,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3601,6 +3918,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3650,6 +3973,12 @@
       "missing_software": [],
       "capability_status": "verified",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [
@@ -3737,6 +4066,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "orca >= 5.0",
         "gaussian (g16/g09)",
@@ -3826,6 +4162,13 @@
       "missing_software": [],
       "capability_status": "experimental",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "gromacs >= 2022",
         "lammps >= 2022",
@@ -3903,6 +4246,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -3969,6 +4319,12 @@
       "missing_software": [],
       "capability_status": "verified",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [
@@ -4077,12 +4433,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Profile to Centroid",
@@ -4146,6 +4507,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4221,6 +4588,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4302,6 +4675,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "orca >= 5.0",
         "gaussian (g16/g09)",
@@ -4380,6 +4760,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4423,6 +4810,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4505,6 +4898,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "vasp (vasp_std)",
         "quantum_espresso (pw.x)",
@@ -4589,6 +4989,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4655,6 +5061,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4718,6 +5130,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4817,6 +5235,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4878,6 +5302,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -4928,6 +5358,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5003,6 +5439,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5086,6 +5528,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5164,12 +5612,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Seismic Submission",
@@ -5267,12 +5720,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Seismic Survey",
@@ -5345,12 +5803,17 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
       "limitations": [],
-      "reproducibility_level": "deterministic",
-      "execution_mode_note": "unknown execution_mode 'internal_deterministic_rules'"
+      "reproducibility_level": "deterministic"
     },
     {
       "node_name": "Molecular Similarity",
@@ -5413,6 +5876,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5480,6 +5949,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5547,6 +6022,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5597,6 +6078,12 @@
       "missing_software": [],
       "capability_status": "verified",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [
@@ -5644,6 +6131,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5710,6 +6203,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5768,6 +6267,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5851,6 +6356,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5926,6 +6437,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -5993,6 +6510,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6034,6 +6557,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6075,6 +6604,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6137,6 +6672,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6204,6 +6745,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6273,6 +6820,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6380,6 +6933,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "至少需要一路证据（MS / NMR / IR / Raman / UV-Vis）或一个外部候选库；质谱通道要求候选条目提供碎片 m/z，仅给 SMILES 的候选库无法参与 MS 打分。单通道配置下置信度只在通道内归一化，不具备跨候选概率意义。",
       "validation_evidence": [
@@ -6470,6 +7029,13 @@
       ],
       "capability_status": "unavailable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [
         "vasp (vasp_std)",
         "quantum_espresso (pw.x)",
@@ -6542,6 +7108,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6611,6 +7183,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6679,6 +7257,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6748,6 +7332,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6815,6 +7405,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6882,6 +7478,12 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],
@@ -6950,6 +7552,13 @@
       "missing_software": [],
       "capability_status": "executable",
       "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
       "required_dependencies": [],
       "input_constraints": "",
       "validation_evidence": [],

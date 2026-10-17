@@ -137,6 +137,12 @@
       "source_port": "wavelet",
       "target": "submit",
       "target_port": "wavelet"
+    },
+    {
+      "source": "forward",
+      "source_port": "energy",
+      "target": "submit",
+      "target_port": "forward_qc"
     }
   ]
 }

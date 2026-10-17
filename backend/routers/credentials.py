@@ -59,6 +59,11 @@ async def read_providers() -> Dict[str, Any]:
                 "docs_url": spec.docs_url,
                 "default_base_url": spec.default_base_url,
                 "notes": {"zh": spec.notes_zh, "en": spec.notes_en},
+                # Lets the GUI explain *before* a key is entered which model the
+                # connectivity check will ask for -- the difference between
+                # "key is wrong" and "this endpoint does not serve that model"
+                # is otherwise only discoverable by getting it wrong.
+                "probe_model": spec.probe_model,
             }
             for spec in PROVIDERS
         ],

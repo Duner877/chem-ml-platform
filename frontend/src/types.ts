@@ -229,6 +229,16 @@ export interface CredentialProbe {
   detail: string;
   latency_ms?: number;
   model?: string;
+  /**
+   * Machine-readable failure class (v0.7.3).  The GUI uses it to colour and
+   * word the result: `invalid_key` means "check the key", while
+   * `model_unsupported`, `network_unreachable` and `rate_limited` all report
+   * `ok: false` but call for completely different user actions.  Optional
+   * because an older backend does not send it.
+   */
+  outcome?: string;
+  /** Present only when a custom base URL was probed, so failures are debuggable. */
+  base_url?: string;
 }
 
 export interface AgentFinding {

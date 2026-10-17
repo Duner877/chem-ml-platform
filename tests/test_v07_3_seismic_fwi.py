@@ -414,3 +414,77 @@ def test_fwi_workflow_file_is_valid_json_with_the_expected_shape():
     }
     assert ("invert", "report", "submit", "report") in edges
     assert ("invert", "wavelet", "submit", "wavelet") in edges
+
+# --------------------------------------------------------------------------- #
+# v0.7.3 audit P1-6: the forward node had no consumer, and truth was mandatory
+# --------------------------------------------------------------------------- #
+def test_the_forward_node_output_is_actually_consumed():
+    """A node in the demo workflow whose every output dangles is a lie.
+
+    ``SeismicForwardNode`` cost a full modelling run and made the user believe
+    its gather fed the inversion, when nothing consumed any of its outputs.
+    """
+    root = Path(__file__).resolve().parents[1]
+    data = json.loads(
+        (root / "workflows" / "09_seismic_fwi.json").read_text(encoding="utf-8")
+    )
+    consumed = {(e["source"], e["source_port"]) for e in data["edges"]}
+    forward_outputs = {"gather", "green", "energy", "text"}
+    used = {port for src, port in consumed if src == "forward"}
+    assert used, "the forward node has no consumer at all in the demo workflow"
+    assert used <= forward_outputs
+
+
+def test_the_forward_qc_reaches_the_submission_summary():
+    root = Path(__file__).resolve().parents[1]
+    data = json.loads(
+        (root / "workflows" / "09_seismic_fwi.json").read_text(encoding="utf-8")
+    )
+    edges = {
+        (e["source"], e["source_port"], e["target"], e["target_port"])
+        for e in data["edges"]
+    }
+    assert ("forward", "energy", "submit", "forward_qc") in edges
+
+
+def test_the_truth_port_is_optional_so_real_data_can_run():
+    """Real survey data has no ground truth.
+
+    While this port was mandatory, a real-data workflow could not even be
+    validated -- which made a synthetic, truth-scored chain look like the only
+    supported path.
+    """
+    from nodes.loader import get_registry
+
+    spec = get_registry().get("SeismicSubmissionNode").spec()
+    ports = {p["name"]: p for p in spec["inputs"]}
+    assert ports["truth"].get("optional") is True
+    assert ports["forward_qc"].get("optional") is True
+
+
+def test_forward_qc_is_read_out_of_the_table_not_guessed():
+    from nodes.instruments.seismic import _forward_qc_from_inputs
+    from workflow_engine.objects import Table
+
+    table = Table.from_records(
+        [
+            {"shot": 0, "gather_energy": 1.0e6},
+            {"shot": 1, "gather_energy": 1.1e6},
+            {"shot": 2, "gather_energy": 0.0},      # a dead trace
+        ],
+        name="qc",
+        metadata={"cfl_dt_limit_s": 8e-4, "requested_dt_s": 4e-4, "cfl_margin": 2.0},
+    )
+    qc = _forward_qc_from_inputs({"forward_qc": table})
+    assert qc["connected"] is True
+    assert qc["shots"] == 3
+    assert qc["cfl_admissible"] is True
+    assert qc["dead_shots"] == 1, "a zero-energy shot must be surfaced, not averaged away"
+
+
+def test_absent_forward_qc_is_reported_as_absent_not_as_zero():
+    """No QC run and a QC result of zero are different facts."""
+    from nodes.instruments.seismic import _forward_qc_from_inputs
+
+    assert _forward_qc_from_inputs({}) is None
+    assert _forward_qc_from_inputs({"forward_qc": None}) is None

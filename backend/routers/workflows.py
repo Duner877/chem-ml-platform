@@ -76,8 +76,15 @@ class RunResponse(BaseModel):
 # --------------------------------------------------------------------------- #
 # helpers
 # --------------------------------------------------------------------------- #
-def _engine() -> WorkflowEngine:
-    """A fresh engine bound to the populated global registry."""
+def _engine(origin: str = "manual", approved_node_types: Optional[List[str]] = None) -> WorkflowEngine:
+    """A fresh engine bound to the populated global registry.
+
+    v0.7.3 (audit P0-3): ``origin`` and ``approved_node_types`` reach the
+    engine's tool guard, so a run started through this REST endpoint is
+    classified the same way the agent path classifies it.  The default
+    (``"manual"``) is the authenticated local user pressing Run -- their own
+    decision -- which is why it does not require per-node approval.
+    """
     from nodes.loader import get_registry
 
     return WorkflowEngine(
@@ -85,6 +92,8 @@ def _engine() -> WorkflowEngine:
         workdir=RUN_DIR,
         max_workers=4,
         use_cache=False,
+        origin=origin,
+        approved_node_types=approved_node_types,
     )
 
 

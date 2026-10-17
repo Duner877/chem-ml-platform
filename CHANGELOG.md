@@ -16,14 +16,14 @@
 - **held-out 炮完全不参与梯度**（`Survey.held_out` / `fit_shots`），且起始值与终值用**同一子波**评估——子波在反演中被刷新，用不同子波算的两个数不是同一个问题的 misfit，其差值可能是进步也可能是换了震源。
 - `simulations/fwi_submission.py`（新增）：写出赛题要求的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`，写完立即读回校验；`score_model` 在提供真值时计算**去除每个深度水平均值后的横向相关系数**（该指标下纯深度趋势起点模型恒为 0），并把起点模型的值并列写出。没有真值时相关字段为**显式 null** 而非 0——两者在 JSON 里含义不同。
 - 节点 `SeismicSurveyNode` / `SeismicForwardNode` / `FWIInversionNode` / `SeismicSubmissionNode`；`workflows/09_seismic_fwi.json` 端到端实跑通过。
-- `tests/check_fwi.py`（新增）：正演稳定性、子波恢复精度、梯度方向（**沿梯度自身的下降曲线**——单方向有限差分低于 misfit 的 float64 噪声底）、误差下降 + 横向结构恢复，共 16 项。`tests/test_v07_3_seismic_fwi.py`（新增）19 项回归。
+- `tests/check_fwi.py`（新增）：正演稳定性、子波恢复精度、梯度方向（**沿梯度自身的下降曲线**——单方向有限差分低于 misfit 的 float64 噪声底）、误差下降 + 横向结构恢复，共 16 项。`tests/test_v07_3_seismic_fwi.py`（新增）24 项回归。
 
 **硬碳预脱溶剂机理（Nat. Commun. 15, 3497 (2024)）**
 - `models/desolvation.py` 与 `nodes/instruments/desolvation.py`：尺寸筛分 / 静置老化 / 双 SEI 能量学三个节点。
 - 引擎数值精确对标论文：CIP / AGG 过孔能垒误差 0.00000 eV，静置阻抗在 4 h / 40 h 两点精确命中（86.200 / 14.600 Ω），活化能取原值，LUMO 位移为平台补充的库仑屏蔽估算（论文断言但未给计算）。
 - `PreDesolvationMechanismNode`（新增）：把三条支路接成一条证据链，并**检查三者是否自洽**。三个独立标定的代理模型即便互相矛盾也各自画得像模像样，说出来比画出来更有用。**未连线（`not_connected`）与上游列名被改（`schema_mismatch`）分别报告**——两者都让用户去查连线，但真正要改的地方不同。
 - `workflows/08_hard_carbon_predesolvation.json` 由三个孤立节点改为 4 节点 / 3 边的连通链路，整链实跑 `completed`，三条判据全 `ok`。
-- `tests/test_v07_3_hard_carbon.py`（新增）21 项回归。
+- `tests/test_v07_3_hard_carbon.py`（新增）25 项回归。
 
 **API Key 管理与图形入口**
 
@@ -35,7 +35,7 @@
 - 对全部 99 个已注册节点验证过分类结果：96 个只读计算节点放行，`ExportNode` / `ReportExportNode` / `SeismicSubmissionNode` 落入需审批。
 - 规则按**真实类名**核对而非凭直觉：`*Submit*` 匹配不到 `Submission`（s-u-b-m-i-s-s-i-o-n），这条"看起来对"的规则实际上匹配为空，会让覆盖赛题产物的节点无人看守地运行。改为 `*Submission*`，并加测试遍历注册表，确保没有规则再次变成死策略。
 - 没有对应节点的类别规则（`*Controlled*` / `*Delete*` / `*Upload*` / `*Write*` / `*.export*`）显式标注 `forward_looking=True`——前瞻性策略是合理的，「看着对但匹配为空」不是。
-- `tests/test_v07_3_tool_guard.py`（新增）22 项回归。
+- `tests/test_v07_3_tool_guard.py`（新增）24 项回归。
 
 - `ai_runtime/credentials.py`（新增）：9 家服务商的密钥存储，顺序为**系统密钥环 → 本地文件**（`config/credentials.json`，已 gitignore）。`list_credentials` / `set_credential` / `delete_credential` / `test_credential` / `mask_secret` / `credential_backend`。
 - 保存时同步写进 `os.environ`——供应商读的是环境变量，只落盘会让界面显示「已配置」而运行时仍在离线降级。
@@ -44,7 +44,7 @@
 - **接口与界面都只返回掩码**（`sk-a•••••3456`，≤8 字符全掩），没有「显示明文」按钮，因为后端根本不会发送。
 - 「已保存」不等于「可用」：测试连接是独立的一等按钮，走真实 HTTP 探测；服务商拒绝密钥返回 200 + `ok: false`（这是要显示的答案，不是传输错误），只有未知服务商才是 404。
 - 存储位置写在面板顶部；无密钥环时明确告知密钥将明文保存，而不是让用户以为已被系统加密。
-- `tests/test_v07_3_credentials.py`（新增）31 项回归，含「响应体全文搜索不得出现明文」与 GUI 入口的静态检查。
+- `tests/test_v07_3_credentials.py`（新增）36 项回归，含「响应体全文搜索不得出现明文」与 GUI 入口的静态检查。
 
 ### 修复 Fixed
 
@@ -76,6 +76,51 @@
 
 - 端口类型新增不透明的 `Survey`，用于在图上传递采集对象；`Survey` 刻意**不**做成 `ScientificObject`——三维道集检查器无法渲染，把每条道都记进运行输出会淹没结果；节点另行发布人可查看的道集、深度趋势与反演产物。
 - `nodes/instruments/__init__.py` 导出四个地震节点与机制汇总节点；节点总数 99。
+
+### 修复 Fixed — 外部审计响应
+
+对交付归档做的一轮独立审计提出 4 项 P0 与 7 项 P1。以下逐条对应，均已修复并各有回归测试；审计未指出的部分不受影响。
+
+**P0-1｜发布归档可能携带明文密钥、桌面会话令牌与用户私有插件。**
+`scripts/package.py::should_skip()` 对 `config/` 的判断是 `return rel_posix.endswith("ai.json")`——**读起来像白名单，实际是一条否定规则**：`config/credentials.json`（明文 API Key）与 `config/session.json`（桌面会话令牌）都会被打进公开归档。`.env*` 与 `plugins/` 同样没有排除规则。本次归档里的 `credentials.json` 恰好是空的 `{}`，不是因为规则安全，而是因为打包时那台机器还没配过 Key；换一台配过的工作树打包就会泄露。
+- 改为**正向白名单** `CONFIG_ALLOWLIST`（只允许 `.gitkeep` 与 `ai.example.json`）——新出现的密钥文件默认被排除，必须被显式论证才能加入。
+- 新增 `.env*`、`plugins/`（仅顶层，故 `examples/plugins/` 的示例节点照常发布）、`*.pem` / `*.key` / `id_rsa` 等私钥容器的排除规则。
+- **打包后重扫归档**：路径黑名单 + 密钥形状（私钥块、`sk-` / `sk-ant-` / `AIza` / `gh[pousr]_` / `xox*-` / `AKIA`、内联赋值）。命中即**删除归档并以非零码退出**——带着 Key 的归档即使短暂存在于磁盘上，下一次 `cp *.zip` 就足以让它逃逸。
+- `config/session.json` 此前从未进 `.gitignore`，只在归档层「碰巧」被挡住；现已补上。
+- `tests/test_v07_3_packaging_secrets.py`（新增）41 项：规则层、**在临时工作树里种入哨兵密钥后真实打包**（端到端，而非只测谓词）、守卫本身能否真的拦下回归、以及**扫描真实仓库树**（合成夹具无法发现「扫描器在自己身上命中」这类问题）。
+- 打包器因此拦下过一次**真实的自我阻断**：`scripts/quality_gate.py` 加入私钥块正则后，归档扫描在它自身命中该形状并拒绝发布。扫描器必须写出它要找的形状，于是每个扫描器都会命中自己——豁免集因此改为**逐文件精确列举**（目录级豁免会把同目录的真实密钥一起放过），并加测试锁定「每个扫描器都同时出现在打包器与门禁的豁免集里」。
+
+**P0-3｜工具守卫声称覆盖全部入口，实际只覆盖 Agent。**
+`agent_runtime/tool_guard.py` 的文档写「every surface (agent node, agent REST endpoint, workflow run) reaches the same `check_tool_call`」，但 `workflow_engine/engine.py` 从不调用它。GUI 的 Run 按钮、`POST /api/workflows/*/run`、CLI 脚本都绕过策略——**一份声称存在、实际不存在的边界比没有边界更糟，因为它会被依赖**。
+- 守卫在 `WorkflowEngine._tool_guard_refusal` 中于**节点执行前**判定，三条入口共用同一决定。
+- `deny` 为绝对拒绝，无 origin、无批准令牌可覆盖；`approval` 按 origin 区分：Agent 运行必须显式批准，**用户手动发起的运行则直接放行**——本地用户点下 Run 就是批准，对每个报告导出再弹一次确认，只会训练用户闭眼点掉，那是审批提示本该防住的失效模式。
+- 守卫模块缺失时**如实降级并在事件流中声明**「未经策略检查执行」，而不是让 provenance 暗示一次从未发生的检查；守卫抛异常则**失败关闭**。
+- `tests/test_v07_3_engine_tool_guard.py`（新增）13 项，含三条入口各自的绕过尝试。
+
+**P0-4｜节点执行来源把「声明」与「实际」混为一谈。**
+注册表把 99/99 节点统一登记为 `internal_approximation`，其中却包含 15 个 `requires_network` 与 9 个 `requires_external_software` 的节点。一个静态字段无法描述一次运行：LLM 节点有 Key 时联网、无 Key 时回退内置引擎，两次运行是同一个节点类型。
+- 注册表拆出 `supported_execution_modes`（**由节点自身声明的能力推导**，避免 99 份副本与能力列表各说各话）与 `default_execution_mode`；`execution_mode` 保留为声明，标注 `execution_mode_source: "declaration"`。24 个节点现在正确地同时声明 `external`。
+- 每次运行的**实际**结果记在 provenance：`execution_mode` / `engine_name`（`external:orca` / `internal:eht`）/ `engine_version` / `fallback_reason`。只有运行期字段能诚实回答「这个数是谁算的」。
+- `tests/test_v07_3_execution_modes.py`（新增）11 项。
+
+**P1-1｜连通性探测会把有效的 Key 报成无效。**
+探测对**所有**服务商硬编码 `gpt-4o-mini`。DeepSeek / Moonshot / SiliconFlow / DashScope / 智谱都不提供这个模型名，各自以 400/404 回应，而界面把这读作「你的 Key 被拒绝了」——用户被送去重新生成一个本来可用的凭据。Anthropic 的 Messages API 根本不是 OpenAI 格式，同一个探测对它**只可能失败**。
+- 每个 `ProviderSpec` 增 `probe_model` / `probe_path` / `probe_style`；Anthropic 走 `x-api-key` + `/v1/messages`，Ollama / vLLM 探测 `/api/tags` / `/v1/models`（本地服务不认证，问的是「在不在」而非「Key 对不对」）。
+- `set_credential` 一直支持 `base_url` 覆盖，探测却无条件读 `default_base_url`——指向自建 vLLM 或兼容网关的用户被告知 Key 无效，因为探测问的是另一台主机。现按运行时同样的方式读取覆盖值，并在失败信息中**写明探测的是哪个地址**。
+- 探测结果新增机器可读的 `outcome` 分类（`invalid_key` / `forbidden` / `model_unsupported` / `network_unreachable` / `rate_limited` / `timeout` …），前端按**失败原因**而非仅按 `ok` 着色：Key 被拒是红色，模型名不匹配、限流、网络不通是琥珀色——正确 Key 后面跟着企业代理时若与拼写错误同色，用户会学会不信任整个面板。
+- 本机发现并修复两个真实缺陷：curl 在连接失败时**仍会输出 `__HTTP__000`**，此前被当成一次 HTTP 结果，于是「DNS 解析失败」被报成「供应商拒绝了请求」；以及 loopback 未绕过代理，`http_proxy` 存在时本地 Ollama/vLLM 的探测会被代理回「upstream connect failed」。
+- `tests/test_v07_3_credential_probe.py`（新增）23 项，起真实本地 HTTP 服务覆盖全部分支。
+
+**P1-4｜依赖 `.git` 的测试在源码归档中必然失败。**
+`test_the_credential_file_is_gitignored` 只调用 `git check-ignore`，而公开源码归档**按设计不含 `.git`**，在那里以 128 退出——测试因环境事实失败，而不是因它声称验证的那条规则失败，而解压后的副本恰恰是最需要这条保证成立的地方。
+- 改为断言 `.gitignore` 的**规则本身**（随归档分发），并实现了完整的 gitignore 语义（后匹配胜出、`!` 反选、目录规则），附带反向校验：`config/ai.example.json` 必须仍然可提交，否则「全部忽略 config/」也能让正向断言变绿。
+- Git 作为**第二意见**保留，仅在确实存在工作树时执行。
+
+**P1-6｜FWI 工作流中的正演节点无人消费，且真值被当作必需。**
+`SeismicForwardNode` 的四个输出全部悬空：它付出一次完整建模的计算量，却让用户以为其炮集参与了反演。同时 `SeismicSubmissionNode` 的 `truth` 端口在端口层面是必需的（虽然 `execute` 能处理缺失），于是**真实地震数据没有真值时该工作流根本无法通过校验**——让「合成 + 真值评分」看起来像是唯一被支持的路径。
+- `SeismicForwardNode.energy` 接入提交节点的 `forward_qc` 端口：CFL 裕度、各炮能量、死炮计数进入 `run_summary.json`。这些数字描述的是**反演之前**的起始模型，正是「误差下降」应当被对照的基线。
+- `truth` 与 `forward_qc` 端口标记为 `optional`。
+- QC 表按**列名**读取（`Table.rows` 是二维列表 + `columns` 表头，不是字典列表）。
 
 ## [0.7.2] — 2026-10
 

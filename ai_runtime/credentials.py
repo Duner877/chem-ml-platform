@@ -42,6 +42,9 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlsplit
+
+from .config import load_config
 
 __all__ = [
     "PROVIDERS",
@@ -89,6 +92,21 @@ class ProviderSpec:
     notes_zh: str = ""
     notes_en: str = ""
 
+    # -- probe (v0.7.3 audit P1-1) ------------------------------------------ #
+    #: Model name the connectivity check asks for.  A hard-coded ``gpt-4o-mini``
+    #: (what this used to send to *every* provider) produces a false negative on
+    #: any OpenAI-compatible service that does not happen to carry that model:
+    #: DeepSeek and Moonshot would answer HTTP 400 / 404 with a perfectly valid
+    #: key, and the GUI would tell the user their key is wrong.  Per provider.
+    probe_model: str = ""
+    #: Endpoint appended to the base URL.  Anthropic's Messages API is not
+    #: OpenAI-shaped, so it needs its own path and body.
+    probe_path: str = "/chat/completions"
+    #: ``"openai"`` (chat/completions) or ``"anthropic"`` (native messages).
+    probe_style: str = "openai"
+    #: Extra headers for the probe (Anthropic requires the API version).
+    probe_headers: Tuple[Tuple[str, str], ...] = ()
+
     @property
     def primary_env(self) -> str:
         return self.env_vars[0] if self.env_vars else ""
@@ -105,6 +123,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("OPENAI_API_KEY",),
         docs_url="https://platform.openai.com/api-keys",
         default_base_url="https://api.openai.com/v1",
+        probe_model="gpt-4o-mini",
         notes_zh="需要有效的 OpenAI API Key。",
         notes_en="Requires a valid OpenAI API key.",
     ),
@@ -115,6 +134,9 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("DEEPSEEK_API_KEY",),
         docs_url="https://platform.deepseek.com/",
         default_base_url="https://api.deepseek.com/v1",
+        # DeepSeek does not serve any OpenAI model name; asking for one is a
+        # guaranteed 400 and would read as "your key is invalid".
+        probe_model="deepseek-chat",
         notes_zh="OpenAI 兼容接口，填写 DeepSeek 平台的 Key。",
         notes_en="OpenAI-compatible endpoint; use the key from the DeepSeek platform.",
     ),
@@ -125,6 +147,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("MOONSHOT_API_KEY",),
         docs_url="https://platform.moonshot.cn/",
         default_base_url="https://api.moonshot.cn/v1",
+        probe_model="moonshot-v1-8k",
         notes_zh="OpenAI 兼容接口，国内直连。",
         notes_en="OpenAI-compatible endpoint, directly reachable from mainland China.",
     ),
@@ -135,6 +158,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("SILICONFLOW_API_KEY",),
         docs_url="https://cloud.siliconflow.cn/",
         default_base_url="https://api.siliconflow.cn/v1",
+        probe_model="Qwen/Qwen2.5-7B-Instruct",
         notes_zh="聚合多个开源模型，OpenAI 兼容。",
         notes_en="Aggregates open models behind an OpenAI-compatible API.",
     ),
@@ -145,6 +169,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("DASHSCOPE_API_KEY",),
         docs_url="https://bailian.console.aliyun.com/",
         default_base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        probe_model="qwen-turbo",
         notes_zh="Qwen 系列，OpenAI 兼容模式。",
         notes_en="Qwen models via the OpenAI-compatible mode.",
     ),
@@ -155,6 +180,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("ZHIPUAI_API_KEY",),
         docs_url="https://open.bigmodel.cn/",
         default_base_url="https://open.bigmodel.cn/api/paas/v4",
+        probe_model="glm-4-flash",
         notes_zh="GLM 系列，OpenAI 兼容。",
         notes_en="GLM models via an OpenAI-compatible API.",
     ),
@@ -164,6 +190,13 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         label_en="Anthropic Claude (cloud)",
         env_vars=("ANTHROPIC_API_KEY",),
         docs_url="https://console.anthropic.com/settings/keys",
+        # Native Messages API.  The old probe sent an OpenAI-shaped body to
+        # this provider too, which could only ever fail.
+        default_base_url="https://api.anthropic.com",
+        probe_model="claude-3-5-haiku-latest",
+        probe_path="/v1/messages",
+        probe_style="anthropic",
+        probe_headers=(("anthropic-version", "2023-06-01"),),
         notes_zh="原生 Messages API，非 OpenAI 兼容格式。",
         notes_en="Native Messages API, not the OpenAI-compatible format.",
     ),
@@ -174,6 +207,9 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("CHEMML_OLLAMA_BASE",),
         kind="local",
         default_base_url="http://127.0.0.1:11434",
+        # /api/tags needs no key at all: for a local server the question is
+        # "is it up and does it have a model", not "is the key valid".
+        probe_path="/api/tags",
         notes_zh="本地推理，无需 Key，填服务地址即可。",
         notes_en="Local inference; no key needed, just the server address.",
     ),
@@ -184,6 +220,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         env_vars=("CHEMML_VLLM_BASE",),
         kind="local",
         default_base_url="http://127.0.0.1:8000",
+        probe_path="/v1/models",
         notes_zh="本地推理，无需 Key，填服务地址即可。",
         notes_en="Local inference; no key needed, just the server address.",
     ),
@@ -521,8 +558,156 @@ def delete_credential(provider_id: str) -> Dict[str, Any]:
 # --------------------------------------------------------------------------- #
 # connectivity test
 # --------------------------------------------------------------------------- #
-def _curl_chat(base_url: str, api_key: str, timeout: float = 20.0) -> Tuple[bool, str]:
-    """Probe an OpenAI-compatible ``/chat/completions`` with a tiny prompt.
+#: Outcome classes a probe can report.  The GUI colours these differently, and
+#: they must not be collapsed: "your key is wrong" and "the host name does not
+#: resolve" call for completely different user actions.
+ProbeOutcome = str
+
+PROBE_OK: ProbeOutcome = "ok"
+PROBE_NO_CREDENTIAL: ProbeOutcome = "no_credential"
+PROBE_INVALID_KEY: ProbeOutcome = "invalid_key"
+PROBE_FORBIDDEN: ProbeOutcome = "forbidden"
+PROBE_BAD_ENDPOINT: ProbeOutcome = "bad_endpoint"
+PROBE_MODEL_UNSUPPORTED: ProbeOutcome = "model_unsupported"
+PROBE_RATE_LIMITED: ProbeOutcome = "rate_limited"
+PROBE_NETWORK: ProbeOutcome = "network_unreachable"
+PROBE_TIMEOUT: ProbeOutcome = "timeout"
+PROBE_BAD_RESPONSE: ProbeOutcome = "bad_response"
+PROBE_UNSUPPORTED: ProbeOutcome = "not_probeable"
+PROBE_UNAVAILABLE: ProbeOutcome = "probe_tool_missing"
+
+
+def _probe_body(spec: ProviderSpec) -> Optional[Dict[str, Any]]:
+    """The JSON body for this provider's probe, or ``None`` if it needs none.
+
+    ``None`` means "GET something that only proves the server is listening" --
+    the right probe for Ollama and vLLM, where the failure being diagnosed is
+    "is the service up", not "is this token accepted".
+    """
+    if spec.kind == "local":
+        return None
+    if spec.probe_style == "anthropic":
+        return {
+            "model": spec.probe_model,
+            "max_tokens": 1,
+            "messages": [{"role": "user", "content": "ping"}],
+        }
+    return {
+        "model": spec.probe_model,
+        "messages": [{"role": "user", "content": "ping"}],
+        "max_tokens": 1,
+    }
+
+
+def _probe_headers(spec: ProviderSpec, api_key: str) -> Dict[str, str]:
+    headers = {"Content-Type": "application/json"}
+    if spec.probe_style == "anthropic":
+        # Anthropic authenticates with x-api-key, not Bearer.
+        headers["x-api-key"] = api_key
+    elif api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    for key, value in spec.probe_headers:
+        headers[key] = value
+    return headers
+
+
+def _classify_http(code: str, body: str, spec: ProviderSpec, api_key: str) -> Tuple[bool, ProbeOutcome, str]:
+    """Turn an HTTP status into (ok, outcome, human message).
+
+    The model-name branch matters more than it looks: an OpenAI-compatible
+    gateway that does not carry the provider's default model answers 400/404
+    with "model not found" *while the key is perfectly valid*.  Reporting that
+    as an invalid key sends the user off to regenerate a working credential.
+    """
+    if code in {"200", ""}:
+        try:
+            parsed = json.loads(body)
+        except json.JSONDecodeError:
+            return False, PROBE_BAD_RESPONSE, (
+                "the endpoint answered but not with JSON -- is the base URL correct?"
+            )
+        model = ""
+        choices = parsed.get("choices")
+        if isinstance(choices, list) and choices:
+            message = choices[0].get("message") or {}
+            model = str(message.get("model") or choices[0].get("model") or "")
+        if not model and isinstance(parsed.get("models"), list):
+            # /v1/models and /api/tags shapes: a listing is proof of life.
+            first = parsed["models"][0] if parsed["models"] else {}
+            if isinstance(first, dict):
+                model = str(first.get("id") or first.get("name") or "")
+        suffix = f", model {model}" if model else ""
+        return True, PROBE_OK, f"connected (HTTP 200){suffix}"
+
+    if code in {"401"}:
+        return False, PROBE_INVALID_KEY, (
+            "HTTP 401: the key was rejected -- check it in the provider's console"
+        )
+    if code == "403":
+        return False, PROBE_FORBIDDEN, (
+            "HTTP 403: the key authenticated but is not permitted to use "
+            f"{spec.probe_model or 'this model'} -- it may need to be enabled in the console first"
+        )
+    if code == "429":
+        return False, PROBE_RATE_LIMITED, (
+            "HTTP 429: rate limited or out of quota (the key itself may be fine)"
+        )
+
+    detail = ""
+    try:
+        parsed = json.loads(body)
+        error = parsed.get("error")
+        detail = str((error or {}).get("message") if isinstance(error, dict) else error or "")
+    except json.JSONDecodeError:
+        detail = body
+    detail = _redact(detail[:300], api_key)
+
+    # "No such model" is a probe artefact, not a credential problem.  The
+    # message has to *name* the model for this to fire: a bare 404 "not found"
+    # is the endpoint itself missing, and reporting that as a model mismatch
+    # would send the user editing the wrong setting.
+    lowered = detail.lower()
+    names_a_model = (
+        spec.probe_model.lower() in lowered
+        or ("model" in lowered and any(
+            # "support" covers both "unsupported" and "not supported"; the
+            # providers really do word this half a dozen different ways.
+            phrase in lowered
+            for phrase in ("not found", "does not exist", "unknown", "support", "no access")
+        ))
+    )
+    if code in {"400", "404", "422"} and names_a_model:
+        return False, PROBE_MODEL_UNSUPPORTED, (
+            f"the endpoint rejected the probe model {spec.probe_model!r} "
+            f"({detail or code}) -- this is a model-name mismatch, not necessarily a bad key"
+        )
+    if code == "404":
+        return False, PROBE_BAD_ENDPOINT, (
+            f"HTTP 404: no {spec.probe_path} at that base URL -- check the path"
+        )
+    if code in {"400", "422"}:
+        return False, PROBE_BAD_RESPONSE, (
+            f"HTTP {code}: the endpoint rejected the probe request"
+            + (f" -- {detail}" if detail else "")
+        )
+    if detail:
+        return False, PROBE_BAD_RESPONSE, f"HTTP {code}: {detail}"
+    return False, PROBE_BAD_RESPONSE, f"HTTP {code}: the provider rejected the request"
+
+
+def _is_loopback(url: str) -> bool:
+    """True for URLs pointing at this machine (see the --noproxy note below)."""
+    try:
+        host = urlsplit(url).hostname or ""
+    except ValueError:
+        return False
+    return host in {"127.0.0.1", "localhost", "::1", "[::1]", "0.0.0.0"}
+
+
+def _curl_probe(
+    spec: ProviderSpec, base_url: str, api_key: str, timeout: float = 20.0,
+) -> Tuple[bool, ProbeOutcome, str]:
+    """Probe *spec* at *base_url* with a request as small as the API allows.
 
     Uses ``curl`` rather than ``urllib`` because a TLS failure, a proxy
     requirement and an HTTP 401 all need to be told apart, and the messages
@@ -531,78 +716,120 @@ def _curl_chat(base_url: str, api_key: str, timeout: float = 20.0) -> Tuple[bool
     """
     exe = shutil.which("curl")
     if not exe:
-        return False, "curl is not available on this machine, so the probe could not run"
-    url = base_url.rstrip("/") + "/chat/completions"
-    payload = json.dumps(
-        {
-            "model": "gpt-4o-mini",
-            "messages": [{"role": "user", "content": "ping"}],
-            "max_tokens": 1,
-        }
-    )
+        return False, PROBE_UNAVAILABLE, (
+            "curl is not available on this machine, so the probe could not run"
+        )
+
+    url = base_url.rstrip("/") + spec.probe_path
+    headers = _probe_headers(spec, api_key)
+    body = _probe_body(spec)
+
     args = [
         exe, "-sS", "-o", "-", "-w", "\n__HTTP__%{http_code}",
         "--max-time", str(timeout),
-        "-H", "Content-Type: application/json",
-        "-H", f"Authorization: Bearer {api_key}",
-        "-d", payload,
-        url,
     ]
+    # Loopback must never go through a proxy.  Corporate and campus networks
+    # routinely export http_proxy/https_proxy (this machine does), and a probe
+    # for a *local* Ollama or vLLM would then be answered by the proxy with
+    # "upstream connect failed" -- reporting the local server as unreachable
+    # when it is running right there.  Cloud providers keep using the proxy,
+    # which is exactly what those users need.
+    if _is_loopback(url):
+        args += ["--noproxy", "*"]
+    for key, value in headers.items():
+        args += ["-H", f"{key}: {value}"]
+    if body is None:
+        args += ["-X", "GET"]
+    else:
+        args += ["-X", "POST", "-d", json.dumps(body)]
+    args.append(url)
+
     try:
         proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
             args, capture_output=True, text=True, timeout=timeout + 5,
         )
     except subprocess.TimeoutExpired:
-        return False, f"no answer within {timeout:.0f} s -- check the address and the network"
+        return False, PROBE_TIMEOUT, (
+            f"no answer within {timeout:.0f} s -- check the address and the network"
+        )
     except OSError as exc:
-        return False, f"could not start curl: {exc}"
+        return False, PROBE_UNAVAILABLE, f"could not start curl: {exc}"
 
     raw = proc.stdout or ""
     if "__HTTP__" not in raw:
-        err = (proc.stderr or "").strip()
-        return False, err or f"curl exited with {proc.returncode} and no response"
+        # No HTTP status at all: the request never completed.
+        err = _redact((proc.stderr or "").strip(), api_key)
+        if proc.returncode in {6, 7} or "resolve" in err.lower() or "Could not resolve" in err:
+            return False, PROBE_NETWORK, (
+                f"could not reach {url} -- check the host name and your network"
+            )
+        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
+            return False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}"
+        if "timed out" in err.lower():
+            return False, PROBE_TIMEOUT, f"the request timed out: {err}"
+        return False, PROBE_NETWORK, (
+            err or f"curl exited with {proc.returncode} and no response"
+        )
 
-    body, _, code = raw.rpartition("__HTTP__")
+    body_text, _, code = raw.rpartition("__HTTP__")
     code = code.strip()
-    body = body.strip()
 
-    if code in {"200", ""}:
-        try:
-            parsed = json.loads(body)
-        except json.JSONDecodeError:
-            return False, "the endpoint answered but not with JSON -- is the base URL correct?"
-        model = ""
-        choices = parsed.get("choices")
-        if isinstance(choices, list) and choices:
-            model = str((choices[0].get("message") or {}).get("model") or "")
-        return True, f"connected (HTTP 200){f', model {model}' if model else ''}"
-    if code in {"401", "403"}:
-        return False, f"HTTP {code}: the key was rejected -- check it in the provider's console"
-    if code == "404":
-        return False, "HTTP 404: no chat/completions at that base URL -- check the path"
-    if code == "429":
-        return False, "HTTP 429: rate limited or out of quota"
-    detail = ""
+    # curl's -w still emits the status line when the connection never
+    # completed, leaving 000.  Treating that as an HTTP result would report a
+    # DNS failure or a refused connection as "HTTP 000: the provider rejected
+    # the request", which is precisely the diagnosis the user needs and would
+    # otherwise not get.
+    if code == "000" or not code:
+        err = _redact((proc.stderr or "").strip(), api_key)
+        if proc.returncode in {5, 6, 7, 28} or "resolve" in err.lower():
+            return False, PROBE_NETWORK, (
+                f"could not reach {url} -- check the host name, the address and your network"
+                + (f" ({err})" if err else "")
+            )
+        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
+            return False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}"
+        if proc.returncode == 28 or "timed out" in err.lower():
+            return False, PROBE_TIMEOUT, (
+                f"no answer within {timeout:.0f} s -- check the address and the network"
+            )
+        return False, PROBE_NETWORK, (
+            err or f"the request to {url} did not complete (curl exit {proc.returncode})"
+        )
+
+    return _classify_http(code, body_text.strip(), spec, api_key)
+
+
+def _effective_base_url(spec: ProviderSpec) -> str:
+    """The base URL the probe must use: the user's override, else the default.
+
+    v0.7.3 audit P1-1: ``set_credential`` has always accepted a ``base_url``
+    override, but the probe read ``spec.default_base_url`` unconditionally --
+    so anyone pointing the platform at a self-hosted vLLM, a proxy or an
+    OpenAI-compatible gateway was told their key was invalid because the probe
+    had asked a different host.  The override is stored in ``config/ai.json``
+    under ``base_urls``; read it the same way the runtime does.
+    """
+    stored = ""
     try:
-        parsed = json.loads(body)
-        detail = str((parsed.get("error") or {}).get("message") or "")[:200]
-    except json.JSONDecodeError:
-        detail = body[:200]
-    if detail:
-        # Several providers echo the submitted key back inside the error
-        # message, and this string is returned to the browser verbatim.  The
-        # statuses handled above deliberately say nothing provider-supplied;
-        # the fallback has to redact for the same reason.
-        detail = _redact(detail, api_key)
-        return False, f"HTTP {code}: {detail}"
-    return False, f"HTTP {code}: the provider rejected the request"
+        config = load_config()
+        stored = str(getattr(config, "base_urls", {}).get(spec.id, "") or "")
+    except Exception:  # noqa: BLE001 - a broken config must not break the probe
+        stored = ""
+    override = stored.strip() or os.environ.get(_BASE_URL_ENV.get(spec.id, ""), "").strip()
+    return override or spec.default_base_url
+
+
+#: Per-provider environment variable holding a base URL override (optional).
+_BASE_URL_ENV: Dict[str, str] = {}
 
 
 def test_credential(provider_id: str) -> Dict[str, Any]:
     """Try the configured credential against its provider and report what happened.
 
     Never raises for a failed probe: "your key is wrong" is an answer, not an
-    exception, and the GUI has to be able to display it.
+    exception, and the GUI has to be able to display it.  Every answer carries
+    an ``outcome`` class so the GUI can distinguish a bad key from an
+    unreachable host from a model that this account cannot use.
     """
     spec = provider_spec(provider_id)
     if spec is None:
@@ -615,22 +842,47 @@ def test_credential(provider_id: str) -> Dict[str, Any]:
         return {
             "provider": spec.id,
             "ok": False,
+            "outcome": PROBE_NO_CREDENTIAL,
             "detail": "no credential is configured for this provider yet",
         }
-    if spec.kind == "local":
+
+    base_url = _effective_base_url(spec)
+    if not base_url:
         return {
             "provider": spec.id,
             "ok": False,
-            "detail": (
-                "local providers are checked by running a model through them; "
-                "use the AI panel's test button for that"
-            ),
-        }
-    if not spec.default_base_url:
-        return {
-            "provider": spec.id,
-            "ok": False,
+            "outcome": PROBE_UNSUPPORTED,
             "detail": "this provider has no built-in probe endpoint; it will be used on the next completion",
         }
-    ok, detail = _curl_chat(spec.default_base_url, secret)
-    return {"provider": spec.id, "ok": ok, "detail": detail}
+
+    if spec.kind == "local":
+        # Local servers do not authenticate; probe the address instead.
+        ok, outcome, detail = _curl_probe(spec, base_url, "", timeout=5.0)
+        if outcome in {PROBE_NETWORK, PROBE_TIMEOUT}:
+            return {
+                "provider": spec.id,
+                "ok": False,
+                "outcome": outcome,
+                "detail": f"{detail} -- is the local server running at {base_url}?",
+            }
+        if ok:
+            return {
+                "provider": spec.id,
+                "ok": True,
+                "outcome": PROBE_OK,
+                "detail": f"reachable at {base_url}{f' ({detail})' if detail else ''}",
+            }
+        return {
+            "provider": spec.id,
+            "ok": False,
+            "outcome": PROBE_BAD_RESPONSE,
+            "detail": f"{base_url} answered but not as an API server: {detail}",
+        }
+
+    ok, outcome, detail = _curl_probe(spec, base_url, secret)
+    result = {"provider": spec.id, "ok": ok, "outcome": outcome, "detail": detail}
+    if base_url != spec.default_base_url:
+        # Say *where* we looked, or a failure on a custom gateway is undebuggable.
+        result["base_url"] = base_url
+        result["detail"] = f"{detail} (probed {base_url})"
+    return result

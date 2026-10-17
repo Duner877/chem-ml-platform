@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from fnmatch import fnmatch
 from pathlib import Path
 
 import pytest
@@ -398,13 +399,87 @@ def test_every_new_i18n_key_exists_in_both_languages():
     missing = zh_keys - en_keys
     assert not missing, f"missing from the English dictionary: {sorted(missing)}"
 
+def _gitignore_patterns(text: str) -> list[str]:
+    """Extract the effective rule list from a ``.gitignore``.
+
+    Blank lines and comments are dropped; leading ``/`` (anchored to the
+    .gitignore's own directory) and trailing ``/`` (directory-only) are kept,
+    because both change what a rule matches and dropping them would make the
+    check claim more coverage than Git actually provides.
+    """
+    patterns = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        patterns.append(line)
+    return patterns
+
+
+def _is_gitignored(target: str, patterns: list[str]) -> bool:
+    """Apply gitignore semantics: last matching rule wins.
+
+    ``fnmatch`` alone cannot express this -- a file matched by ``config/*`` and
+    then re-included by ``!config/.gitkeep`` is *not* ignored, and getting that
+    backwards here would produce a green test over a leaking file.
+    """
+    ignored = False
+    for pattern in patterns:
+        negated = pattern.startswith("!")
+        body = pattern[1:] if negated else pattern
+        body = body.lstrip("/")
+        directory_only = body.endswith("/")
+        if directory_only:
+            body = body.rstrip("/")
+        if not body:
+            continue
+        # ``config/`` as a directory rule covers everything beneath it.
+        if fnmatch(target, body) or fnmatch(target, body + "/*"):
+            ignored = not negated
+    return ignored
+
+
 def test_the_credential_file_is_gitignored():
     """It holds plaintext keys, so ``git add -A`` must never pick it up.
 
     ``config/ai.json`` was ignored from the start; the credential store was
     not, and a test that wrote a key left the file sitting in the working tree
     one ``git add -A`` away from being committed.
+
+    v0.7.3 audit P1-4: this used to shell out to ``git check-ignore`` and
+    nothing else.  A published source archive has no ``.git`` directory by
+    design, so there the command exits 128 and the test fails on an
+    environment fact rather than on the rule it claims to verify -- an
+    extracted copy of the release is exactly where you most want this
+    guarantee to hold.
+
+    So the assertion is made against the ``.gitignore`` **rules**, which ship
+    inside the archive.  Git itself is still consulted when a work tree is
+    actually available, but only as a second opinion that can never be the
+    thing that decides.
     """
+    gitignore = (REPO / ".gitignore").read_text(encoding="utf-8")
+    patterns = _gitignore_patterns(gitignore)
+
+    for target in ("config/credentials.json", "config/session.json"):
+        assert _is_gitignored(target, patterns), (
+            f"{target} is not ignored by .gitignore -- it stores secrets and "
+            "'git add -A' would commit it"
+        )
+
+    # The templates that *must* keep shipping are the counter-check: an
+    # over-broad rule that ignored all of config/ would pass the assertions
+    # above while leaving a fresh clone with no example config at all.
+    for template in ("config/ai.example.json", "config/.gitkeep"):
+        assert not _is_gitignored(template, patterns), (
+            f"{template} must stay committable -- it is the shipped template"
+        )
+
+
+def test_the_git_work_tree_agrees_when_one_is_available():
+    """Second opinion, never the deciding vote (see the test above)."""
+    if not (REPO / ".git").exists():
+        pytest.skip("extracted source archive: no .git work tree to consult")
     ignored = subprocess.run(
         ["git", "check-ignore", "-q", "config/credentials.json"],
         cwd=REPO,

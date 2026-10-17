@@ -117,6 +117,12 @@ class QuantumChemistryNode(ScientificNode):
             workdir=Path(ctx.run_dir) if ctx is not None else None,
         )
         self.log(f"{self.node_type()} -> {result.engine}")
+        # v0.7.3 (audit P0-4): publish the engine that actually ran, so
+        # provenance can name it.  ``execution_mode`` alone would only say
+        # "internal_approximation" without identifying the approximation.
+        self.last_engine = str(result.engine or "")
+        self.fallback_used = bool(getattr(result, "fallback_used", False))
+        self.fallback_reason = str(getattr(result, "fallback_reason", "") or "")
         return result.ports
 
 

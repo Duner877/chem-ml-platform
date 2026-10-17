@@ -41,6 +41,12 @@ def apply_instance_facts(record: ProvenanceRecord, instance: Any) -> None:
 
     Shared by the event-driven collector and by :func:`build_node_record` so the
     two can never disagree about a node's actual execution mode.
+
+    v0.7.3 (audit P0-4) adds the engine identity.  ``execution_mode`` says which
+    *kind* of computation ran (``external`` / ``internal_approximation`` /
+    ``synthetic_demo``); that alone leaves a report claiming "internal
+    approximation" without ever naming the approximation that produced the
+    numbers.  ``engine_name`` answers the question a reader actually has.
     """
     mode_fn = getattr(instance, "effective_execution_mode", None)
     if callable(mode_fn):
@@ -52,6 +58,31 @@ def apply_instance_facts(record: ProvenanceRecord, instance: Any) -> None:
     else:
         record.execution_mode = str(getattr(instance, "execution_mode", "") or "")
     record.capability_status = str(getattr(instance, "capability_status", "") or "")
+
+    # What the node *could* do, and what it does by default.  Read from the
+    # class so the provenance record carries the same vocabulary as the
+    # registry that published the node.
+    cls = type(instance)
+    supported = list(getattr(cls, "supported_execution_modes", []) or [])
+    if record.execution_mode and record.execution_mode not in supported:
+        supported.append(record.execution_mode)
+    record.supported_execution_modes = supported
+    record.default_execution_mode = str(
+        getattr(cls, "default_execution_mode", "") or record.execution_mode
+    )
+
+    # The concrete engine, when the node reports one.  Prefer the live value a
+    # node set during this run (e.g. ``internal:eht`` after a fallback) over
+    # any static class default.
+    for attr in ("last_engine", "engine_name"):
+        value = str(getattr(instance, attr, "") or "").strip()
+        if value:
+            record.engine_name = value
+            break
+    record.engine_version = str(
+        getattr(instance, "engine_version", "") or getattr(cls, "engine_version", "") or ""
+    ).strip()
+
     if not record.node_version:
         record.node_version = str(getattr(instance, "version", "") or "")
     record.deterministic = bool(getattr(instance, "deterministic", record.deterministic))

@@ -79,6 +79,9 @@ memory/*.json
 *.local
 config/ai.json
 config/credentials.json
+# v0.7.3: the desktop launcher drops the live session token here.  It was
+# never listed, so it was only protected from the archive by accident.
+config/session.json
 !config/.gitkeep
 !config/ai.example.json
 plugins/*

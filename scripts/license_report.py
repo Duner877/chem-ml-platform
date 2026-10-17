@@ -63,7 +63,19 @@ _SECRET_PATTERNS: Tuple[Tuple[str, str], ...] = (
     (r"-----BEGIN (RSA|EC|OPENSSH|PGP) PRIVATE KEY-----", "private key"),
     (r"(?i)(api[_-]?key|secret|token)\s*[:=]\s*[\"'][A-Za-z0-9_\-]{16,}[\"']", "inline credential"),
 )
-_SECRET_ALLOW_FILES = {"config/ai.example.json"}
+_SECRET_ALLOW_FILES = {
+    "config/ai.example.json",
+    # v0.7.3: the two scanners necessarily *contain* the shapes they look for.
+    # ``package.py`` defines the archive's secret patterns and
+    # ``license_report.py`` defines these ones; flagging them would mean the
+    # build fails every time someone hardens the scanner, and the fix people
+    # reach for under that pressure is to weaken the pattern -- which is the
+    # exact opposite of the intent.  The exemption is by explicit path, so a
+    # real key pasted into either file is still caught by
+    # ``scripts/package.py``'s own scan, which does not exempt them.
+    "scripts/package.py",
+    "scripts/license_report.py",
+}
 
 #: cleanliness buckets that are informational and never block a release.
 #: ``pyc`` / ``pycache`` are included because ``scripts/package.py`` already

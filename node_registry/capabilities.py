@@ -61,6 +61,43 @@ def _cuda_available() -> Optional[bool]:
         return False
 
 
+def _derive_supported_modes(
+    cls: type,
+    capabilities: List[str],
+    software: List[str],
+    declared_mode: str,
+    declared_supported: List[str],
+) -> List[str]:
+    """What execution modes this node may actually use.
+
+    Derived from the node's *own* declared capabilities rather than repeated
+    on each of the 99 classes, because a capability list that disagrees with
+    the mode list is a new way to be wrong: today ``ORCANode`` says
+    ``requires_external_software`` while its ``execution_mode`` says
+    ``internal_approximation``, and only one of those is a statement about
+    what the code will do.
+
+    The rules, each of which is falsifiable against the class:
+
+    * a node that declares ``requires_network`` reaches a remote service, so
+      it supports ``external`` as well as the internal fallback;
+    * a node that names external software runs that program when it is
+      installed, so likewise;
+    * everything else supports only what it declared.
+    """
+    modes: List[str] = list(declared_supported)
+    if not modes:
+        modes = [declared_mode]
+    wants_external = (
+        "requires_network" in capabilities
+        or "requires_external_software" in capabilities
+        or bool(software)
+    )
+    if wants_external and "external" not in modes:
+        modes.append("external")
+    return modes
+
+
 def node_status(cls: type) -> Dict[str, Any]:
     """Compute the capability / status record of one node class."""
     capabilities: List[str] = list(getattr(cls, "effective_capabilities", lambda: getattr(cls, "capabilities", []))())
@@ -128,6 +165,39 @@ def node_status(cls: type) -> Dict[str, Any]:
         record["capability_status_note"] = status_note
     if mode_note:
         record["execution_mode_note"] = mode_note
+
+    # -- v0.7.3 audit P0-4: declared vs. actual execution ------------------ #
+    # ``execution_mode`` above is a *static class attribute*.  It is what the
+    # node says about itself before anything has run, and it cannot describe a
+    # given run: an LLM node reaches the network when a key is present and
+    # falls back to the offline engine when it is not, and both runs are the
+    # same node type.  Publishing only the static field made 99/99 nodes read
+    # as ``internal_approximation`` -- including the ones that declared
+    # ``requires_network`` and ``requires_external_software``.
+    #
+    # So the registry now says three separate things:
+    #   * ``supported_execution_modes`` -- what this node *may* do;
+    #   * ``default_execution_mode``   -- what it does with nothing special set;
+    #   * ``execution_mode``            -- the declaration, kept for compatibility.
+    #
+    # What a *particular run* actually did is not knowable here at all.  It is
+    # recorded per run in provenance (``actual_execution_mode``,
+    # ``engine_name``, ``fallback_reason``) by
+    # :func:`provenance.collector.apply_instance_facts`, which reads the live
+    # node instance.  Anything this registry claimed about a run would be a
+    # guess wearing a fact's clothes.
+    supported = list(getattr(cls, "supported_execution_modes", []) or [])
+    supported = _derive_supported_modes(cls, capabilities, software, mode, supported)
+    record["supported_execution_modes"] = supported
+    record["default_execution_mode"] = str(
+        getattr(cls, "default_execution_mode", "") or mode
+    )
+    record["execution_mode_source"] = "declaration"
+    record["execution_mode_note"] = (
+        record.get("execution_mode_note")
+        or "declared by the node class; what a specific run used is recorded "
+           "per run in provenance.actual_execution_mode"
+    )
     return record
 
 
