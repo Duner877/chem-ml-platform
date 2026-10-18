@@ -678,24 +678,34 @@ class TestInstalledSnapshotsAreDiscoverable:
         candidates = module._candidate_install_dirs()
         assert module.DEFAULT_APP.resolve() in {p.resolve() for p in candidates}
 
-    def test_candidates_live_at_the_expected_depths(self):
-        """Both layouts must be reachable, not just the one that exists today.
+    def test_candidates_live_at_the_expected_depths(self, tmp_path, monkeypatch):
+        """Discovery must reach a launcher however deep the repo is nested.
 
-        Asserted behaviourally: a synthetic tree holding both shapes must yield
-        both.  Checking the source text instead would pass on a comment.
+        Asserted behaviourally against a synthetic tree.  The previous version
+        of this test grepped the function's *source text* for ``here.parent`` --
+        which is exactly the trap this class's docstring warns about, and which
+        let a real regression through: moving the repo into ``01-源码/`` put the
+        user's install three levels up, outside the two fixed levels searched,
+        so ``--all-installed`` quietly stopped seeing the app they launch.
+
+        A fixed search depth is the bug; every ancestor must be searched.
         """
         module = self._tool()
-        found = module._candidate_install_dirs()
-        assert found, "discovery must find at least the repo's own build output"
-        # The tool searches the working folder *and its parent*, which is the
-        # only reason ``Desktop/0.5/`` was reachable when the repo is in
-        # ``Desktop/0.5 - 副本/``.
-        import inspect as _inspect
 
-        source = _inspect.getsource(module._candidate_install_dirs)
-        assert "here.parent" in source, (
-            "the search must leave the working folder too -- the install lived "
-            "next to it, not inside it"
+        launcher = tmp_path / "Chem ML Platform" / "resources" / "app"
+        launcher.mkdir(parents=True)
+        # Repo nested two folders below the working folder, which holds the
+        # install as a sibling -- the exact shape that broke discovery.
+        repo = tmp_path / "work" / "01-源码" / "v0.7.3-active"
+        repo.mkdir(parents=True)
+
+        monkeypatch.setattr(module, "ROOT", repo)
+        monkeypatch.setattr(module, "DEFAULT_APP", repo / "desktop" / "dist")
+
+        found = {p.resolve() for p in module._candidate_install_dirs()}
+        assert launcher.resolve() in found, (
+            "the installed copy the user launches must be discovered even when "
+            "the repo sits several levels below the folder containing it"
         )
 
     def test_no_candidate_is_a_backup_directory(self):

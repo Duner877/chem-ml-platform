@@ -304,10 +304,18 @@ def _candidate_install_dirs() -> list[Path]:
 
     # The repo lives inside a working folder (``Desktop/0.5 - 副本/``) while the
     # launcher often lives in a *sibling* of that folder (``Desktop/0.5/``).
-    # Both levels are searched, plus the desktop itself, because guessing wrong
-    # here is what let a stale install survive.
-    roots = {here, here.parent}
-    for base in roots:
+    # Every ancestor is searched, not just the first two: a fixed depth silently
+    # loses the installed copy the moment the repo is moved one level deeper,
+    # and the symptom is a reassuring ``AGREES`` about a snapshot nobody runs --
+    # which is the exact failure this function exists to prevent.  When that
+    # regression bit, moving the repo into ``01-源码/v0.7.3-active/`` dropped the
+    # user's install from the report without a single error.
+    bases = [here, *here.parents]
+    # ``here.parents`` runs all the way to the drive root; the desktop layout we
+    # care about is never that deep, and each extra level costs a directory
+    # listing.  Four levels covers a repo nested well inside a working folder.
+    bases = bases[:4]
+    for base in bases:
         # The repo's own build output and its install copy.
         for child in sorted(base.glob("*")):
             offer(child / "desktop" / "dist" / "win-unpacked" / "resources" / "app")
