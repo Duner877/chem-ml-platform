@@ -143,13 +143,16 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 | `release_manifest` | FAIL | **PASS** | 清单记录 `0.7.3@ffa8585`，工作树已到 `0.7.3@ab803b7`。**预期行为**：清单记录的是上一次提交，必须在本轮源码提交后重新生成（见项目发布顺序：安装包 → 归档 → 清单 → 门禁）。修复后 `OK: manifest matches 0.7.3@ab803b7 (21/21 built)` |
 | `credential_scan` | ERROR | **PASS** | **本轮引入的真 bug**：给该阶段加豁免集时把 `patterns`（`re.Pattern` 列表）当成 `(pattern, label)` 元组用，`matched.group(...)` 抛 `AttributeError`。改为直接取 `p.search(text)` 的 match 对象 |
 
-最终 PASS 的 26 个阶段中与本轮相关者：`python_compile` 244 个一方文件 ·
-`unit_tests` 304/304 · `integration_tests` 187/187 · `security_tests` 135/135 ·
+最终 PASS 的 26 个阶段中与本轮相关者：`python_compile` 248 个一方文件 ·
+`unit_tests` 396/396 · `integration_tests` 187/187 · `security_tests` 135/135 ·
 `benchmark_tests` 18/18 · `desktop_tests` 45/45 · `host_dependent_tests` 7/7 ·
-`demo_workflows_dry_run` 9/9 · `reproducibility_verification` 2 工作流 × 2 次 ·
+`workflow_json_validation` 10 个工作流合法 · `demo_workflows_dry_run` **10/10**
+（本轮新增的工作流 10 已被门禁自动发现并跑通）·
+`reproducibility_verification` 2 工作流 × 2 次 ·
 `frontend_typescript` `tsc clean` · `frontend_production_build` ·
 `electron_installer_artefact`（75.5 MiB）· `version_consistency` ·
-`dependency_licenses` · `license_sbom_report` · `release_cleanliness`。
+`release_manifest`（`OK: manifest matches 0.7.3@5257df2`）·
+`dependency_licenses` · `license_sbom_report` · `credential_scan` · `release_cleanliness`。
 
 唯一 SKIP 为 `host_gpu_status`：`torch 2.14.1+cpu present, CUDA not available on this host`
 ——本机无 GPU，属环境事实而非跳过未做。
@@ -263,8 +266,14 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 
 | 运行方式 | 结果 |
 | --- | --- |
-| **联网实跑**（NVIDIA `openai/gpt-oss-20b`） | `completed` · **26.5 s** · 0 失败节点 · Markdown 产物已生成 |
+| **联网实跑**（仓库，NVIDIA `openai/gpt-oss-20b`） | `completed` · **26.5 s** · 0 失败节点 · Markdown 产物已生成 |
+| **联网实跑**（**用户实际启动的那一份**，无 torch 宿主机） | `completed` · **36.8 s** · `engine=remote` · 密钥环读取成功 |
 | **离线降级**（无 Key） | `completed` · 两个 LLM 节点 `engine=offline` · 结构完整 |
+
+第二行是最有说服力的一条：它跑在 `C:\Users\hanku\Desktop\0.5\Chem ML Platform\
+resources\app`——用户双击打开的那份，不开浏览器、不带 torch，且 Key 是从**系统密钥环**
+读出来的（不依赖任何环境变量或明文文件）。这同时验证了 §2.7 里「密钥环凭据读不出来」
+那处修复在真实部署形态下确实生效。
 
 联网运行的成稿确实承接了策划：策划给出标题「实验室安全新标杆：380 g 智能安全帽」，
 正文首节即为「轻量化设计：380 g 的佩戴体验」，四节结构与结尾行动号召齐备。
