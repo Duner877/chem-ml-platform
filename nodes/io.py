@@ -16,7 +16,15 @@ from typing import Any, Dict, List
 
 from workflow_engine.errors import NodeInputError
 from workflow_engine.node_base import ParameterSpec, ScientificNode
-from workflow_engine.objects import Image, Molecule, ScientificObject, Spectrum, Table, Text
+from workflow_engine.objects import (
+    Image,
+    Molecule,
+    ScientificObject,
+    ScientificReport,
+    Spectrum,
+    Table,
+    Text,
+)
 from workflow_engine.parsers import SUPPORTED_EXTENSIONS, load_spectra
 from workflow_engine.ports import Port
 from workflow_engine.registry import register_node

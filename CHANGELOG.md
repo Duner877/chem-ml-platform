@@ -4,7 +4,45 @@
 
 ## [0.7.3] — 2026-10
 
-**三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。发布前对 0.7.3 新增代码做了两轮独立审查，本轮修复的缺陷列在末尾「修复 Fixed」中。
+**三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。发布前对 0.7.3 新增代码做了两轮独立审查，另有一轮针对交付产物的外部审计（4 项 P0 + 7 项 P1）。此后补充 NVIDIA NIM 第三方 Key 入口与内容创作工作流（`workflows/10`），并修复由此暴露的三处既有缺陷。所有修复列在「修复 Fixed」中。
+
+### 新增 Added
+
+**NVIDIA NIM 第三方 API Key 入口（按实测校准，非按文档）**
+- `ai_runtime/credentials.py::PROVIDERS` 新增 `nvidia`（`NVIDIA_API_KEY`，`https://integrate.api.nvidia.com/v1`）；`nodes/ai/llm.py::PROVIDERS` 同步新增同名条目——**这两张 provider 表是分开的**，只改一张会得到「界面能选、画布用不了」或反之。
+- 平台实际行为与公开文档多处不符，全部按实测写死：
+  - `GET /v1/models` 返回 81 个 id，但其中多数调用即 **HTTP 410**（已下线）或 404。**模型目录不等于可用清单**，填错必须报「模型已下线」而不是「Key 无效」。
+  - `deepseek-ai/deepseek-v4.1-flash` 在目录内、接受连接，但**连续 300 秒零字节**；同一把 Key 下 `openai/gpt-oss-20b`（1.0 s）与 `stepfun-ai/step-5-preview`（1.7 s）返回 200。探测模型取实测可用的那个，用户指定的模型名作为可选值保留。
+  - 免费额度主力模型均为**推理模型**：token 预算不足时返回 `content: null` + `finish_reason: length`。实测 400 token 正文为空，3000 token 才出稿。这一条写进了参数说明。
+- `_classify_http` 新增 410 / 503 两类，并支持 NVIDIA 的 **RFC-7807 响应形态**（`title` / `detail`；此前只读 `error.message`，遇到这套响应会把全部解释丢掉）。三类处置互不塌缩：换模型 / 稍后重试 / 换 Key。
+- `tests/test_v07_3_nvidia_provider.py`（新增）16 项。测试内**不含任何 Key**——依赖付费 Key 的测试在 CI 里必然被跳过或失败，而跳过的测试什么也没验证。
+
+**公众号营销文写作工作流**
+- `workflows/10_wechat_marketing_copy.json`（新增）：卖点输入 → **选题策划** → **正文撰写** → 汇总 → 导出 Markdown。两个 LLM 节点分工而非一步到位：策划的输出是撰写的显式上游输入，成稿因此可被对照检查；单次调用往往正文与自己的提纲脱节。
+- 无 Key 时两个节点都降级为内置确定性摘要器并标注 `engine=offline`——文档结构仍然完整，但文字不是模型生成的；这一点写在 `metadata.limitations_zh` 里，而不是留给用户猜。
+- `tests/test_v07_3_wechat_workflow.py`（新增）10 项，全部走离线路径。
+
+### 修复 Fixed
+
+**`ExportNode` 导出 Markdown 时必然崩溃**
+`nodes/io.py` 在 markdown 分支里用了 `ScientificReport`，而模块顶部的 import 没有它。第一次导出报告为 Markdown 即 `NameError`。此前从未暴露：已发布的工作流导出的都是 JSON/CSV，这条分支一次都没跑过。`py_compile` 通过、导入期检查通过——只有真正执行到那一行才会失败。
+
+**LLM 链路丢数据：下游模型会编造上游内容**
+`LLMNode._render_context` 把所有输入交给 `ScientificObject.summary()`，而 `Text.summary()` 是 **120 字符预览**（节点卡片需要，设计如此）。策划节点写出的 742 字策划，传给撰写节点时只剩前 120 字，撰写节点在信息缺失下**自信地写了一篇关于「智慧烹饪机」的营销文**——不报错、不告警、输出看起来完全合理。
+
+判据不是「返回值是不是字符串」，而是**展示用截断绝不能出现在数据路径上**。`Text` 改为全文传递，其余类型维持 `summary()` 不变。回归 `tests/test_v07_3_llm_context.py` 6 项，已反向验证（退回旧行为时 3 项确实失败）。
+
+**密钥环里的凭据读不出来**
+`_stored_secrets` 只查环境变量与本地文件，**从不查系统密钥环**，而同一模块的 `_source_of` 查了。后果不是显示不一致这么轻：在有可用密钥环、且未导出环境变量的机器上（重启后的常态），界面 `source` 显示 `keyring`、配置状态却显示未配置，而 `test_credential` 读的正是 `_stored_secrets`，于是刚保存的 Key 探测结果永远是「未配置凭据」。
+
+**推理路径不读用户配置的 endpoint**
+`set_credential` 与 `test_credential` 都支持 `base_url` 覆盖（P1-1 已修探测侧），但 `LLMNode._complete` 仍调硬编码表。自建网关 / 私有 NVIDIA 镜像的用户会「对着自己的镜像探测、对着公网调用」。
+
+**模型返回 `content: null` 被读成字符串 "None"**
+`str(message.get("content", ""))` 在键存在而值为 `null` 时返回 `"None"`——一个**非空但毫无内容**的回答，看起来像模型答过了。新增 `_choice_text`（`or ""` 兜底）与 `_choice_reasoning`（兼容 `reasoning_content` / `reasoning` / `thinking` 三种字段名），正文为空时回落到思考轨迹：用户看到的是「模型想了但预算不够」，而不是「模型没答」。
+
+**静态扫描：节点模块里未被 import 的类名**
+新增 `tests/test_v07_3_unbound_names.py`（60 项）。用 AST 比较加载的名字与模块实际绑定的名字，覆盖 `nodes/` 全包。缺 import 对 `py_compile`、导入期检查、类型检查全都不可见，只有执行到那一行才失败——而一个以「运行各种节点组合」为卖点的平台，不能指望有人恰好点到那条路径。扫描器自带两条自检（能抓出它被写来抓的形状，且不误报正常 import）。
 
 ### 新增 Added
 

@@ -1,0 +1,153 @@
+{
+  "name": "公众号营销文写作 / WeChat Marketing Copy",
+  "description": "输入产品卖点与目标人群，先由模型产出选题策划（标题备选、卖点排序、开头钩子），再据此撰写公众号正文成稿，最后汇总为可交付的结构化稿件并导出 Markdown。",
+  "version": "0.7.3",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Content",
+    "tags": [
+      "marketing",
+      "copywriting",
+      "WeChat",
+      "LLM",
+      "content"
+    ],
+    "language": "zh",
+    "task": "Turn product selling points into a publishable WeChat Official Account article: plan first, then draft.",
+    "engine": "external:LLM (provider configurable; offline fallback is deterministic)",
+    "data_source": "user-supplied selling points (Text node)",
+    "expected_outputs": [
+      "text",
+      "table",
+      "report"
+    ],
+    "provenance_zh": "两个 LLMNode：策划与撰写分工。策划节点的输出作为撰写节点的上游输入，避免一步到位时标题与正文风格脱节。未配置 API Key 时两个节点都降级为内置确定性摘要器，engine 字段标记为 offline——稿件结构仍然完整，但文字不是模型生成的。",
+    "provenance_en": "Two LLMNodes with split duties: the planner's output feeds the writer, which avoids a title/body style mismatch in a single pass. Without an API key both degrade to the built-in deterministic summariser, flagged engine=offline -- the document structure survives but the prose is not model-generated.",
+    "limitations_zh": "文案质量取决于所配模型的创作能力；免费额度模型（如 NVIDIA NIM 的 openai/gpt-oss-20b）为推理型，需把 max_tokens 调到 2000 以上否则正文为空。平台不校验事实与合规性，发布前需人工复核。",
+    "limitations_en": "Copy quality depends entirely on the configured model. Free-tier models (e.g. openai/gpt-oss-20b on NVIDIA NIM) are reasoning models and need max_tokens above 2000 or the body comes back empty. The platform validates neither facts nor compliance; a human must review before publishing."
+  },
+  "nodes": [
+    {
+      "id": "brief",
+      "type": "TextInputNode",
+      "label": "产品卖点与人群",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": {
+        "text": "产品：实验室级智能安全帽\n核心卖点：\n1) 轻量 380g，长时间佩戴不疲劳\n2) 内置跌落与撞击传感器，异常自动记录\n3) 与实验安全管理系统打通，班次数据可追溯\n目标人群：高校实验室与化工企业的安全员\n语气：专业、克制，不用夸张词",
+        "language": "zh"
+      },
+      "label_en": "Selling points and audience"
+    },
+    {
+      "id": "plan",
+      "type": "LLMNode",
+      "label": "选题策划",
+      "position": {
+        "x": 300,
+        "y": 0
+      },
+      "params": {
+        "provider": "nvidia",
+        "model": "openai/gpt-oss-20b",
+        "system_prompt": "你是一名资深中文新媒体策划。你只做策划，不写正文，直接给出策划结果，不要解释你的思考过程。",
+        "instruction": "阅读下面的产品卖点，输出一份公众号选题策划，包含：3 个备选标题（标注各自角度）、卖点优先级排序、一句话开头钩子、建议的正文小标题结构。",
+        "temperature": 0.7,
+        "max_tokens": 3000,
+        "timeout_s": 180.0,
+        "json_output": false
+      },
+      "label_en": "Topic planning"
+    },
+    {
+      "id": "write",
+      "type": "LLMNode",
+      "label": "正文撰写",
+      "position": {
+        "x": 620,
+        "y": 0
+      },
+      "params": {
+        "provider": "nvidia",
+        "model": "openai/gpt-oss-20b",
+        "system_prompt": "你是一名资深中文文案。直接给出成稿，不要解释，不要复述策划内容。",
+        "instruction": "依据上游的选题策划，写一篇公众号营销文成稿：用一个标题、开头钩子、3 至 4 个小标题分节，每节 2 至 3 句，结尾一句行动号召。全文控制在 600 字以内。",
+        "temperature": 0.8,
+        "max_tokens": 4000,
+        "timeout_s": 240.0,
+        "json_output": false
+      },
+      "label_en": "Draft writing"
+    },
+    {
+      "id": "assemble",
+      "type": "ReportBuilderNode",
+      "label": "汇总稿件",
+      "position": {
+        "x": 940,
+        "y": 0
+      },
+      "params": {
+        "title": "公众号营销文成稿",
+        "abstract": "由选题策划与正文撰写两个 LLM 节点串行产出的公众号稿件。策划在前、撰写在后，标题与正文风格因此保持一致。",
+        "language": "zh",
+        "include_tables": true,
+        "include_provenance": true
+      },
+      "label_en": "Assemble document"
+    },
+    {
+      "id": "publish",
+      "type": "ExportNode",
+      "label": "导出 Markdown",
+      "position": {
+        "x": 1260,
+        "y": 0
+      },
+      "params": {
+        "filename": "wechat_marketing_copy",
+        "format": "md"
+      },
+      "label_en": "Export Markdown"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "brief",
+      "source_port": "text",
+      "target": "plan",
+      "target_port": "prompt"
+    },
+    {
+      "id": "e2",
+      "source": "plan",
+      "source_port": "text",
+      "target": "write",
+      "target_port": "context"
+    },
+    {
+      "id": "e3",
+      "source": "write",
+      "source_port": "text",
+      "target": "assemble",
+      "target_port": "text"
+    },
+    {
+      "id": "e4",
+      "source": "plan",
+      "source_port": "text",
+      "target": "assemble",
+      "target_port": "text"
+    },
+    {
+      "id": "e5",
+      "source": "assemble",
+      "source_port": "report",
+      "target": "publish",
+      "target_port": "data"
+    }
+  ]
+}

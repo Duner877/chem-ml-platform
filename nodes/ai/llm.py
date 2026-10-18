@@ -46,6 +46,17 @@ PROVIDERS: Dict[str, Dict[str, str]] = {
         "base": "https://api.deepseek.com/v1",
         "env": "DEEPSEEK_API_KEY",
     },
+    # NVIDIA NIM: an OpenAI-compatible gateway in front of NVIDIA-hosted open
+    # models, with a free tier -- worth having as its own entry because its
+    # model ids are namespaced (``vendor/model``) and its catalogue contains
+    # end-of-life ids that answer 410.  Verified live on 2026-10-18:
+    # ``openai/gpt-oss-20b`` returned HTTP 200 in ~1 s with the same key that
+    # got zero bytes from ``deepseek-ai/deepseek-v4.1-flash``.
+    "nvidia": {
+        "model": "openai/gpt-oss-20b",
+        "base": "https://integrate.api.nvidia.com/v1",
+        "env": "NVIDIA_API_KEY",
+    },
     "qwen": {
         "model": "qwen-plus",
         "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -165,13 +176,54 @@ def _chat_openai_compatible(
     response.raise_for_status()
     payload = response.json()
     choices = payload.get("choices") or []
-    content = ""
-    if choices:
-        message = choices[0].get("message") or {}
-        content = str(message.get("content", ""))
+    content = _choice_text(choices)
+    reasoning = _choice_reasoning(choices)
+    # A reasoning model spends its whole budget on thinking and returns
+    # ``content: null`` with ``finish_reason: "length"`` (measured against
+    # ``openai/gpt-oss-20b`` on NVIDIA NIM, 2026-10-18).  Reporting that as an
+    # empty answer is indistinguishable from the provider failing, so the
+    # reasoning trace is surfaced instead -- an operator can see the model
+    # thought and ran out of room, which is a different fix from "no key".
+    if not content and reasoning:
+        content = reasoning
     return _Completion(
         content, "remote", model, (time.perf_counter() - started) * 1000.0
     )
+
+
+def _choice_text(choices: Any) -> str:
+    """The assistant text of an OpenAI-shaped choice list.
+
+    ``str(message.get("content", ""))`` was wrong in a way that only shows up
+    against real gateways: when the key is present but the value is ``null``,
+    ``.get("content", "")`` returns ``None`` and the workflow is handed the
+    literal string ``"None"`` -- a non-empty answer that says nothing.
+    """
+    if not isinstance(choices, list) or not choices:
+        return ""
+    message = choices[0].get("message") if isinstance(choices[0], dict) else None
+    if not isinstance(message, dict):
+        return ""
+    return str(message.get("content") or "").strip()
+
+
+def _choice_reasoning(choices: Any) -> str:
+    """The thinking trace, under the three field names gateways actually use.
+
+    ``reasoning_content`` (DeepSeek/Qwen style), ``reasoning`` (OpenAI-style
+    responses), and ``thinking`` (Anthropic-style blocks) all appear in the
+    wild; picking one would silently drop the trace for the others.
+    """
+    if not isinstance(choices, list) or not choices:
+        return ""
+    message = choices[0].get("message") if isinstance(choices[0], dict) else None
+    if not isinstance(message, dict):
+        return ""
+    for key in ("reasoning_content", "reasoning", "thinking"):
+        value = message.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
 
 
 def _chat_anthropic(
@@ -246,8 +298,11 @@ class LLMNode(ScientificNode):
 
     name = "LLM Reasoner"
     category = "AI/LLM"
-    description = "调用 GPT / Claude / Gemini / Qwen / DeepSeek / Ollama 进行科学推理与解释生成。"
-    tags = ["ai", "llm", "gpt", "claude", "gemini", "reasoning"]
+    description = (
+        "调用 GPT / Claude / Gemini / Qwen / DeepSeek / NVIDIA NIM / Ollama "
+        "进行科学推理与解释生成。"
+    )
+    tags = ["ai", "llm", "gpt", "claude", "gemini", "nvidia", "reasoning"]
     #: v0.7.1 task E/F: cloud providers need the network; prompts may carry
     #: sensitive research data, so the permission prompt warns and local /
     #: offline providers are the honest fallback.
@@ -271,14 +326,22 @@ class LLMNode(ScientificNode):
             "模型供应商",
             options=list(PROVIDERS),
         ),
-        ParameterSpec("model", "string", "", "模型名（留空用默认值）"),
+        ParameterSpec("model", "string", "",
+                      "模型名（留空用默认值）。NVIDIA 需填 vendor/model 形式，"
+                      "如 openai/gpt-oss-20b"),
         ParameterSpec("api_key_env", "string", "", "API Key 环境变量名（覆盖默认）"),
         ParameterSpec("system_prompt", "text",
                       "You are a rigorous analytical chemist. Reason step by step and cite the evidence you were given.",
                       "系统提示词"),
         ParameterSpec("instruction", "text", "", "附加指令（拼在上下文之后）"),
         ParameterSpec("temperature", "number", 0.2, "采样温度", min=0.0, max=2.0, step=0.05),
-        ParameterSpec("max_tokens", "integer", 1024, "最大输出 token", min=16, max=32768),
+        # 1024 is enough for a chat model but not for a reasoning model: those
+        # spend the budget thinking and then answer ``content: null``.  Measured
+        # on ``openai/gpt-oss-20b`` via NVIDIA NIM (2026-10-18): 400 tokens
+        # returned an empty answer, 3000 returned the finished text.
+        ParameterSpec("max_tokens", "integer", 1024,
+                      "最大输出 token。推理模型（gpt-oss、step-、nemotron reasoning）"
+                      "需调到 2000 以上，否则正文为空", min=16, max=32768),
         ParameterSpec("timeout_s", "number", 30.0, "请求超时", unit="s", min=1.0, max=600.0),
         ParameterSpec("json_output", "boolean", True, "要求模型输出 JSON"),
     ]
@@ -338,11 +401,24 @@ class LLMNode(ScientificNode):
     # -- internals ---------------------------------------------------------- #
     @staticmethod
     def _render_context(value: Any) -> str:
-        """Render the objects connected to ``context`` as readable text."""
+        """Render the objects connected to ``context`` as readable text.
+
+        ``Text`` is special-cased to its full body.  ``ScientificObject.summary()``
+        is by design a 120-character preview -- correct for a node card, wrong
+        here: a chain that feeds one LLM's answer into the next would give the
+        second model a truncated fragment.  Measured on workflow 10 (a planner
+        writing 742 characters of plan), the downstream writer saw only the
+        first 120 and invented an unrelated product.  Truncation must be a
+        display decision, never a data-path one.
+        """
         chunks: List[str] = []
         for item in collect(value):
             if isinstance(item, ScientificReport):
                 chunks.append(render_report_markdown(item))
+            elif isinstance(item, Text):
+                body = str(getattr(item, "text", "") or "").strip()
+                if body:
+                    chunks.append(body)
             elif isinstance(item, ScientificObject):
                 chunks.append(item.summary())
             elif isinstance(item, (list, tuple)):
@@ -371,6 +447,7 @@ class LLMNode(ScientificNode):
 
         temperature = float(self.get_param("temperature", 0.2))
         max_tokens = int(self.get_param("max_tokens", 1024))
+        base = _effective_base(provider_key, provider["base"])
         try:
             if provider_key == "anthropic":
                 return _chat_anthropic(
@@ -381,12 +458,31 @@ class LLMNode(ScientificNode):
                     api_key, model, system, user, temperature, max_tokens, timeout
                 )
             return _chat_openai_compatible(
-                provider["base"], api_key or "ollama", model, system, user,
+                base, api_key or "ollama", model, system, user,
                 temperature, max_tokens, timeout,
             )
         except Exception as exc:  # noqa: BLE001 - offline fallback
             self.log(f"provider {provider_key} unavailable: {exc}")
             return _Completion(_offline_text(user, str(exc)), "offline", model, 0.0)
+
+
+def _effective_base(provider_key: str, default: str) -> str:
+    """The base URL to actually call: the user's override, else the built-in.
+
+    The credential panel has always accepted a ``base_url`` override -- a
+    self-hosted gateway, a proxy, or a private NVIDIA NIM mirror -- and
+    ``test_credential`` reads it (v0.7.3 audit P1-1).  The inference path did
+    not: it sent every request to the hard-coded table above, so a user who
+    configured an endpoint was probed against it and then called against
+    something else.  Both halves must read the same setting.
+    """
+    try:
+        from ai_runtime.config import load_config
+
+        stored = str(getattr(load_config(), "base_urls", {}).get(provider_key, "") or "")
+    except Exception:  # noqa: BLE001 - a broken config must not break a run
+        stored = ""
+    return stored.strip() or default
 
 
 def _offline_text(user: str, reason: str = "") -> str:

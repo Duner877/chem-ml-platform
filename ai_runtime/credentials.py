@@ -201,6 +201,34 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         notes_en="Native Messages API, not the OpenAI-compatible format.",
     ),
     ProviderSpec(
+        id="nvidia",
+        label_zh="NVIDIA NIM（云端，免费额度）",
+        label_en="NVIDIA NIM (cloud, free tier)",
+        env_vars=("NVIDIA_API_KEY",),
+        docs_url="https://build.nvidia.com/",
+        # OpenAI-compatible gateway in front of NVIDIA-hosted open models.
+        default_base_url="https://integrate.api.nvidia.com/v1",
+        # Measured on 2026-10-18 against a live key: ``/v1/models`` lists 81 ids,
+        # but many of them answer HTTP 410 (end-of-life) or 404, and a few
+        # (deepseek-ai/deepseek-v4.1-flash, z-ai/glm-5.3*) accept the
+        # connection and then never answer.  So the catalogue is *not* a
+        # availability list and the probe model has to be one measured to
+        # return 200 in ~1 s.  ``openai/gpt-oss-20b`` did; the failure modes
+        # above are what ``_classify_http`` now distinguishes.
+        probe_model="openai/gpt-oss-20b",
+        notes_zh=(
+            "NVIDIA 开放模型托管平台，OpenAI 兼容接口，有免费额度。"
+            "模型名形如 meta/llama-3.3-70b-instruct、openai/gpt-oss-20b；"
+            "平台的模型目录包含已下线模型，填错会得到 410/404 或长时间无响应。"
+        ),
+        notes_en=(
+            "NVIDIA's host for open models behind an OpenAI-compatible API, "
+            "with a free tier. Model ids look like meta/llama-3.3-70b-instruct "
+            "or openai/gpt-oss-20b. The catalogue includes end-of-life ids, so "
+            "a wrong name yields 410/404 or no answer at all."
+        ),
+    ),
+    ProviderSpec(
         id="ollama",
         label_zh="Ollama（本地）",
         label_en="Ollama (local)",
@@ -309,13 +337,32 @@ def credential_backend() -> str:
 
 
 def _stored_secrets() -> Dict[str, str]:
-    """Every stored secret as ``provider id -> value``, keyring first."""
+    """Every stored secret as ``provider id -> value``, keyring first.
+
+    The keyring read was missing while :func:`_source_of` had it, so on a
+    machine with a working keyring and no environment variable -- which is the
+    normal state after a restart -- the listing said a key was missing while
+    the *source* column for the same provider said ``keyring``.  Worse than an
+    inconsistency: :func:`test_credential` reads its secret from here, so the
+    probe reported "no credential configured" for a key the user had just
+    saved, and only after restarting in an environment that happened to export
+    the variable did it work.  A credential that is stored but unreadable is
+    the same failure as no credential at all.
+    """
     out: Dict[str, str] = {}
     file_data = _read_file()
+    keyring = _keyring()
     for spec in PROVIDERS:
         value = ""
         if spec.primary_env and (os.environ.get(spec.primary_env) or "").strip():
             value = os.environ[spec.primary_env].strip()
+        if not value and keyring is not None:
+            try:
+                value = str(
+                    keyring.get_password(_keyring_service(), spec.id) or ""  # type: ignore[union-attr]
+                ).strip()
+            except Exception:  # noqa: BLE001 - one locked entry must not hide the rest
+                value = ""
         if not value:
             entry = file_data.get(spec.id)
             if isinstance(entry, dict):
@@ -658,9 +705,34 @@ def _classify_http(code: str, body: str, spec: ProviderSpec, api_key: str) -> Tu
         parsed = json.loads(body)
         error = parsed.get("error")
         detail = str((error or {}).get("message") if isinstance(error, dict) else error or "")
+        if not detail:
+            # NVIDIA NIM (and any RFC 7807 style gateway) answers
+            # ``{"title": "Gone", "detail": "..."}`` with no ``error`` object.
+            # Reading only ``error.message`` threw that whole explanation away
+            # and left a bare HTTP status to report.
+            detail = str(parsed.get("detail") or parsed.get("message") or "")
+            title = str(parsed.get("title") or "").strip()
+            if detail and title and title.lower() not in detail.lower():
+                detail = f"{title}: {detail}"
     except json.JSONDecodeError:
         detail = body
     detail = _redact(detail[:300], api_key)
+
+    # Measured against a live NVIDIA key on 2026-10-18: its catalogue lists
+    # end-of-life model ids, which answer HTTP 410 Gone, and its serving tiers
+    # answer HTTP 503 when saturated.  Neither means the key is wrong -- the
+    # remedy is "choose another model" or "retry shortly", and reporting
+    # either as a bad credential sends the user to regenerate a key that works.
+    if code == "410":
+        return False, PROBE_MODEL_UNSUPPORTED, (
+            f"HTTP 410: {spec.probe_model or 'this model'} has been retired on "
+            f"this platform ({detail or 'end of life'}) -- choose another model id"
+        )
+    if code == "503":
+        return False, PROBE_RATE_LIMITED, (
+            "HTTP 503: the serving tier is saturated right now "
+            f"({detail or 'resource exhausted'}) -- the key is fine, retry shortly"
+        )
 
     # "No such model" is a probe artefact, not a credential problem.  The
     # message has to *name* the model for this to fire: a bare 404 "not found"

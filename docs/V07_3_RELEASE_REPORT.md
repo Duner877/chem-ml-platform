@@ -66,38 +66,52 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 
 | 检查 | 结果 | 说明 |
 | --- | --- | --- |
-| `python -m pytest tests/ -q` | **689/689 通过**，见 §2.1 | 全量套件 |
+| `python -m pytest tests/ -q` | **781/781 通过**，见 §2.1 | 全量套件 |
 | `tests/check_fwi.py` | **`all checks passed`**，见 §2.2 | FWI 合成验收 |
-| `python scripts/quality_gate.py` | **PASSED**（26/0/1/0/0），见 §2.3 | 质量门禁 |
+| `python scripts/quality_gate.py` | **PASSED**，见 §2.3 | 质量门禁 |
 | `python scripts/version.py --check` | `OK: every artefact agrees on 0.7.3` | 已扩展覆盖发布文档 |
 | `python scripts/license_report.py --check` | `[PASS]`，见 §2.4 | 第三方许可证 |
 | `python scripts/dataset_governance.py --check` | `OK: 10 dataset metadata records are consistent` | 数据集治理 |
 | `python -m node_registry --write` + `scripts/node_catalog.py --check` | `99 nodes / 30 categories` · `OK` | 注册表与 README 同步 |
-| `python scripts/package.py` | 420 文件 · `scan : clean` | 归档后密钥扫描 |
+| `python scripts/package.py` | `scan : clean`，见 §2.5 | 归档后密钥扫描 |
 | 前端 `npm run build`（tsc + vite） | `tsc clean` · 3 files，见 §2.5 | 生产构建 |
-| `desktop` 构建（NSIS） | `Setup 0.7.3.exe` · 75.5 MiB，见 §2.5 | 安装包 |
-| `scripts/refresh_desktop_payload.py --verify --all-installed` | 2/3 STALE → **3/3 AGREES**，见 §2.5 | 桌面载荷一致性 |
+| `desktop` 构建（NSIS） | `Setup 0.7.3.exe`，见 §2.5 | 安装包 |
+| `scripts/refresh_desktop_payload.py --verify --all-installed` | 3/3 `AGREES`，见 §2.5 | 桌面载荷一致性 |
 | 工作流 09 在**用户实际启动的那一份**、**无 torch** 宿主机实跑 | `completed` · 0 失败，见 §2.6 | 桌面版真实依赖 |
+| **NVIDIA NIM 探测 + 端到端推理（真实 Key）** | `ok` · HTTP 200 · 1.7 s；`engine=remote` · 5.8 s，见 §2.7 | 第三方 Key 入口 |
+| **工作流 10 公众号营销文（联网实跑）** | `completed` · 26.5 s · 0 失败，见 §2.8 | 内容创作工作流 |
 
 ### 2.1 全量测试
 
-`python -m pytest tests/ -q` → **689 项执行，全部通过，零失败零错误**。分类普查（call phase）：
+`python -m pytest tests/ -q` → **781 项执行，全部通过，零失败零错误**。分类普查（call phase）：
 
 | 分类 | 通过 |
 | --- | --- |
-| unit | 304 |
+| unit | 396 |
 | integration | 187 |
 | security | 135 |
 | benchmark | 18 |
 | desktop | 45 |
-| **合计** | **689** |
+| **合计** | **781** |
 
-门禁另以独立阶段跑 `host_dependent_tests`（7/7 通过），门禁自报
-`tests collected across stages: 695`——两个数字口径不同：689 是单次 `pytest tests/`
-的执行数，695 是门禁各阶段 marker 合并后的收集数。
+门禁另以独立阶段跑 `host_dependent_tests`（7/7 通过），门禁自报的收集数含该阶段——
+两个数字口径不同：781 是单次 `pytest tests/` 的执行数，门禁自报的是各阶段 marker
+合并后的收集数。
 
-其中本轮新增 4 个测试文件（打包密钥 41 项 · 凭据探测 23 项 · 引擎守卫 13 项 ·
-执行模式 11 项），并扩充了地震 FWI 测试（19 → 24 项）与凭据 gitignore 测试。
+新增 7 个测试文件：
+
+| 文件 | 项数 | 锁住的问题 |
+| --- | --- | --- |
+| `test_v07_3_packaging_secrets.py` | 41 | 归档不得携带凭据 / `.env*` / 私有插件 |
+| `test_v07_3_credential_probe.py` | 23 | 每家服务商的探测形态与失败分类 |
+| `test_v07_3_engine_tool_guard.py` | 13 | 守卫在 GUI / REST / CLI 三条入口上都生效 |
+| `test_v07_3_execution_modes.py` | 11 | 声明模式 vs 实际模式分离 |
+| `test_v07_3_unbound_names.py` | 60 | 节点模块不得使用未 import 的类名 |
+| `test_v07_3_nvidia_provider.py` | 16 | 410 / 503 与「Key 无效」必须区分 |
+| `test_v07_3_wechat_workflow.py` | 10 | 工作流 10 的结构与离线降级 |
+
+另新增 `test_v07_3_llm_context.py` 6 项（上游文本不得被截断），并扩充地震 FWI 测试
+（19 → 24 项）与凭据 gitignore 测试。
 
 ### 2.2 FWI 验收
 
@@ -201,6 +215,63 @@ Agent 工具守卫），并在**一轮独立审计之后**关闭了全部 4 项 
 且 `cfl_margin = 1.81` 证明反演是在一个数值上可接受的起始模型上开始的——此前
 「误差下降」缺少可比对的基线。这条比任何单元测试都更能说明交付有效，因为它跑在
 用户双击打开的那一份上，且该机器**没有 torch**。
+
+### 2.7 第三方 API Key 入口：NVIDIA NIM（真实 Key 实测）
+
+凭据入口新增 `nvidia`（`NVIDIA_API_KEY` → `https://integrate.api.nvidia.com/v1`），
+凭据目录与 LLM 节点目录**两张表同步新增**。以下全部为对一把真实 Key 的实测结果，
+**不是文档摘抄**——平台实际行为与公开文档多处不符。
+
+| 检查 | 实测结果 |
+| --- | --- |
+| `GET /v1/models` | HTTP 200 · 0.53 s · 返回 **81** 个 id |
+| 连通性探测 `test_credential("nvidia")` | `ok` · HTTP 200 · **1.7 s** |
+| 凭据存储后端 | **系统密钥环**（`WinVaultKeyring`），非明文文件 |
+| `LLMNode` 端到端推理 | `engine=remote` · **5.8 s** · 中文营销文案正常返回 |
+
+**平台行为与文档不符的三处（均已按实测写死）：**
+
+1. **模型目录 ≠ 可用清单。** 目录里的多数 id 调用即 **HTTP 410**（end of life）或
+   404，例如 `meta/llama-3.1-8b-instruct` 返回 `410 Gone: reached its end of life on
+   2026-08-26`。因此 410 被单独分类为 `model_unsupported`（换模型），**绝不并入
+   `invalid_key`**——后者会让用户去重生成一把本来可用的 Key。
+2. **用户指定的 `deepseek-ai/deepseek-v4.1-flash` 当前无响应。** 它在目录中、接受
+   连接，但**连续 300 秒零字节**；同一把 Key 下 `openai/gpt-oss-20b`（1.0 s）与
+   `stepfun-ai/step-5-preview`（1.7 s）返回 200。判定为该模型后端不可用，**不是**
+   Key 或网络问题（Key 已由同端点其他模型证明有效）。探测模型因此取实测可用的
+   `openai/gpt-oss-20b`；用户指定的模型名仍可手动填入。
+3. **免费额度主力模型是推理模型。** token 预算不足时返回 `content: null` +
+   `finish_reason: length`：实测 `max_tokens=400` 正文为空，`max_tokens=3000` 才出稿
+   （`finish_reason: stop`）。原先的解析会把 `null` 读成字符串 `"None"`——一个非空
+   但毫无内容的回答，看起来像模型答过了。
+
+**由此发现并修复的三处既有缺陷**（详见 CHANGELOG）：
+
+- `ExportNode` 的 Markdown 分支用了未 import 的 `ScientificReport`，**导出报告为
+  Markdown 必然崩溃**；此前从未暴露，因为已发布工作流导出的都是 JSON/CSV。
+- `LLMNode._render_context` 用 `Text.summary()`（**120 字符预览**）转发上游文本，
+  742 字策划只剩前 120 字传给下游，下游模型在信息缺失下**自信地写了一篇关于
+  「智慧烹饪机」的营销文**——不报错、不告警、输出看着完全合理。展示用截断不能
+  出现在数据路径上。
+- `_stored_secrets` 从不查系统密钥环（有 Key 环的机器上，刚保存的 Key 探测永远
+  返回「未配置凭据」）；`LLMNode` 也从不读用户配置的 `base_url` 覆盖。
+
+### 2.8 公众号营销文工作流（联网实跑）
+
+`workflows/10_wechat_marketing_copy.json`：卖点输入 → **选题策划** → **正文撰写**
+→ 汇总 → 导出 Markdown。两个 LLM 节点分工，策划的输出是撰写的显式上游输入。
+
+| 运行方式 | 结果 |
+| --- | --- |
+| **联网实跑**（NVIDIA `openai/gpt-oss-20b`） | `completed` · **26.5 s** · 0 失败节点 · Markdown 产物已生成 |
+| **离线降级**（无 Key） | `completed` · 两个 LLM 节点 `engine=offline` · 结构完整 |
+
+联网运行的成稿确实承接了策划：策划给出标题「实验室安全新标杆：380 g 智能安全帽」，
+正文首节即为「轻量化设计：380 g 的佩戴体验」，四节结构与结尾行动号召齐备。
+
+> 第一次实跑时**正文完全跑题**（写成了「智慧烹饪机」）。根因不是模型，是上游策划
+> 被 `Text.summary()` 截断成 120 字符——见 §2.7。这类缺陷没有任何工具会主动报告：
+> 不抛异常、不产生告警，输出是一篇语法完整、格式正确、只是答非所问的文章。
 
 ---
 
