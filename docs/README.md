@@ -25,6 +25,12 @@
 | [V07_1_COMPLETENESS_AUDIT.md](V07_1_COMPLETENESS_AUDIT.md) | v0.7.1 整改**前**差距审计（时点文档，已被发布报告取代） |
 | [node-catalog.md](node-catalog.md) | 全节点能力目录（运行时状态分级，由 `scripts/node_catalog.py` 生成） |
 
+## 案例
+
+| 文档 | 内容 |
+| --- | --- |
+| [cases/al-fcc/README.md](cases/al-fcc/README.md) | **铝面心立方晶胞**：弛豫 → 能带 → 态密度，含 6 张实跑产物图、可信部分与局限逐条标注 |
+
 快速上手请先阅读仓库根目录的 [README.md](../README.md)。
 
 ## 阅读顺序建议

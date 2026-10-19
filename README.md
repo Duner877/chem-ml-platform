@@ -21,6 +21,7 @@
 ## 目录
 
 - [这是什么](#这是什么)
+- [案例：铝晶胞弛豫与能带态密度](#案例铝晶胞弛豫与能带态密度)
 - [快速开始](#快速开始)
 - [架构](#架构)
 - [节点目录](#节点目录)
@@ -55,6 +56,69 @@ Chem ML Platform 把**科学研究**拆成可复用的节点，用有向无环�
 | **确定性优先**  | 每个计算都有固定随机种子，同样的输入永远得到同样的输出                                                                                   |
 | **优雅降级**   | 外部工具（ORCA、GROMACS、PubChem、LLM API）不可用时自动回退到内置引擎，并在元数据中标注 `engine`                                             |
 | **零伪代码**   | 仓库中每个文件都是可运行实现                                                                                                |
+
+---
+
+## 案例：铝晶胞弛豫与能带态密度
+
+完整说明见 **[docs/cases/al-fcc/README.md](docs/cases/al-fcc/README.md)**。
+工作流文件：[`workflows/11_solid_state_dft.json`](workflows/11_solid_state_dft.json)
+— 14 个节点 / 16 条边，本机实跑 `completed` / 0 错误。
+
+给一块铝，问三个问题：最舒服的晶格常数是多少（弛豫）、电子能怎么分布（能带）、
+费米面附近有没有态（态密度，是金属还是绝缘体）。本案例把三次计算串成一张图，
+并让后两次跑在**第一次弛豫出来的那个晶胞**上。
+
+```
+MaterialInputNode  铝(fcc) a=4.05Å
+        │
+        ▼
+ABACUSNode cell_relax ──► a 4.050 → 3.987 Å（实验 4.05，误差 −1.6%）
+        │ material（弛豫后的晶胞，不是原始的）
+        ├─────────────┬─────────────┐
+        ▼             ▼             ▼
+   bands 节点      dos 节点      pdos 节点
+   a=3.987Å       a=3.987Å      a=3.987Å
+   gap 0.000eV    DOS(E_F)=      p 轨道主导
+   E_F −6.851eV   0.2152 st/eV
+        │             │             │
+        ▼             ▼             ▼
+    能带图.png     态密度.png    PDOS.png
+```
+
+**能量 / 力 / 应力**三条收敛曲线量纲不同且相差三到四个数量级，因此拆成三张图。
+
+### 六张产物图（本机实跑产出）
+
+| 产物图                                        | 关键结果                                                     |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| ![能带](docs/cases/al-fcc/Al_能带图.png)        | 4 条带；`gap = 0.000 eV`，费米面处有带穿过 → 金属             |
+| ![态密度](docs/cases/al-fcc/Al_态密度_DOS.png)  | 费米面处态密度非零 → 金属                                     |
+| ![PDOS](docs/cases/al-fcc/Al_投影态密度_PDOS.png)| 费米面附近几乎全部来自 p 轨道，s 贡献极小 → 符合 3s²3p¹ 构型 |
+| ![能量](docs/cases/al-fcc/Al_弛豫能量收敛.png)  | 单调下降，第 2 步起平台                                       |
+| ![力](docs/cases/al-fcc/Al_弛豫力收敛.png)      | 残余力 \|F\| 降到 ~6×10⁻⁴ eV/Å                               |
+| ![应力](docs/cases/al-fcc/Al_弛豫应力收敛.png)  | \|stress\| 降到 ~7×10⁻³ GPa                                 |
+
+为什么只有 4 条带：Al 原胞 1 个原子 × 4 个轨道（1s + 3p），`d` 轨道数为 0。
+**这是结构性上限，不是调参问题**——要更多带必须引入 d 轨道或用超胞。
+
+### 这份结果该怎么看
+
+**可信的部分**：晶格常数误差 −1.6 %；带隙 0 与「金属性」判定完全正确；
+六张图全部交付，弛豫后的晶格常数在三个下游节点间一致（容差 0.01 Å，有测试断言）。
+
+**不可信的部分（如实标注）**：内置 Al 参数的**能带色散方向目前是颠倒的**——
+Γ 点最低带（−3.00 eV）高于 X 点最低带（−10.68 eV），物理上应当相反。
+直接翻转符号会得到 −25 eV 的非物理结果，所以这是 onsite 能与 hopping 积分
+需要**整体重新标定**，不是符号写反了。
+
+另外，Al 的电声/强关联修正不在本模型内。**绝对数值请以 DFT 为准**，
+本案例的价值在于「全流程可跑通、产物完整、跨节点自洽可校验」，
+不在于可发表的电子结构结果。
+
+`ABACUSNode` 在未安装 ABACUS 的机器上会回退到内置引擎 `internal:tight-binding`，
+同时照常生成 ABACUS 的 `INPUT` / `STRU` 输入卡；装了 ABACUS 则走 `external:abacus`
+并真实读取 `BANDS_*.dat` / `OUT.ABACUS`。
 
 ---
 
@@ -500,6 +564,7 @@ cd node_sdk/nodejs && npm test
 
 | 文档                                                                                                                | 内容                                       |
 | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| [docs/cases/al-fcc/README.md](docs/cases/al-fcc/README.md)                                                              | **晶胞案例**：铝 fcc 弛豫 + 能带 + 态密度，6 张实跑产物图、可信与不可信逐条标注 |
 | [docs/architecture.md](docs/architecture.md)                                                                      | 四层架构、引擎执行模型、事件总线与缓存、科学对象协议、设计决策记录        |
 | [docs/node-development.md](docs/node-development.md)                                                              | 从零编写科学节点：端口、参数、`execute()` 契约、调试、测试、自检清单 |
 | [docs/workflow-format.md](docs/workflow-format.md)                                                                | 工作流 JSON 完整规范：节点、边（含简写形式）、端口兼容、运行时输入注入   |
@@ -525,3 +590,18 @@ v1.0           Scientific Intelligence Operating System
 ## 许可证
 
 [Apache License 2.0](LICENSE)
+
+### 第三方与上游引用
+
+| 内容 | 说明 |
+| --- | --- |
+| 随包依赖 | 12 个 Python + 153 个 npm 包，逐条列在 [NOTICE](NOTICE) 与 [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)，许可信息取自真实安装元数据；SBOM 见 [sbom.json](sbom.json) |
+| 外部科研软件 | ABACUS / CP2K / GROMACS / LAMMPS / ORCA / PSI4 / Quantum ESPRESSO 等**不随包分发**，平台仅在用户已安装时调用，缺失时回退内置近似 |
+| 上游项目引用 | `agent_runtime/tool_guard.py` 借鉴了 [TencentCloud/Octop](https://github.com/TencentCloud/Octop)（MIT）的工具守卫**思路**（单点收口、风险分级、规则外置）。**未复制任何上游源文件**，具体「借了什么 / 没借什么」见 NOTICE 与许可清单第 8 节 |
+| 样例数据 | `datasets/` 下的数据由本项目生成或以 CC0 提供，每个数据集在 `*.metadata.json` 中自带 `license` 与 `source` 字段 |
+
+许可清单由 `scripts/license_report.py` 从真实元数据生成，`--check` 模式可验证未漂移：
+
+```bash
+python scripts/license_report.py --check
+```

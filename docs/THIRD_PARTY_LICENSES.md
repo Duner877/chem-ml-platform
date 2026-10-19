@@ -225,7 +225,18 @@
 
 - 无（未发现需要复核的强 copyleft 依赖被分发）
 
-## 8. 方法说明
+## 8. 上游项目引用（借鉴思路，**未复制代码**）
+
+下表列出本仓库**重新实现了其思路**的上游项目。仓库内**没有复制任何上游源文件**，因此不构成 Apache-2.0 意义上的再分发义务；列出的目的是可追溯：读者若认出了某个模块的设计，应能直接读到「借了什么、没借什么」，而不是去猜省略是疏忽还是意外。`MIT` 上游亦在表中记录以备核对。
+
+| module | upstream | license | borrowed | not_taken |
+|---|---|---|---|---|
+| agent_runtime/tool_guard.py, agent_runtime/tasks.py | TencentCloud/Octop <https://github.com/TencentCloud/Octop> | MIT | the tool-guard shape -- one chokepoint every tool call passes through before it runs, risk classes (allow / approval / deny) rather than a boolean, and rules held in an editable data file | the multi-user server machinery: JWT isolation, the interactive approval UI, and the ~/.octop storage layout.  Here `approval` means the caller must pass approved=True |
+
+> 「借鉴了什么 / 明确没借鉴什么」这后半句才是有用信息。只写"adapted from X" 的读者无法判断严格的部分是否也一并沿用了。
+
+
+## 9. 方法说明
 
 - Python 依赖：解析 `requirements.txt` 的声明项，再用 `importlib.metadata` 读取真实版本与许可证。
 - 前端依赖：读取 `frontend/package-lock.json` 的锁定版本与许可证字段（含传递依赖）。
