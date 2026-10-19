@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from models.materials import simulate_xrd
-from simulations.runners import ToolResult
+from simulations.runners import ToolResult, find_executable, run_tool
 from simulations.tight_binding import (
     band_gap,
     build_lattice,
@@ -34,6 +34,7 @@ from simulations.tight_binding import (
     total_energy,
 )
 from workflow_engine.objects import Material, Molecule, Spectrum, Table, Text
+from workflow_engine.errors import ExternalToolError
 
 from .base import SimulationBackend, SimulationResult
 
@@ -911,6 +912,339 @@ class ABACUSBackend(_MaterialsExternal):
     name = "abacus"
     executable = "abacus"
     input_filename = "INPUT"
+
+    #: Directory ABACUS creates for every run.
+    output_dir = "OUT.ABACUS"
+
+    def run_tool(self, input_path, workdir, timeout, exe_path=""):  # type: ignore[override]
+        """Run ABACUS the way ABACUS actually has to be run.
+
+        The base class builds ``[exe, str(input_path)]`` -- the
+        ``program <inputfile>`` convention used by ORCA and Gaussian.  ABACUS
+        does **not** accept an input file as a positional argument: it reads
+        ``INPUT`` from the current working directory and takes only switches
+        (``abacus -m mpi``, ``abacus --check-input``).  Passing the path anyway
+        is not merely ignored -- it is a different program invocation, and it
+        made the external path exercise a code route ABACUS never takes.
+
+        ``run_tool`` already sets ``cwd=workdir``, so the bare executable with
+        the deck beside it is exactly what ABACUS expects.
+        """
+        exe = find_executable(self.executable, exe_path or None)
+        if exe is None:
+            raise ExternalToolError(
+                f"{self.name}: executable '{self.executable}' not found"
+            )
+        return run_tool([exe], workdir, timeout=float(timeout))
+
+    # -- output parsing ------------------------------------------------------ #
+    # ABACUS reports essentially nothing on stdout.  The SCF table there has no
+    # "total energy:" label, and the band structure / DOS / PDOS are written to
+    # files under ``OUT.ABACUS/``.  A stdout regex therefore matches nothing,
+    # the metrics dict comes back empty, and every downstream ``.get(key, 0.0)``
+    # silently substitutes a zero -- a total energy of exactly 0.0 eV for a
+    # real aluminium calculation, with nothing raised.  These readers look at
+    # the files instead.
+
+    def _out_dir(self, result: ToolResult) -> Path:
+        root = Path(result.workdir) if result.workdir else Path.cwd()
+        return root / self.output_dir
+
+    def _read_total_energy(self, out_dir: Path) -> Optional[float]:
+        """Total energy from ``running_*.log``.
+
+        ABACUS writes ``FINAL_ETOT_IS <hartree>`` near the end of the log; the
+        value is in Hartree and is reported in several slightly different
+        spellings depending on version, so all of them are accepted.
+        """
+        # ``istate.info`` deliberately is NOT read here.  Its documented
+        # columns are "energy level index, eigenenergy, occupation number" --
+        # an attempt to take column 1 as the energy reported -145.28 eV for
+        # aluminium, which is the lowest *eigenvalue*, not the total energy.
+        # Only ``FINAL_ETOT_IS`` in the log is a total energy.
+        logs = sorted(out_dir.glob("running_*.log"))
+        for log in logs:
+            text = log.read_text(encoding="utf-8", errors="replace")
+            match = re.search(
+                r"FINAL_ETOT_IS\s*[:=]?\s*(-?\d+\.\d+(?:[eEdD][-+]?\d+)?)",
+                text,
+            )
+            if match:
+                hartree = float(match.group(1).replace("d", "e").replace("D", "e"))
+                # Hartree -> eV.  Keeping the raw value here as well means a
+                # caller can tell which convention they are looking at.
+                return hartree * 27.211386245988
+        return None
+
+    def _read_bands(self, out_dir: Path) -> Optional[Dict[str, Any]]:
+        """Read ``BANDS_<k>.dat`` -- ABACUS's band-structure output.
+
+        The file name is the documented one (``out_band 1`` produces
+        ``BANDS_1.dat``; the suffix follows the spin index), not the
+        ``band_*.dat`` shape this method originally assumed.  Layout is
+        k-major: one row per k point, one eigenvalue column per band, and the
+        k coordinate is **not** stored in the file at all -- it has to be
+        rebuilt from the ``KPT`` line-mode segments, so the x axis returned
+        here is simply the row ordinal.
+
+        Getting this wrong is silent: a wrong glob returns nothing, and the
+        caller then reports "no data" for a run that in fact succeeded.
+        """
+        files = sorted(
+            path
+            for path in out_dir.glob("*")
+            if path.name.upper().startswith("BANDS_") and path.suffix == ".dat"
+        )
+        if not files:
+            return None
+        columns: List[List[float]] = []
+        for line in files[0].read_text(encoding="utf-8", errors="replace").splitlines():
+            parts = line.split()
+            if len(parts) < 1:
+                continue
+            try:
+                values = [float(value) for value in parts]
+            except ValueError:
+                continue
+            columns.append(values)
+        if not columns:
+            return None
+        width = min(len(row) for row in columns)
+        bands = [[row[index] for row in columns] for index in range(width)]
+        return {
+            "x": [float(index) for index in range(len(columns))],
+            "bands": bands,
+        }
+
+    def _read_dos(self, out_dir: Path) -> Optional[Dict[str, Any]]:
+        """Read ``dos_0.dat`` / the DOS columns of ``dos.csv``.
+
+        ABACUS writes two whitespace-separated columns: energy in eV and the
+        DOS.  Some builds emit an ``dos.csv`` with a header line instead; the
+        header is skipped by the float() guard rather than by counting lines.
+        """
+        for name in ("dos_0.dat", "DOS_0.dat", "dos.csv", "dos_0.csv"):
+            path = out_dir / name
+            if not path.is_file():
+                continue
+            x_axis: List[float] = []
+            dos: List[float] = []
+            for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+                parts = line.split()
+                if len(parts) < 2:
+                    continue
+                try:
+                    x_axis.append(float(parts[0]))
+                    dos.append(float(parts[1]))
+                except ValueError:
+                    continue
+            if x_axis:
+                return {"x": x_axis, "y": dos}
+        return None
+
+    def _read_pdos(self, out_dir: Path) -> Optional[Dict[str, Any]]:
+        """Read ``pdos_0.dat`` -- energy plus one column per orbital.
+
+        Column 0 is energy in eV; columns 1..n are the orbital-resolved
+        densities, already band-decomposed by ABACUS itself.
+        """
+        for name in ("pdos_0.dat", "PDOS_0.dat", "pdos.csv", "pdos_0.csv"):
+            path = out_dir / name
+            if not path.is_file():
+                continue
+            x_axis: List[float] = []
+            columns: List[List[float]] = []
+            for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+                parts = line.split()
+                if len(parts) < 2:
+                    continue
+                try:
+                    values = [float(value) for value in parts]
+                except ValueError:
+                    continue
+                x_axis.append(values[0])
+                columns.append(values[1:])
+            if x_axis and columns:
+                width = min(len(row) for row in columns)
+                labels = [
+                    f"orbital {index + 1}" for index in range(width)
+                ]
+                return {
+                    "x": x_axis,
+                    "curves": [[row[i] for row in columns] for i in range(width)],
+                    "labels": labels,
+                }
+        return None
+
+    def parse_output(
+        self, result: ToolResult, system: Any, **params: Any
+    ) -> Dict[str, float]:
+        """Scalar metrics, read from ABACUS output files rather than stdout."""
+        out_dir = self._out_dir(result)
+        metrics: Dict[str, float] = {}
+        energy = self._read_total_energy(out_dir)
+        if energy is not None:
+            metrics["total_energy_ev"] = energy
+
+        bands = self._read_bands(out_dir)
+        if bands:
+            metrics["band_count"] = float(len(bands["bands"]))
+            flat = [value for band in bands["bands"] for value in band]
+            if flat:
+                metrics["band_min_ev"] = min(flat)
+                metrics["band_max_ev"] = max(flat)
+                # A Fermi level is required to state metallicity, and for
+                # aluminium the answer hinges on bands crossing it.  ABACUS
+                # prints E_Fermi in the log as well.
+                text_log = "\n".join(
+                    log.read_text(encoding="utf-8", errors="replace")
+                    for log in sorted(out_dir.glob("running_*.log"))
+                )
+                match = re.search(
+                    r"E_Fermi\s*[:=]?\s*(-?\d+\.\d+(?:[eE][-+]?\d+)?)", text_log
+                )
+                if match:
+                    e_fermi = float(match.group(1))
+                    metrics["fermi_energy_ev"] = e_fermi
+                    crossing = any(
+                        min(band) <= e_fermi <= max(band) for band in bands["bands"]
+                    )
+                    metrics["metallic"] = 1.0 if crossing else 0.0
+                    metrics["band_gap_ev"] = 0.0 if crossing else abs(
+                        metrics["band_min_ev"] - e_fermi
+                    )
+
+        dos = self._read_dos(out_dir)
+        if dos:
+            metrics["dos_points"] = float(len(dos["x"]))
+        return metrics
+
+    def build_spectrum(
+        self, system: Any, result: ToolResult, **params: Any
+    ) -> Optional[Spectrum]:
+        """Turn the parsed output files into the spectrum the node asked for.
+
+        Returns ``None`` when ABACUS produced no usable file, so the caller can
+        decide what to do -- an empty ``Spectrum`` would render as a blank
+        figure that looks like a real answer.
+        """
+        calculation = str(params.get("calculation", "scf") or "scf").lower()
+        element = str(params.get("element", "") or _primary_element(_resolve_material(system)))
+        formula = _formula(_resolve_material(system))
+        out_dir = self._out_dir(result)
+
+        if calculation == "pdos":
+            pdos = self._read_pdos(out_dir)
+            if not pdos:
+                return None
+            spectrum = Spectrum.from_arrays(
+                pdos["x"],
+                [],
+                mode="PDOS",
+                x_unit="eV",
+                y_unit="states/eV",
+                name=f"{element} projected density of states",
+            )
+            spectrum.curves = pdos["curves"]
+            spectrum.curve_labels = pdos["labels"]
+            spectrum.metadata["pdos"] = {
+                "orbitals": pdos["labels"],
+                "curves": pdos["curves"],
+                "x": pdos["x"],
+            }
+            return spectrum
+
+        if calculation == "dos":
+            dos = self._read_dos(out_dir)
+            if not dos:
+                return None
+            return Spectrum.from_arrays(
+                dos["x"],
+                dos["y"],
+                mode="DOS",
+                x_unit="eV",
+                y_unit="states/eV",
+                name=f"{formula} density of states",
+            )
+
+        bands = self._read_bands(out_dir)
+        if not bands:
+            return None
+        e_fermi = 0.0
+        for log in sorted(out_dir.glob("running_*.log")):
+            text = log.read_text(encoding="utf-8", errors="replace")
+            match = re.search(r"E_Fermi\s*[:=]?\s*(-?\d+\.\d+)", text)
+            if match:
+                e_fermi = float(match.group(1))
+        energies = [
+            [value - e_fermi for value in band] for band in bands["bands"]
+        ]
+        spectrum = Spectrum.from_arrays(
+            bands["x"],
+            energies,
+            mode="Bands",
+            x_unit="k path (2pi/alat)",
+            y_unit="E - E_F (eV)",
+            name=f"{element} band structure (ABACUS)",
+        )
+        spectrum.metadata["engine"] = "external:abacus"
+        spectrum.metadata["fermi_ev"] = e_fermi
+        return spectrum
+
+    def to_object_from_result(
+        self,
+        result: ToolResult,
+        system: Any,
+        metrics: Dict[str, float],
+        **params: Any,
+    ) -> Dict[str, Any]:
+        """Hand back a real spectrum instead of the hard-coded ``None``.
+
+        The base implementation returned ``"spectrum": None`` unconditionally,
+        so an external ABACUS run produced a node that reported success and
+        handed downstream figure nodes nothing at all -- six requested product
+        figures silently reduced to zero.  A missing output file now raises,
+        because an ABACUS run that produced no band data must not be reported
+        as a successful band-structure calculation.
+        """
+        material = _resolve_material(system)
+        formula = _formula(material)
+        calculation = str(params.get("calculation", "scf") or "scf").lower()
+
+        spectrum = None
+        if calculation in {"bands", "scf", "relax", "cell_relax", "dos", "pdos"}:
+            spectrum = self.build_spectrum(system, result, **params)
+            if spectrum is None:
+                raise ExternalToolError(
+                    f"{self.name}: run exited successfully but produced no "
+                    f"{calculation} data under {self._out_dir(result)}. "
+                    "Expected band_*.dat / dos_0.dat / pdos_0.dat there. "
+                    "Refusing to report a successful run with no spectrum."
+                )
+
+        table = Table(
+            name=f"{self.name} result",
+            columns=["quantity", "value"],
+            rows=[
+                [key, round(float(value), 6)]
+                for key, value in sorted(metrics.items())
+            ] or [["total_energy", "not reported"]],
+        )
+        summary = f"{self.name} [external:{self.executable}] {formula} ({calculation})"
+        return {
+            "material": material,
+            "spectrum": spectrum,
+            "table": table,
+            "text": Text(
+                name=self.name,
+                text=summary,
+                data={
+                    "engine": f"external:{self.executable}",
+                    "calculation": calculation,
+                    "metrics": dict(metrics),
+                },
+            ),
+        }
 
     def _params(self, system: Any, **params: Any) -> Dict[str, Any]:
         material = _resolve_material(system)

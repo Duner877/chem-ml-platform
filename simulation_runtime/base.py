@@ -128,6 +128,29 @@ class SimulationBackend:
     ) -> Dict[str, Any]:
         raise NotImplementedError
 
+    def to_object_from_result(
+        self,
+        result: ToolResult,
+        system: Any,
+        metrics: Dict[str, float],
+        **params: Any,
+    ) -> Dict[str, Any]:
+        """Stage 4 with the raw :class:`ToolResult` in hand.
+
+        ``to_object`` only receives parsed scalars, which is enough for
+        programs that print their results.  ABACUS does not: its band
+        structure, DOS and PDOS live in files under ``OUT.ABACUS/`` and are
+        multi-curve objects rather than scalars, so it needs the raw result to
+        find them.
+
+        This is a separate hook rather than an instance attribute because the
+        engine runs same-generation nodes in parallel; stashing the result on
+        ``self`` would let two ABACUS nodes clobber each other and hand a node
+        another node's spectrum.  The default keeps every existing backend's
+        behaviour identical.
+        """
+        return self.to_object(system, metrics, **params)
+
     # -- internal fallback (must be implemented) ----------------------------- #
     def internal_execute(
         self, system: Any, workdir: Path, **params: Any
@@ -165,7 +188,7 @@ class SimulationBackend:
                 return self.internal_execute(system, directory, **params)
             if result.success:
                 metrics = self.parse_output(result, system, **params)
-                ports = self.to_object(system, metrics, **params)
+                ports = self.to_object_from_result(result, system, metrics, **params)
                 return SimulationResult(
                     backend=self.name,
                     engine=f"external:{self.executable}",
