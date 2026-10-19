@@ -53,6 +53,14 @@ PROJECT_NAME = "Chem ML Platform"
 PROJECT_VERSION = _VERSION
 PROJECT_LICENSE = "Apache-2.0"
 
+#: Copyright holder.  This used to be the literal string
+#: ``"{PROJECT_NAME} contributors"``, which named nobody -- an Apache-2.0
+#: NOTICE whose holder is a placeholder tells a reader who may redistribute
+#: this and under what name exactly nothing, and the LICENSE shipped the
+#: template's own ``[yyyy] [name of copyright owner]`` for the same reason.
+#: Set here so the two files cannot drift apart again.
+COPYRIGHT_HOLDER = "Duner877"
+
 #: licences that require a human review before distribution (strong copyleft)
 _REVIEW_LICENCES = ("GPL", "AGPL", "SSPL", "CC-BY-NC", "BUSL", "Commons Clause")
 
@@ -541,7 +549,7 @@ def build_notice(
 ) -> str:
     lines = [
         f"{PROJECT_NAME} {PROJECT_VERSION}",
-        f"Copyright (c) 2026 {PROJECT_NAME} contributors",
+        f"Copyright (c) 2026 {COPYRIGHT_HOLDER}",
         "",
         f"This product is licensed under the {PROJECT_LICENSE} License; see LICENSE.",
         "",

@@ -237,3 +237,54 @@ class TestPackagingRule:
     def test_required_paths_are_shipped(self, packager, rel):
         assert packager.should_skip(Path(rel)) is False
 
+
+
+class TestCopyrightHolder:
+    """The copyright holder must name someone.
+
+    Both the LICENSE and the NOTICE shipped unfilled placeholders until
+    v0.7.3: ``LICENSE`` line 189 was Apache's own
+    ``Copyright [yyyy] [name of copyright owner]`` and the NOTICE read
+    ``Copyright (c) 2026 Chem ML Platform contributors`` -- a holder that names
+    nobody.  For an Apache-2.0 project going public that is the one line that
+    tells a reader who may redistribute it under what name, and it was the
+    blankest possible value.
+
+    The two files are generated from different sources (a static LICENSE file
+    and ``license_report.COPYRIGHT_HOLDER``), so they can drift; these tests
+    check both against each other rather than trusting either.
+    """
+
+    #: the Apache-2.0 appendix placeholder, verbatim
+    PLACEHOLDER = "Copyright [yyyy] [name of copyright owner]"
+
+    def test_holder_is_not_the_apache_template_placeholder(self, lic):
+        assert lic.COPYRIGHT_HOLDER.strip(), "copyright holder must not be empty"
+        assert "[yyyy]" not in lic.COPYRIGHT_HOLDER
+        assert "[" not in lic.COPYRIGHT_HOLDER, (
+            f"copyright holder still carries a placeholder: {lic.COPYRIGHT_HOLDER!r}"
+        )
+
+    def test_license_file_carries_the_real_holder(self, lic):
+        licence_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+        assert self.PLACEHOLDER not in licence_text, (
+            "LICENSE still ships Apache's template placeholder; run the "
+            "copyright-holder fixup so redistribution terms name a holder"
+        )
+        assert lic.COPYRIGHT_HOLDER in licence_text, (
+            "LICENSE and license_report.COPYRIGHT_HOLDER disagree -- the "
+            "Apache-2.0 appendix must name the same holder as the NOTICE"
+        )
+
+    def test_notice_and_license_agree(self, lic):
+        notice = lic.build_notice([], [], [])
+        assert f"Copyright (c) 2026 {lic.COPYRIGHT_HOLDER}" in notice
+        assert "contributors" not in notice.splitlines()[1], (
+            "NOTICE fell back to the anonymous 'contributors' holder"
+        )
+
+    def test_provenance_document_names_the_holder(self, lic):
+        provenance = (ROOT / "docs" / "PROVENANCE.md").read_text(encoding="utf-8")
+        assert lic.COPYRIGHT_HOLDER in provenance, (
+            "docs/PROVENANCE.md must name the same copyright holder as LICENSE"
+        )
