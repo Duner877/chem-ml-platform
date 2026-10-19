@@ -1,18 +1,18 @@
 # SHA256SUMS — Chem ML Platform v0.7.3 (Trusted Delivery Release)
-# commit 3636bd9 · generated 2026-10-19T05:01:12+00:00
+# commit 01099b8 · generated 2026-10-19T06:43:27+00:00
 # verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
 d2f513955f73d2f5d3cdf172c25be18c6c86b55522e03ce7b77ed08239784a7c  C:/Users/hanku/Desktop/0.5 - 副本/01-源码/Chem-ML-Platform-v0.7.3.zip
 ecb371f8ebf7249ec4b0d68225122b0b7e84ad9dfd3b70e68f69bdb65c982a0b  desktop/dist/Chem ML Platform Setup 0.7.3.exe
 fcf9daa1b4e4777a3afbdc321cbf7c2eadf30f4bf3f5a5e3f086428a385de001  desktop/dist/Chem ML Platform Setup 0.7.3.exe.blockmap
 873facbcae068c622e18de61fe2c677dd26a26c5515f1969686969185be8e24e  sbom.json
-4cddb64e39b75d64853ffef28d1d73b8648f06569612cbb8f79c85b246c5287f  output/quality_gate.json
-825d8de0872dd2ef7e904effaea97bd6628b051cb2a3e1a901646ee6e9e408ca  output/quality_gate.md
+af84903177beaf69e37e25b8f3345f825c68bfdaaa457186cbce66eda5c571f1  output/quality_gate.json
+c8bdc96742bec8e2cf690b461d298c5e4db5e8b68faf949ff8cd96a5bfc55612  output/quality_gate.md
 0b514aa13b9344372956106121e28489aed86a2f0dcda01c583f882d553cce53  output/ci_pipeline.json
 4cf497f2fa4eef56a07f907bbedd129cbc4f856114803baf020c8dfa1e73b35a  docs/THIRD_PARTY_LICENSES.md
 6dfaa4c6a103be6cbeb89d0758d804d18ca8414eb3f94270f1532820041e4ccf  docs/PROVENANCE.md
 fd01f89f24c04636914608d4786b1069b11d246158c65228da6dfe42accd2928  NOTICE
 3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661  docs/V07_2_SYNTHETIC_BENCHMARK.md
-5cc3735adb5618dc999486d93a2de553a33351230f9f58c6a7ed88fdfb6ba54b  docs/node-catalog.md
+5198cf7250ef329e10adc8b200912deae6b43d8f8b641a73a469ff63fdf0fe80  docs/node-catalog.md
 7f010d168c157323eed364bb5c005aab1c8bb7e846e675ddfc3f2a8a6da40da6  requirements.lock
 6f98177d4ad9646e483c75de26f65026e9effab18d4199837e3e40bd237a0ec4  frontend/package-lock.json
 347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6  desktop/src/runtime-probe.js
