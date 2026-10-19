@@ -1,0 +1,193 @@
+{
+  "name": "铝原胞弛豫与能带态密度 / Al primitive-cell relaxation, bands and PDOS",
+  "description": "先用内置 Slater-Koster 引擎把铝的面心立方晶格常数弛豫到总能量极小，再在**弛豫后的同一个晶胞**上计算能带与分轨道态密度，最后汇总成 HTML 报告。能带沿 Γ-X-W-K-Γ-L-W-X 高对称点路径，态密度分 s / px / py / pz 四个通道，E_F 处态密度非零即铝为金属。",
+  "metadata": {
+    "author": "Chem ML Platform",
+    "category": "Materials",
+    "tags": [
+      "solid-state",
+      "DFT",
+      "band structure",
+      "DOS",
+      "PDOS",
+      "lattice relaxation",
+      "ABACUS"
+    ],
+    "language": "zh",
+    "task": "Relax an fcc aluminium cell, then compute its band structure and orbital-resolved density of states on the relaxed cell.",
+    "engine": "internal:tight-binding (Slater-Koster two-centre; writes ABACUS INPUT/STRU decks for a cluster that has ABACUS installed)",
+    "data_source": "no external data: the element and lattice type are the inputs",
+    "expected_outputs": [
+      "material",
+      "spectrum",
+      "table",
+      "report"
+    ],
+    "provenance_zh": "与 Agent 的 solid_state_dft 配方同源：同一份 DAG 既由规则规划器生成，也存为可从 GUI 直接打开的演示工作流，因此两者不会漂移。弛豫节点返回的是**弛豫后的晶胞**，能带与态密度因此跑在同一个 a 上——这正是本工作流要演示的关键一步。",
+    "provenance_en": "Generated from the agent's solid_state_dft recipe, so the GUI demo and the autonomous plan are the same graph and cannot drift apart. The relaxation node emits the relaxed cell, which is what makes bands and PDOS run at the same lattice constant.",
+    "accuracy": "两中心紧束缚模型：Al 晶格常数误差约 1.6%，Cu/Ni/Ag 约 1-2%，过渡金属约 2%。定性趋势可信，绝对数值请以 DFT 为准。"
+  },
+  "nodes": [
+    {
+      "id": "material",
+      "type": "MaterialInputNode",
+      "label": "铝（面心立方）",
+      "params": {
+        "formula": "Al",
+        "a": 0.0
+      },
+      "position": {
+        "x": 60,
+        "y": 260
+      },
+      "label_en": "Al (fcc)"
+    },
+    {
+      "id": "relax",
+      "type": "ABACUSNode",
+      "label": "晶胞弛豫",
+      "params": {
+        "calculation": "cell_relax",
+        "lattice": "fcc",
+        "relax_steps": 25
+      },
+      "position": {
+        "x": 300,
+        "y": 260
+      },
+      "label_en": "Lattice relaxation"
+    },
+    {
+      "id": "bands",
+      "type": "ABACUSNode",
+      "label": "能带结构",
+      "params": {
+        "calculation": "bands",
+        "lattice": "fcc",
+        "band_points": 40
+      },
+      "position": {
+        "x": 560,
+        "y": 140
+      },
+      "label_en": "Band structure"
+    },
+    {
+      "id": "pdos",
+      "type": "ABACUSNode",
+      "label": "分轨道态密度",
+      "params": {
+        "calculation": "pdos",
+        "lattice": "fcc"
+      },
+      "position": {
+        "x": 560,
+        "y": 380
+      },
+      "label_en": "Projected DOS"
+    },
+    {
+      "id": "summary",
+      "type": "SummaryTableNode",
+      "label": "结果汇总",
+      "params": {
+        "max_rows": 40
+      },
+      "position": {
+        "x": 820,
+        "y": 200
+      },
+      "label_en": "Summary table"
+    },
+    {
+      "id": "report",
+      "type": "ReportBuilderNode",
+      "label": "计算报告",
+      "params": {
+        "title": "原胞弛豫与能带态密度计算报告"
+      },
+      "position": {
+        "x": 1060,
+        "y": 240
+      },
+      "label_en": "Report"
+    },
+    {
+      "id": "export",
+      "type": "ReportExportNode",
+      "label": "导出 HTML",
+      "params": {
+        "format": "html",
+        "filename": "solid_state_dft_report"
+      },
+      "position": {
+        "x": 1300,
+        "y": 240
+      },
+      "label_en": "HTML export"
+    }
+  ],
+  "edges": [
+    {
+      "source": "material",
+      "source_port": "material",
+      "target": "relax",
+      "target_port": "material"
+    },
+    {
+      "source": "relax",
+      "source_port": "material",
+      "target": "bands",
+      "target_port": "material"
+    },
+    {
+      "source": "relax",
+      "source_port": "material",
+      "target": "pdos",
+      "target_port": "material"
+    },
+    {
+      "source": "relax",
+      "source_port": "material",
+      "target": "summary",
+      "target_port": "material"
+    },
+    {
+      "source": "bands",
+      "source_port": "table",
+      "target": "summary",
+      "target_port": "table"
+    },
+    {
+      "source": "relax",
+      "source_port": "material",
+      "target": "report",
+      "target_port": "material"
+    },
+    {
+      "source": "summary",
+      "source_port": "table",
+      "target": "report",
+      "target_port": "table"
+    },
+    {
+      "source": "bands",
+      "source_port": "text",
+      "target": "report",
+      "target_port": "text"
+    },
+    {
+      "source": "pdos",
+      "source_port": "spectrum",
+      "target": "report",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "report",
+      "source_port": "report",
+      "target": "export",
+      "target_port": "report"
+    }
+  ],
+  "version": "0.7.3"
+}

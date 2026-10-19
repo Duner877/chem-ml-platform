@@ -182,6 +182,7 @@
 
 | name | license | installed | homepage |
 |---|---|---|---|
+| abacus | LGPL-3.0 | False | https://abacus.ustc.edu.cn/ |
 | cp2k | GPL-2.0 | False | https://www.cp2k.org/ |
 | gaussian | Commercial license; NOT bundled with the platform | False | https://gaussian.com/ |
 | gromacs | LGPL-2.1 | False | https://www.gromacs.org/ |

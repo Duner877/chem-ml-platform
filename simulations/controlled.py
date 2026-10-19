@@ -129,6 +129,12 @@ TOOL_ALLOWLIST: Dict[str, ExternalToolSpec] = {
         domain="materials", homepage="https://www.quantum-espresso.org/",
         license="GPL-2.0",
     ),
+    "abacus": ExternalToolSpec(
+        key="abacus", executable="abacus", aliases=("abacus.exe",),
+        description="ABACUS plane-wave / LCAO DFT",
+        domain="materials", homepage="https://abacus.ustc.edu.cn/",
+        license="LGPL-3.0",
+    ),
 }
 
 

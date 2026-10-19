@@ -10,7 +10,7 @@ engine (:mod:`simulations.tight_binding`) plus a powder XRD pattern
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from simulation_runtime import run
 from workflow_engine.errors import NodeInputError
@@ -21,11 +21,11 @@ from workflow_engine.registry import register_node
 
 from nodes._helpers import build_material, first_of
 
-__all__ = ["SolidStateNode", "VASPNode", "QuantumESPRESSONode"]
+__all__ = ["SolidStateNode", "VASPNode", "QuantumESPRESSONode", "ABACUSNode"]
 
-CALCULATIONS = ["scf", "relax", "bands", "dos", "xrd"]
+CALCULATIONS = ["scf", "relax", "cell_relax", "bands", "dos", "pdos", "xrd"]
 FUNCTIONALS = ["pbe", "pbesol", "lda", "scan", "hse06"]
-LATTICE_KEYS = ("sc", "bcc", "fcc")
+LATTICE_KEYS = ("sc", "bcc", "fcc", "hcp")
 
 
 class SolidStateNode(ScientificNode):
@@ -37,15 +37,18 @@ class SolidStateNode(ScientificNode):
     # -- v0.7.2 task P0-05: execution provenance ------------------------ #
     capability_status = "experimental"
     execution_mode = "internal_approximation"
-    required_dependencies = ["vasp (vasp_std)", "quantum_espresso (pw.x)", "cp2k"]
+    required_dependencies = ["vasp (vasp_std)", "quantum_espresso (pw.x)", "abacus", "cp2k"]
     input_constraints = (
-        "需要 Material 或带晶格的 Molecule；仅支持 sc/bcc/fcc 三种晶格语义。"
-        "不接受实验测量的非理想结构（缺陷、表面、非晶）。"
+        "需要 Material 或带晶格的 Molecule；支持 sc/bcc/fcc/hcp 四种晶格语义，"
+        "默认取原胞。不接受实验测量的非理想结构（缺陷、表面、非晶）。"
     )
     validation_evidence = []
     limitations = [
-        "内置紧束缚 / 近自由电子模型，能带与态密度只用于流程演示，不作定量声明。",
-        "未安装 VASP / Quantum ESPRESSO / CP2K 时结果必须视为近似。",
+        "内置 Slater-Koster 紧束缚 / 近自由电子模型，能带与态密度反映元素、晶格常数与"
+        "压缩的正确趋势；晶格常数弛豫对 Al fcc 误差约 1%，过渡金属约 10%，属定性结果。",
+        "未安装 VASP / Quantum ESPRESSO / ABACUS / CP2K 时结果必须视为近似，"
+        "engine 字段会标注 internal:tight-binding。",
+        "两中心模型每个晶胞只处理一种元素；多元素化合物按过渡金属优先取一种计算，属已知近似。",
         "不处理自旋极化、强关联与范德华修正。",
     ]
     reproducibility_level = "deterministic"
@@ -62,15 +65,26 @@ class SolidStateNode(ScientificNode):
     ]
 
     parameters = [
-        ParameterSpec("formula", "string", "LiFePO4", "化学式（无上游时使用）"),
+        ParameterSpec("formula", "string", "Al", "化学式（无上游时使用）"),
+        ParameterSpec("element", "string", "", "元素符号（留空从化学式推断，如 Al）",
+                      advanced=True),
         ParameterSpec("calculation", "enum", "scf", "计算类型", options=CALCULATIONS),
         ParameterSpec("functional", "enum", "pbe", "泛函", options=FUNCTIONALS),
         ParameterSpec("cutoff_ev", "number", 520.0, "平面波截断能", unit="eV", min=50.0),
         ParameterSpec("kpoints", "integer", 4, "k 点网格", min=1, max=32),
-        ParameterSpec("lattice", "enum", "sc", "Bravais 格子（内置紧束缚用）", options=list(LATTICE_KEYS), advanced=True),
-        ParameterSpec("hopping", "number", -1.0, "最近邻跃迁积分 t", unit="eV", advanced=True),
-        ParameterSpec("a", "number", 0.0, "晶胞参数 a（0 = 自动）", unit="Å", advanced=True),
-        ParameterSpec("b", "number", 0.0, "晶胞参数 b", unit="Å", advanced=True),
+        ParameterSpec("lattice", "enum", "fcc", "Bravais 格子", options=list(LATTICE_KEYS)),
+        ParameterSpec(
+            "a", "number", 0.0,
+            "晶格常数 a（Å）。0 = 用材料自带值或实验值；例如 Al fcc 为 4.05",
+            unit="Å",
+        ),
+        ParameterSpec("hopping", "number", 0.0,
+                      "跃迁积分整体缩放（eV，0 = 用元素表默认值）", advanced=True),
+        ParameterSpec("band_points", "integer", 40, "能带路径每段取点数", min=8, max=200,
+                      advanced=True),
+        ParameterSpec("relax_steps", "integer", 25, "晶格弛豫最大步数", min=1, max=200,
+                      advanced=True),
+        ParameterSpec("b", "number", 0.0, "晶胞参数 b（XRD 用）", unit="Å", advanced=True),
         ParameterSpec("c", "number", 0.0, "晶胞参数 c", unit="Å", advanced=True),
         ParameterSpec("alpha", "number", 90.0, "晶胞角 α", unit="°", advanced=True),
         ParameterSpec("beta", "number", 90.0, "晶胞角 β", unit="°", advanced=True),
@@ -107,7 +121,38 @@ class SolidStateNode(ScientificNode):
 
     # -- execution ------------------------------------------------------------- #
     def execute(self, inputs: Dict[str, Any], ctx: Any = None) -> Dict[str, Any]:
+        return self._run(inputs, ctx)
+
+    def _run(
+        self, inputs: Dict[str, Any], ctx: Any = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Shared body of every solid-state node.
+
+        ``extra`` lets a subclass add back-end specific parameters without
+        copying the whole call -- duplicating this dispatch is how the ABACUS
+        node would have ended up forwarding a different default for ``a`` than
+        VASP does, which is the exact class of drift this method exists to stop.
+        """
         material = self._resolve_material(inputs)
+        # Per-node output directory.  Every solid-state node writes a file with
+        # a *fixed* name -- ``tb.in``, ``INPUT``, ``Al_primitive.STRU`` -- so two
+        # of them sharing one directory overwrite each other.  That is invisible
+        # while the engine runs generation by generation with one worker, and
+        # becomes a real data race the moment independent calculations (bands,
+        # pdos) run concurrently: both write `Al_primitive.STRU`, and which one
+        # survives is decided by thread timing.  Keying the directory on the
+        # node id also matches the platform rule that products are named by id
+        # and never overwrite.
+        workdir = None
+        if ctx is not None:
+            workdir = Path(ctx.run_dir) / str(self.node_id or self.node_type())
+        # ``a`` used to be forwarded as ``get_param("a", 10.33) or 10.33``, which
+        # meant the node never passed 0 and the back-end could not tell "user set
+        # 10.33" from "user set nothing" -- so every solid-state run silently used
+        # a 10.33 Å cell whatever the element.  Passing the real value lets the
+        # back-end resolve it (parameter -> material -> measured) and say which
+        # one it used.
         result = run(
             "materials",
             material,
@@ -116,11 +161,14 @@ class SolidStateNode(ScientificNode):
             functional=str(self.get_param("functional", "pbe")),
             cutoff_ev=float(self.get_param("cutoff_ev", 520.0)),
             kpoints=int(self.get_param("kpoints", 4) or 4),
-            lattice=str(self.get_param("lattice", "sc")),
-            hopping=float(self.get_param("hopping", -1.0)),
-            a=float(self.get_param("a", 10.33) or 10.33),
-            b=float(self.get_param("b", 6.01) or 6.01),
-            c=float(self.get_param("c", 4.69) or 4.69),
+            lattice=str(self.get_param("lattice", "fcc")),
+            element=str(self.get_param("element", "") or ""),
+            hopping=float(self.get_param("hopping", 0.0) or 0.0),
+            band_points=int(self.get_param("band_points", 40) or 40),
+            relax_steps=int(self.get_param("relax_steps", 25) or 25),
+            a=float(self.get_param("a", 0.0) or 0.0),
+            b=float(self.get_param("b", 0.0) or 0.0),
+            c=float(self.get_param("c", 0.0) or 0.0),
             alpha=float(self.get_param("alpha", 90.0) or 90.0),
             beta=float(self.get_param("beta", 90.0) or 90.0),
             gamma=float(self.get_param("gamma", 90.0) or 90.0),
@@ -128,10 +176,52 @@ class SolidStateNode(ScientificNode):
             exe_path=str(self.get_param("exe_path", "") or ""),
             timeout=float(self.get_param("timeout_s", 1800.0)),
             force_internal=bool(self.get_param("force_internal", False)),
-            workdir=Path(ctx.run_dir) if ctx is not None else None,
+            workdir=workdir,
+            **(extra or {}),
         )
+        text = result.ports.get("text")
         self.log(f"{self.node_type()} -> {result.engine}")
+        if text is not None and getattr(text, "text", ""):
+            # Surface the headline result in the node log too: a user reading the
+            # console should not have to open the inspector to learn whether the
+            # run was a metal.
+            self.log(str(text.text)[:200])
         return result.ports
+
+
+@register_node
+class ABACUSNode(SolidStateNode):
+    """ABACUS SCF / relaxation / band / DOS / XRD wrapper.
+
+    Writes a complete ``INPUT`` + ``STRU`` deck whether or not ABACUS is
+    installed, so the files can be taken to a cluster that has it.
+    """
+
+    name = "ABACUS"
+    category = "Simulation/Materials"
+    description = (
+        "生成 ABACUS 输入（INPUT/STRU）并运行；未安装时使用内置 Slater-Koster "
+        "紧束缚引擎，输出 STRU、能带、态密度与分轨道态密度。"
+    )
+    tags = ["simulation", "materials", "abacus", "dft", "bands", "dos"]
+    aliases = ["ABACUS", "abacus"]
+    icon = "AB"
+    executable = "abacus"
+    backend_name = "abacus"
+
+    parameters = list(SolidStateNode.parameters) + [
+        ParameterSpec("orbital", "enum", "lcao", "轨道基组类型",
+                      options=["lcao", "pw", "lcao_in_pw", "lialc"], advanced=True),
+        ParameterSpec("ecutwfc", "number", 100.0,
+                      "平面波截断能（Ry）。LCAO 基组下同样写入 INPUT",
+                      unit="Ry", min=10.0, advanced=True),
+    ]
+
+    def execute(self, inputs: Dict[str, Any], ctx: Any = None) -> Dict[str, Any]:
+        return self._run(inputs, ctx, extra={
+            "orbital": str(self.get_param("orbital", "lcao")),
+            "ecutwfc": float(self.get_param("ecutwfc", 100.0) or 100.0),
+        })
 
 
 @register_node

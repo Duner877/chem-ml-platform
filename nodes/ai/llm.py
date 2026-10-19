@@ -355,7 +355,7 @@ class LLMNode(ScientificNode):
         provider = PROVIDERS.get(provider_key)
         if provider is None:
             raise NodeInputError(f"LLMNode: unknown provider {provider_key!r}")
-        model = str(self.get_param("model", "") or "").strip() or provider["model"]
+        model = str(self.get_param("model", "") or "").strip() or _configured_model(provider_key) or provider["model"]
         system = str(self.get_param("system_prompt", "") or "")
         wants_json = bool(self.get_param("json_output", True))
         timeout = float(self.get_param("timeout_s", 30.0))
@@ -464,6 +464,25 @@ class LLMNode(ScientificNode):
         except Exception as exc:  # noqa: BLE001 - offline fallback
             self.log(f"provider {provider_key} unavailable: {exc}")
             return _Completion(_offline_text(user, str(exc)), "offline", model, 0.0)
+
+
+def _configured_model(provider_key: str) -> str:
+    """The model the user picked for this provider in the API-key panel.
+
+    The panel can now fetch the provider's own ``/models`` catalogue, so the
+    choice a user makes there is a deployment decision -- and one that has to
+    reach inference.  Precedence is: the node's explicit ``model`` parameter,
+    then this stored choice, then the built-in default in :data:`PROVIDERS`.
+    Falling straight through to the built-in default made the catalogue
+    read-only: the user picked a model NVIDIA still serves while the default
+    was an id that answers 410.
+    """
+    try:
+        from ai_runtime.credentials import provider_model
+
+        return provider_model(provider_key)
+    except Exception:  # noqa: BLE001 - a missing config must not break a run
+        return ""
 
 
 def _effective_base(provider_key: str, default: str) -> str:

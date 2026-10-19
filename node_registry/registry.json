@@ -61,6 +61,108 @@
   ],
   "nodes": [
     {
+      "node_name": "ABACUS",
+      "type": "ABACUSNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "material",
+          "data_type": "Any",
+          "description": "上游材料（材料 / 分子）",
+          "optional": true,
+          "multi": true,
+          "description_en": "Upstream material (material / molecule)"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "material",
+          "data_type": "Material",
+          "description": "带计算性质的材料",
+          "optional": false,
+          "multi": false,
+          "description_en": "Material with computed properties"
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "能带 / 态密度 / 衍射图",
+          "optional": false,
+          "multi": false,
+          "description_en": "Band structure / density of states / diffractogram"
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "计算结果",
+          "optional": false,
+          "multi": false,
+          "description_en": "Calculation result"
+        },
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "计算报告",
+          "optional": false,
+          "multi": false,
+          "description_en": "Calculation report"
+        }
+      ],
+      "author": "",
+      "description": "生成 ABACUS 输入（INPUT/STRU）并运行；未安装时使用内置 Slater-Koster 紧束缚引擎，输出 STRU、能带、态密度与分轨道态密度。",
+      "name_zh": "ABACUS",
+      "category_zh": "模拟 / 材料",
+      "description_en": "生成 ABACUS 输入（INPUT/STRU）并运行；未安装时使用内置 Slater-Koster 紧束缚引擎，输出 STRU、能带、态密度与分轨道态密度。",
+      "category": "Simulation/Materials",
+      "tags": [
+        "simulation",
+        "materials",
+        "abacus",
+        "dft",
+        "bands",
+        "dos"
+      ],
+      "module": "nodes.simulation.materials_sim",
+      "capabilities": [
+        "requires_external_software",
+        "experimental"
+      ],
+      "implementation_status": "experimental",
+      "availability": "unavailable",
+      "deterministic": true,
+      "required_software": [
+        "abacus"
+      ],
+      "missing_software": [
+        "abacus"
+      ],
+      "capability_status": "unavailable",
+      "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation",
+        "external"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
+      "required_dependencies": [
+        "vasp (vasp_std)",
+        "quantum_espresso (pw.x)",
+        "abacus",
+        "cp2k"
+      ],
+      "input_constraints": "需要 Material 或带晶格的 Molecule；支持 sc/bcc/fcc/hcp 四种晶格语义，默认取原胞。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
+      "validation_evidence": [],
+      "limitations": [
+        "内置 Slater-Koster 紧束缚 / 近自由电子模型，能带与态密度反映元素、晶格常数与压缩的正确趋势；晶格常数弛豫对 Al fcc 误差约 1%，过渡金属约 10%，属定性结果。",
+        "未安装 VASP / Quantum ESPRESSO / ABACUS / CP2K 时结果必须视为近似，engine 字段会标注 internal:tight-binding。",
+        "两中心模型每个晶胞只处理一种元素；多元素化合物按过渡金属优先取一种计算，属已知近似。",
+        "不处理自旋极化、强关联与范德华修正。"
+      ],
+      "reproducibility_level": "deterministic",
+      "capability_status_note": "a declared dependency is missing in this environment"
+    },
+    {
       "node_name": "AFLOW",
       "type": "AFLOWNode",
       "version": "0.7.3",
@@ -3115,7 +3217,7 @@
         }
       ],
       "author": "",
-      "description": "调用 GPT / Claude / Gemini / Qwen / DeepSeek / Ollama 进行科学推理与解释生成。",
+      "description": "调用 GPT / Claude / Gemini / Qwen / DeepSeek / NVIDIA NIM / Ollama 进行科学推理与解释生成。",
       "name_zh": "大模型推理",
       "category_zh": "AI / 大语言模型",
       "description_en": "Call GPT / Claude / Gemini / Qwen / DeepSeek / Ollama for scientific reasoning and explanation generation.",
@@ -3126,6 +3228,7 @@
         "gpt",
         "claude",
         "gemini",
+        "nvidia",
         "reasoning"
       ],
       "module": "nodes.ai.llm",
@@ -4908,13 +5011,15 @@
       "required_dependencies": [
         "vasp (vasp_std)",
         "quantum_espresso (pw.x)",
+        "abacus",
         "cp2k"
       ],
-      "input_constraints": "需要 Material 或带晶格的 Molecule；仅支持 sc/bcc/fcc 三种晶格语义。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
+      "input_constraints": "需要 Material 或带晶格的 Molecule；支持 sc/bcc/fcc/hcp 四种晶格语义，默认取原胞。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
       "validation_evidence": [],
       "limitations": [
-        "内置紧束缚 / 近自由电子模型，能带与态密度只用于流程演示，不作定量声明。",
-        "未安装 VASP / Quantum ESPRESSO / CP2K 时结果必须视为近似。",
+        "内置 Slater-Koster 紧束缚 / 近自由电子模型，能带与态密度反映元素、晶格常数与压缩的正确趋势；晶格常数弛豫对 Al fcc 误差约 1%，过渡金属约 10%，属定性结果。",
+        "未安装 VASP / Quantum ESPRESSO / ABACUS / CP2K 时结果必须视为近似，engine 字段会标注 internal:tight-binding。",
+        "两中心模型每个晶胞只处理一种元素；多元素化合物按过渡金属优先取一种计算，属已知近似。",
         "不处理自旋极化、强关联与范德华修正。"
       ],
       "reproducibility_level": "deterministic",
@@ -5649,7 +5754,7 @@
           "name": "report",
           "data_type": "Text",
           "description": "上游反演节点的完整结果（JSON），提供后才有误差与验证数据",
-          "optional": false,
+          "optional": true,
           "multi": false,
           "description_en": "上游反演节点的完整结果（JSON），提供后才有误差与验证数据"
         },
@@ -5665,9 +5770,17 @@
           "name": "truth",
           "data_type": "Image",
           "description": "可选真值剖面（Image；提供后才计算评分）",
-          "optional": false,
+          "optional": true,
           "multi": false,
           "description_en": "可选真值剖面（Image；提供后才计算评分）"
+        },
+        {
+          "name": "forward_qc",
+          "data_type": "Table",
+          "description": "可选正演 QC（SeismicForwardNode.energy：各炮能量与 CFL 裕度）",
+          "optional": true,
+          "multi": false,
+          "description_en": "可选正演 QC（SeismicForwardNode.energy：各炮能量与 CFL 裕度）"
         }
       ],
       "outputs": [
@@ -7039,13 +7152,15 @@
       "required_dependencies": [
         "vasp (vasp_std)",
         "quantum_espresso (pw.x)",
+        "abacus",
         "cp2k"
       ],
-      "input_constraints": "需要 Material 或带晶格的 Molecule；仅支持 sc/bcc/fcc 三种晶格语义。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
+      "input_constraints": "需要 Material 或带晶格的 Molecule；支持 sc/bcc/fcc/hcp 四种晶格语义，默认取原胞。不接受实验测量的非理想结构（缺陷、表面、非晶）。",
       "validation_evidence": [],
       "limitations": [
-        "内置紧束缚 / 近自由电子模型，能带与态密度只用于流程演示，不作定量声明。",
-        "未安装 VASP / Quantum ESPRESSO / CP2K 时结果必须视为近似。",
+        "内置 Slater-Koster 紧束缚 / 近自由电子模型，能带与态密度反映元素、晶格常数与压缩的正确趋势；晶格常数弛豫对 Al fcc 误差约 1%，过渡金属约 10%，属定性结果。",
+        "未安装 VASP / Quantum ESPRESSO / ABACUS / CP2K 时结果必须视为近似，engine 字段会标注 internal:tight-binding。",
+        "两中心模型每个晶胞只处理一种元素；多元素化合物按过渡金属优先取一种计算，属已知近似。",
         "不处理自旋极化、强关联与范德华修正。"
       ],
       "reproducibility_level": "deterministic",
@@ -7681,22 +7796,22 @@
     },
     {
       "category": "Simulation/Materials",
-      "count": 2
+      "count": 3
     },
     {
       "category": "Simulation/Quantum",
       "count": 4
     }
   ],
-  "total_nodes": 99,
+  "total_nodes": 100,
   "availability_summary": {
     "executable": 86,
     "experimental": 5,
-    "unavailable": 8
+    "unavailable": 9
   },
   "capability_summary": {
     "deduces_fragmentation_pathway": 1,
-    "experimental": 13,
+    "experimental": 14,
     "models_double_sei_energetics": 1,
     "models_electrolyte_aging": 1,
     "models_nanopore_desolvation": 1,
@@ -7705,13 +7820,14 @@
     "models_seismic_fwi": 1,
     "models_seismic_submission": 1,
     "nondeterministic": 2,
-    "requires_external_software": 9,
+    "requires_external_software": 10,
     "requires_gpu": 4,
     "requires_network": 15,
     "sensitive_data": 1,
     "writes_files": 3
   },
   "missing_software_summary": {
+    "abacus": 1,
     "cp2k.psmp": 1,
     "g16": 1,
     "gmx": 1,
@@ -7724,15 +7840,15 @@
   "capability_status_summary": {
     "executable": 86,
     "experimental": 1,
-    "unavailable": 8,
+    "unavailable": 9,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 99
+    "internal_approximation": 100
   },
   "reproducibility_summary": {
-    "deterministic": 97,
+    "deterministic": 98,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 94
+  "nodes_without_validation_evidence": 95
 }

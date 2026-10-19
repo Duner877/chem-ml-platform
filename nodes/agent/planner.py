@@ -107,6 +107,13 @@ INTENT_KEYWORDS: Dict[str, List[str]] = {
         "量化", "量子", "dft", "orca", "gaussian", "单点能", "优化",
         "optimis", "optimiz", "energy",
     ],
+    "solid_state_dft": [
+        "能带", "带隙", "态密度", "能带态密度", "原胞", "晶格常数", "晶胞",
+        "弛豫", "几何优化", "费米", "金属", "半导体",
+        "band structure", "band gap", "density of states", "dos", "pdos",
+        "primitive cell", "lattice constant", "relax", "geometry opt",
+        "fermi", "metal", "semiconductor", "work function",
+    ],
     "report": ["报告", "report", "总结", "summary", "导出"],
 }
 
@@ -139,7 +146,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "ms_file",
                 "type": "SpectrumFileNode",
                 "data_key": "path",
-                "params": {"technique": "MS", "mode": "EI-MS"},
+                "params": {"mode": "MS"},
                 "why": "读取质谱原始数据（通用格式或厂商格式）",
             },
             {
@@ -152,14 +159,14 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "ms_peaks",
                 "type": "PeakPickingNode",
                 "inputs": {"spectrum": "ms_file.spectrum"},
-                "params": {"height": 5.0, "prominence": 2.0, "limit": 40},
+                "params": {"prominence": 0.03, "max_peaks": 100},
                 "why": "提取分子离子与碎片峰",
             },
             {
                 "id": "ms_smooth",
                 "type": "SmoothingNode",
                 "inputs": {"spectrum": "ms_peaks.spectrum"},
-                "params": {"method": "savitzky_golay", "window": 9, "order": 3},
+                "params": {"method": "savitzky_golay", "window": 9, "polyorder": 3},
                 "why": "Savitzky-Golay 平滑去噪",
             },
             {
@@ -171,7 +178,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
             {
                 "id": "ir",
                 "type": "IRNode",
-                "params": {"smiles": "CCO", "resolution_cm": 4.0},
+                "params": {"smiles": "CCO", "points": 1800, "noise": 0.004},
                 "why": "模拟红外官能团谱带",
             },
             {
@@ -234,7 +241,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "xrd_peaks",
                 "type": "PeakPickingNode",
                 "inputs": {"spectrum": "xrd.spectrum"},
-                "params": {"height": 5.0, "prominence": 2.0, "limit": 40},
+                "params": {"prominence": 0.03, "max_peaks": 100},
                 "why": "XRD 峰检索与指标化",
             },
             {
@@ -259,7 +266,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                     "xps": "xps.spectrum",
                     "candidates": "material.material",
                 },
-                "params": {"target": "capacity", "top_k": 5},
+                "params": {"target_property": "capacity_gravimetric", "top_k": 5},
                 "why": "按目标性质（比容量/电压/带隙）排序候选",
             },
             {
@@ -287,28 +294,28 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "ingest",
                 "type": "SpectrumFileNode",
                 "data_key": "path",
-                "params": {"technique": "Generic"},
+                "params": {"mode": "Generic"},
                 "why": "读取谱图",
             },
             {
                 "id": "baseline",
                 "type": "BaselineCorrectionNode",
                 "inputs": {"spectrum": "ingest.spectrum"},
-                "params": {"method": "asls"},
+                "params": {"method": "als"},
                 "why": "基线校正",
             },
             {
                 "id": "smooth",
                 "type": "SmoothingNode",
                 "inputs": {"spectrum": "baseline.spectrum"},
-                "params": {"method": "savitzky_golay", "window": 9, "order": 3},
+                "params": {"method": "savitzky_golay", "window": 9, "polyorder": 3},
                 "why": "平滑去噪",
             },
             {
                 "id": "peaks",
                 "type": "PeakPickingNode",
                 "inputs": {"spectrum": "smooth.spectrum"},
-                "params": {"height": 5.0, "prominence": 2.0, "limit": 40},
+                "params": {"prominence": 0.03, "max_peaks": 100},
                 "why": "峰提取",
             },
             {
@@ -340,7 +347,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "predict",
                 "type": "PropertyPredictionNode",
                 "inputs": {"molecule": "descriptors.molecule"},
-                "params": {"property": "logp"},
+                "params": {},
                 "why": "预测目标性质",
             },
         ],
@@ -384,7 +391,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "quantum",
                 "type": "ORCANode",
                 "inputs": {"molecule": "molecule.molecule"},
-                "params": {"method": "B3LYP", "basis": "def2-SVP"},
+                "params": {"method": "b3lyp", "basis": "def2-SVP"},
                 "why": "生成 ORCA 输入并用内置 EHT 求解",
             },
             {
@@ -393,6 +400,84 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "inputs": {"molecule": "quantum.molecule", "text": "quantum.text"},
                 "params": {"title": "电子结构报告"},
                 "why": "整理电子结构结论",
+            },
+        ],
+    },
+    # Reproduces the reference case end to end: relax the primitive cell, then
+    # compute the band structure and the orbital-resolved density of states from
+    # the *relaxed* cell, and report.  The ordering matters -- running bands at
+    # the unrelaxed ``a`` is the single most common way to report a band
+    # structure that does not correspond to the crystal under discussion.
+    "solid_state_dft": {
+        "description": "固态 DFT：原胞弛豫 -> 能带 -> 分轨道态密度 -> 报告",
+        "steps": [
+            {
+                "id": "material",
+                "type": "MaterialInputNode",
+                "data_key": "formula",
+                "params": {"formula": "Al", "a": 0.0},
+                "why": "给出目标元素/化学式；a=0 表示后续按晶格类型取实验值",
+            },
+            {
+                "id": "relax",
+                "type": "ABACUSNode",
+                "inputs": {"material": "material.material"},
+                "params": {
+                    "calculation": "cell_relax",
+                    "lattice": "fcc",
+                    "relax_steps": 25,
+                },
+                "why": "晶胞弛豫，扫描晶格常数取总能量极小（内部 Slater-Koster 引擎）",
+            },
+            {
+                "id": "bands",
+                "type": "ABACUSNode",
+                "inputs": {"material": "relax.material"},
+                "params": {
+                    "calculation": "bands",
+                    "lattice": "fcc",
+                    "band_points": 40,
+                },
+                "why": "在弛豫后的晶胞上沿高对称点路径 Γ-X-W-K-Γ-L-W-X 求能带",
+            },
+            {
+                "id": "pdos",
+                "type": "ABACUSNode",
+                "inputs": {"material": "relax.material"},
+                "params": {
+                    "calculation": "pdos",
+                    "lattice": "fcc",
+                },
+                "why": "分轨道态密度：Al 的 s-p 杂化在 E_F 处非零，即金属性的来源",
+            },
+            {
+                "id": "summary",
+                "type": "SummaryTableNode",
+                "inputs": {
+                    "material": "relax.material",
+                    "table": "bands.table",
+                },
+                "params": {"max_rows": 40},
+                "why": "把弛豫结果与能带指标汇成一张表",
+            },
+            {
+                "id": "report",
+                "type": "ReportBuilderNode",
+                "inputs": {
+                    "material": "relax.material",
+                    "table": "summary.table",
+                    "text": "bands.text",
+                    "spectrum": "pdos.spectrum",
+                },
+                "params": {"title": "原胞弛豫与能带态密度计算报告"},
+                "why": "汇总弛豫、能带与态密度结论",
+            },
+            {
+                "id": "export",
+                "type": "ReportExportNode",
+                "inputs": {"report": "report.report"},
+                "params": {"format": "html", "filename": "solid_state_dft_report"},
+                "why": "导出 HTML 报告",
             },
         ],
     },
@@ -421,14 +506,14 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "id": "ingest",
                 "type": "SpectrumFileNode",
                 "data_key": "path",
-                "params": {"technique": "Generic"},
+                "params": {"mode": "Generic"},
                 "why": "读取谱图",
             },
             {
                 "id": "peaks",
                 "type": "PeakPickingNode",
                 "inputs": {"spectrum": "ingest.spectrum"},
-                "params": {"height": 5.0, "prominence": 2.0, "limit": 40},
+                "params": {"prominence": 0.03, "max_peaks": 100},
                 "why": "峰提取",
             },
             {
@@ -466,17 +551,93 @@ def extract_data(question: str) -> Dict[str, str]:
 # Planner
 # --------------------------------------------------------------------------- #
 #: Prompt asking an LLM to emit a plan as JSON.  ``{catalog}`` is replaced with
-#: the registered node types so the model can only pick real nodes.
+#: the registered node types **and their parameter schemas** so the model can
+#: only pick real nodes *and* only set real parameters.
+#:
+#: The parameter schema used to be missing entirely -- the catalogue showed one
+#: truncated description per node type, so the model had no way to learn that
+#: ``ABACUSNode`` takes ``calculation``/``lattice``/``a``.  It therefore emitted
+#: plans with an empty ``params`` on every step, which validate cleanly and then
+#: run the wrong calculation on default settings: the plan looked planned while
+#: the artefact was still wrong.  Prompting a planner without the parameter
+#: names produces exactly that failure.
 _PLAN_PROMPT = (
     "You are the planner of the Chem ML Platform, a node based scientific "
     "workflow engine.  Given a scientific question, choose the minimal chain "
     "of nodes that answers it.\n\n"
-    "Available node types:\n{catalog}\n\n"
+    "Available node types (each with the parameters it accepts):\n{catalog}\n\n"
+    "Rules:\n"
+    "- Use only the node types listed above, spelled exactly as listed.\n"
+    "- Use only the parameter names listed for that node.\n"
+    "- For an enum parameter use one of the listed values verbatim.\n"
+    "- Wire inputs as \"<step_id>.<output_port>\", using the listed ports.\n"
+    "- Set parameters whenever the question implies a value: an element, "
+    "a lattice, a calculation type, or a numeric setting.\n\n"
     'Answer ONLY with JSON: {{"intent": "<short intent>", "steps": '
     '[{{"node_type": "<registered type>", "id": "<short id>", '
-    '"params": {{}}, "reason": "<why>"}}]}}\n\n'
+    '"inputs": {{"<port>": "<step_id>.<port>"}}, "params": {{}}, '
+    '"reason": "<why>"}}]}}\n\n'
     "Question: {question}\n"
 )
+
+def _enum_values(raw: Any) -> List[str]:
+    """Flatten a parameter's option list into the values a caller may pass.
+
+    Options are ``(value, label)`` tuples in the node registry but bare strings
+    in some hand-built specs, so both shapes are accepted.  Labels are dropped:
+    the prompt must show the value to use, and showing both invites the model
+    to emit the Chinese label into a field that expects the English token.
+    """
+    values: List[str] = []
+    for item in raw or []:
+        if isinstance(item, (list, tuple)) and item:
+            values.append(str(item[0]))
+        elif item is not None:
+            values.append(str(item))
+    return values
+
+
+def _catalog_entry(node_type: str, spec: Dict[str, Any]) -> str:
+    """One catalogue line: what the node is, what it consumes and accepts.
+
+    The parameter list is the point of this function.  A planner shown only a
+    prose description cannot set ``calculation="pdos"``, because nothing in the
+    description says that parameter exists -- so it emits ``params: {}`` and the
+    plan runs on defaults while looking correct.
+    """
+    lines = [f"- {node_type}: {str(spec.get('description', ''))[:110]}"]
+    ports = [str(port.get("name", "")) for port in spec.get("inputs") or []]
+    ports = [name for name in ports if name]
+    if ports:
+        lines.append(f"    in: {', '.join(ports)}")
+    outputs = [str(port.get("name", "")) for port in spec.get("outputs") or []]
+    outputs = [name for name in outputs if name]
+    if outputs:
+        lines.append(f"    out: {', '.join(outputs)}")
+    parameters = spec.get("parameters") or []
+    if parameters:
+        parts: List[str] = []
+        for parameter in parameters:
+            name = str(parameter.get("name", ""))
+            if not name:
+                continue
+            kind = str(parameter.get("type", "string"))
+            options = _enum_values(parameter.get("options"))
+            if options:
+                shown = ", ".join(options[:12])
+                if len(options) > 12:
+                    shown += ", ..."
+                parts.append(f"{name}({kind}: {shown})")
+            else:
+                default = parameter.get("default")
+                if default in (None, "", 0, 0.0, False):
+                    parts.append(f"{name}({kind})")
+                else:
+                    parts.append(f"{name}({kind}, default {default!r})")
+        if parts:
+            lines.append(f"    params: {'; '.join(parts)}")
+    return "\n".join(lines)
+
 
 #: Node type -> the parameter that carries the ingested datum.
 _INPUT_PARAM = {
@@ -503,9 +664,21 @@ class Planner:
 
     def __init__(self, catalog: Optional[List[Dict[str, Any]]] = None) -> None:
         #: ``{node_type: spec}`` of everything the platform can run.
-        self.catalog: Dict[str, Dict[str, Any]] = {
-            spec.get("type", ""): spec for spec in (catalog or []) if spec.get("type")
-        }
+        #:
+        #: The key is read as ``type`` **or** ``node_type``.  Only the second
+        #: spelling is what the tool registry actually emits, and reading just
+        #: ``type`` produced an empty catalogue for every real agent run -- the
+        #: prompt then said "(no node catalogue available)" and the model, quite
+        #: correctly, could not plan a workflow out of nothing.  It failed
+        #: quietly: the planner fell back to the recipe and reported success, so
+        #: the cause was invisible from the outside.
+        self.catalog: Dict[str, Dict[str, Any]] = {}
+        for spec in catalog or []:
+            if not isinstance(spec, dict):
+                continue
+            node_type = str(spec.get("type") or spec.get("node_type") or "").strip()
+            if node_type:
+                self.catalog[node_type] = spec
 
     # -- public API --------------------------------------------------------- #
     def plan(
@@ -600,7 +773,7 @@ class Planner:
                 return None
 
         catalog_lines = "\n".join(
-            f"- {node_type}: {str(spec.get('description', ''))[:90]}"
+            _catalog_entry(node_type, spec)
             for node_type, spec in sorted(self.catalog.items())
         ) or "(no node catalogue available)"
         prompt = _PLAN_PROMPT.format(catalog=catalog_lines, question=question)
@@ -621,7 +794,20 @@ class Planner:
         return plan if plan.steps else None
 
     def plan_from_llm(self, question: str, completion: str) -> Optional[Plan]:
-        """Parse a plan out of an LLM completion (``None`` when unparseable)."""
+        """Parse a plan out of an LLM completion (``None`` when unparseable).
+
+        Model-emitted parameters are **checked against the node spec**, not
+        trusted.  A parameter the node does not declare is dropped and recorded
+        in ``plan.notes`` rather than passed through: nodes store unknown
+        params in ``self.params`` and never read them, so a hallucinated name
+        looks accepted, survives validation, and quietly does nothing.  The
+        note is what turns "my plan did not take effect" into a diagnosis.
+
+        Enum values are validated the same way, except that a value matching a
+        declared option's *label* is rewritten to its value -- a model asked for
+        the Chinese label of an option has not made a mistake worth discarding a
+        whole plan over.
+        """
         payload = _extract_json(completion)
         if not isinstance(payload, dict):
             return None
@@ -639,16 +825,61 @@ class Planner:
             node_type = str(raw.get("node_type") or raw.get("type") or "").strip()
             if not node_type:
                 continue
+            params = self._clean_params(node_type, raw.get("params"), plan)
             plan.steps.append(
                 PlanStep(
                     node_type=node_type,
                     node_id=str(raw.get("id") or f"llm_{index}"),
                     inputs=dict(raw.get("inputs") or {}),
-                    params=dict(raw.get("params") or {}),
+                    params=params,
                     reason=str(raw.get("reason", "") or ""),
                 )
             )
         return plan if plan.steps else None
+
+    def _clean_params(
+        self, node_type: str, raw: Any, plan: Plan
+    ) -> Dict[str, Any]:
+        """Drop parameters the node does not declare; record what was dropped."""
+        if not isinstance(raw, dict):
+            return {}
+        spec = self.catalog.get(node_type) or {}
+        declared = {
+            str(parameter.get("name", "")): parameter
+            for parameter in (spec.get("parameters") or [])
+            if parameter.get("name")
+        }
+        if not declared:
+            # No schema available (empty catalogue): pass through untouched
+            # rather than deleting parameters the platform may well accept.
+            return dict(raw)
+
+        cleaned: Dict[str, Any] = {}
+        for key, value in raw.items():
+            parameter = declared.get(str(key))
+            if parameter is None:
+                plan.notes.append(
+                    f"{node_type}: dropped unknown parameter {key!r}"
+                )
+                continue
+            options = _enum_values(parameter.get("options"))
+            if options and value is not None:
+                text = str(value)
+                if text not in options:
+                    labels = {}
+                    for item in parameter.get("options") or []:
+                        if isinstance(item, (list, tuple)) and len(item) > 1:
+                            labels[str(item[1])] = str(item[0])
+                    if text in labels:
+                        value = labels[text]
+                    else:
+                        plan.notes.append(
+                            f"{node_type}.{key}: dropped {text!r}, "
+                            f"not one of {options[:8]}"
+                        )
+                        continue
+            cleaned[str(key)] = value
+        return cleaned
 
 
 def _extract_json(text: str) -> Any:

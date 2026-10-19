@@ -11,7 +11,7 @@ import { translate } from "../i18n";
 import { useRunActions } from "../workflowActions";
 import { api } from "../api";
 import type { WorkflowSummary } from "../types";
-import { THEME_IDS, type ThemeId } from "../theme";
+import { THEME_SETTINGS, type ThemeSetting } from "../theme";
 import {
   IconChevron,
   IconCube,
@@ -122,8 +122,24 @@ export default function TopBar() {
       .catch(() => setDemos([]));
   }, []);
 
-  const themeLabel = (id: ThemeId) =>
-    id === "wb-light" ? translate(lang, "themeWbLight") : translate(lang, "themeWbDark");
+  /**
+   * Theme label by lookup, not by comparison.
+   *
+   * This was a two-way ternary, which labelled every id that was not
+   * `wb-light` as "WorkBuddy black".  Adding `wb-system` therefore made the
+   * menu claim the user had picked black when they had picked the system --
+   * a menu that lies about the current state is worse than no menu.  A lookup
+   * table with an explicit unknown case cannot do that.
+   */
+  const themeLabel = (id: ThemeSetting): string => {
+    const key =
+      id === "wb-light"
+        ? "themeWbLight"
+        : id === "wb-dark"
+          ? "themeWbDark"
+          : "themeWbSystem";
+    return translate(lang, key);
+  };
 
   async function saveWorkflow() {
     const payload = buildPayload();
@@ -319,7 +335,7 @@ export default function TopBar() {
         </button>
         {menuOpen && (
           <div className="cml-menu absolute right-0 top-full z-50 mt-1 w-40 py-1">
-            {THEME_IDS.map((id) => (
+            {THEME_SETTINGS.map((id) => (
               <button
                 key={id}
                 type="button"

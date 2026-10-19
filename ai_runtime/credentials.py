@@ -39,7 +39,7 @@ import platform
 import re
 import shutil
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
@@ -51,7 +51,10 @@ __all__ = [
     "CredentialStatus",
     "credential_backend",
     "list_credentials",
+    "list_provider_models",
+    "provider_model",
     "set_credential",
+    "set_provider_model",
     "delete_credential",
     "test_credential",
     "mask_secret",
@@ -106,6 +109,16 @@ class ProviderSpec:
     probe_style: str = "openai"
     #: Extra headers for the probe (Anthropic requires the API version).
     probe_headers: Tuple[Tuple[str, str], ...] = ()
+    # -- model catalogue (v0.7.3) ------------------------------------------- #
+    #: Endpoint that lists the models this account may call, or ``""`` when the
+    #: provider publishes no such listing.  Appended to the *base* URL, exactly
+    #: like :attr:`probe_path`, because OpenAI-compatible gateways put it at
+    #: ``<base>/models`` while Ollama keeps it at ``<base>/api/tags`` -- a single
+    #: hard-coded ``/v1/models`` silently lists nothing on a local server.
+    models_path: str = ""
+    #: Key holding the model id in a listing entry.  OpenAI-compatible servers
+    #: use ``id``; Ollama's ``/api/tags`` uses ``name``.
+    models_id_key: str = "id"
 
     @property
     def primary_env(self) -> str:
@@ -124,6 +137,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         docs_url="https://platform.openai.com/api-keys",
         default_base_url="https://api.openai.com/v1",
         probe_model="gpt-4o-mini",
+        models_path="/models",
         notes_zh="需要有效的 OpenAI API Key。",
         notes_en="Requires a valid OpenAI API key.",
     ),
@@ -137,6 +151,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         # DeepSeek does not serve any OpenAI model name; asking for one is a
         # guaranteed 400 and would read as "your key is invalid".
         probe_model="deepseek-chat",
+        models_path="/models",
         notes_zh="OpenAI 兼容接口，填写 DeepSeek 平台的 Key。",
         notes_en="OpenAI-compatible endpoint; use the key from the DeepSeek platform.",
     ),
@@ -148,6 +163,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         docs_url="https://platform.moonshot.cn/",
         default_base_url="https://api.moonshot.cn/v1",
         probe_model="moonshot-v1-8k",
+        models_path="/models",
         notes_zh="OpenAI 兼容接口，国内直连。",
         notes_en="OpenAI-compatible endpoint, directly reachable from mainland China.",
     ),
@@ -159,6 +175,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         docs_url="https://cloud.siliconflow.cn/",
         default_base_url="https://api.siliconflow.cn/v1",
         probe_model="Qwen/Qwen2.5-7B-Instruct",
+        models_path="/models",
         notes_zh="聚合多个开源模型，OpenAI 兼容。",
         notes_en="Aggregates open models behind an OpenAI-compatible API.",
     ),
@@ -170,6 +187,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         docs_url="https://bailian.console.aliyun.com/",
         default_base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
         probe_model="qwen-turbo",
+        models_path="/models",
         notes_zh="Qwen 系列，OpenAI 兼容模式。",
         notes_en="Qwen models via the OpenAI-compatible mode.",
     ),
@@ -181,6 +199,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         docs_url="https://open.bigmodel.cn/",
         default_base_url="https://open.bigmodel.cn/api/paas/v4",
         probe_model="glm-4-flash",
+        models_path="/models",
         notes_zh="GLM 系列，OpenAI 兼容。",
         notes_en="GLM models via an OpenAI-compatible API.",
     ),
@@ -197,6 +216,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         probe_path="/v1/messages",
         probe_style="anthropic",
         probe_headers=(("anthropic-version", "2023-06-01"),),
+        models_path="/v1/models",
         notes_zh="原生 Messages API，非 OpenAI 兼容格式。",
         notes_en="Native Messages API, not the OpenAI-compatible format.",
     ),
@@ -216,16 +236,20 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         # return 200 in ~1 s.  ``openai/gpt-oss-20b`` did; the failure modes
         # above are what ``_classify_http`` now distinguishes.
         probe_model="openai/gpt-oss-20b",
+        models_path="/models",
         notes_zh=(
             "NVIDIA 开放模型托管平台，OpenAI 兼容接口，有免费额度。"
             "模型名形如 meta/llama-3.3-70b-instruct、openai/gpt-oss-20b；"
             "平台的模型目录包含已下线模型，填错会得到 410/404 或长时间无响应。"
+            "点「获取模型列表」可以看到全部登记在册的 id，但列表不等于可用。"
         ),
         notes_en=(
             "NVIDIA's host for open models behind an OpenAI-compatible API, "
             "with a free tier. Model ids look like meta/llama-3.3-70b-instruct "
             "or openai/gpt-oss-20b. The catalogue includes end-of-life ids, so "
-            "a wrong name yields 410/404 or no answer at all."
+            "a wrong name yields 410/404 or no answer at all. Fetching the model "
+            "list shows every registered id -- but the list is not an "
+            "availability list."
         ),
     ),
     ProviderSpec(
@@ -238,6 +262,8 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         # /api/tags needs no key at all: for a local server the question is
         # "is it up and does it have a model", not "is the key valid".
         probe_path="/api/tags",
+        models_path="/api/tags",
+        models_id_key="name",
         notes_zh="本地推理，无需 Key，填服务地址即可。",
         notes_en="Local inference; no key needed, just the server address.",
     ),
@@ -249,6 +275,7 @@ PROVIDERS: Tuple[ProviderSpec, ...] = (
         kind="local",
         default_base_url="http://127.0.0.1:8000",
         probe_path="/v1/models",
+        models_path="/v1/models",
         notes_zh="本地推理，无需 Key，填服务地址即可。",
         notes_en="Local inference; no key needed, just the server address.",
     ),
@@ -418,6 +445,12 @@ class CredentialStatus:
     docs_url: str = ""
     notes: Dict[str, str] = field(default_factory=dict)
     default_base_url: str = ""
+    #: Model id the user picked from the provider's catalogue ("" = use default).
+    selected_model: str = ""
+    #: The model id that will actually be sent when a node names none.
+    effective_model: str = ""
+    #: Catalogue endpoint, "" when the provider publishes none.
+    models_path: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -432,6 +465,10 @@ class CredentialStatus:
             "docs_url": self.docs_url,
             "notes": self.notes,
             "default_base_url": self.default_base_url,
+            "selected_model": self.selected_model,
+            "effective_model": self.effective_model,
+            "models_path": self.models_path,
+            "has_catalogue": bool(self.models_path),
         }
 
 
@@ -456,9 +493,14 @@ def _source_of(spec: ProviderSpec) -> str:
 def list_credentials() -> Dict[str, Any]:
     """Every provider's status, plus where a new key would be stored."""
     secrets = _stored_secrets()
+    try:
+        chosen = dict(getattr(load_config(), "models", {}) or {})
+    except Exception:  # noqa: BLE001 - a broken config must not break the listing
+        chosen = {}
     items: List[CredentialStatus] = []
     for spec in PROVIDERS:
         secret = secrets.get(spec.id, "")
+        selected = str(chosen.get(spec.id, "") or "").strip()
         items.append(
             CredentialStatus(
                 provider=spec.id,
@@ -472,6 +514,9 @@ def list_credentials() -> Dict[str, Any]:
                 docs_url=spec.docs_url,
                 notes={"zh": spec.notes_zh, "en": spec.notes_en},
                 default_base_url=spec.default_base_url,
+                selected_model=selected,
+                effective_model=selected or spec.probe_model,
+                models_path=spec.models_path,
             )
         )
     backend = credential_backend()
@@ -599,6 +644,249 @@ def delete_credential(provider_id: str) -> Dict[str, Any]:
         "removed": removed,
         "shell_env_preserved": preserved,
         "status": list_credentials(),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# model catalogue
+# --------------------------------------------------------------------------- #
+#: Upper bound on how many ids are returned to the GUI.  NVIDIA's catalogue
+#: holds 81 and grows every quarter; shipping all of them into a dropdown
+#: makes it unusable, and the client keeps whatever the user picked either way.
+MODEL_LIST_LIMIT = 500
+
+
+def _parse_model_listing(body: str, spec: ProviderSpec) -> List[Dict[str, str]]:
+    """Pull ``{"id": ..., ...}`` entries out of a provider's model listing.
+
+    Handles the three shapes actually seen: OpenAI-compatible ``{"data": [...]}``
+    (the key is not fixed -- one gateway nests it under ``models``), Ollama's
+    ``{"models": [{"name": "qwen2.5:7b", ...}]}``, and Anthropic's
+    ``{"data": [{"id": ...}]}``.
+    """
+    try:
+        parsed = json.loads(body)
+    except json.JSONDecodeError:
+        return []
+    # Some gateways answer with a bare array rather than an object.
+    if isinstance(parsed, list):
+        entries: Any = parsed
+    elif isinstance(parsed, dict):
+        entries = None
+        for key in ("data", "models", "result"):
+            value = parsed.get(key)
+            if isinstance(value, list):
+                entries = value
+                break
+    else:
+        return []
+    if entries is None:
+        # A 200 with no list field is a shape this parser does not know, not an
+        # empty catalogue.  Returning [] here is what the caller turns into a
+        # clear diagnostic; iterating None here would raise instead.
+        return []
+
+    out: List[Dict[str, str]] = []
+    for item in entries:
+        if isinstance(item, str):
+            out.append({"id": item, "owned_by": ""})
+            continue
+        if not isinstance(item, dict):
+            continue
+        # Ollama's /api/tags carries the model under "name"; everything else
+        # uses "id".  Accept either rather than trusting the declared key, so a
+        # provider that switches convention does not silently list nothing.
+        ident = str(item.get(spec.models_id_key) or item.get("id") or item.get("name") or "").strip()
+        if not ident:
+            continue
+        entry = {"id": ident, "owned_by": str(item.get("owned_by") or item.get("owner") or "")}
+        size = item.get("size") or item.get("parameter_size") or item.get("context_length")
+        if size not in (None, ""):
+            entry["detail"] = str(size)
+        out.append(entry)
+    return out
+
+
+def _selected_model(spec: ProviderSpec) -> str:
+    """The model id the user chose for this provider, if any."""
+    try:
+        config = load_config()
+        return str(getattr(config, "models", {}).get(spec.id, "") or "").strip()
+    except Exception:  # noqa: BLE001 - a broken config must not break the listing
+        return ""
+
+
+def set_provider_model(provider_id: str, model: str) -> Dict[str, Any]:
+    """Remember the user's chosen model for a provider.
+
+    Persisted next to the base-URL override (``config/ai.json``) and read back
+    by :mod:`nodes.ai.llm`, so a model picked in the GUI is the model the
+    canvas actually calls.  An empty *model* clears the choice.
+    """
+    spec = provider_spec(provider_id)
+    if spec is None:
+        raise KeyError(
+            f"unknown provider {provider_id!r}; known: {', '.join(sorted(_BY_ID))}"
+        )
+    value = str(model or "").strip()
+    if value and ("\n" in value or "\r" in value):
+        raise ValueError("the model id contains a line break")
+    try:
+        from ai_runtime.config import get_config, save_config
+
+        config = get_config()
+        config.models = {
+            k: v for k, v in dict(getattr(config, "models", {}) or {}).items() if k != spec.id
+        }
+        if value:
+            config.models[spec.id] = value
+        save_config(config)
+    except Exception as exc:  # noqa: BLE001
+        _log.warning("could not persist the model for %s: %s", spec.id, exc)
+        raise ValueError(f"the model choice could not be saved: {exc}") from exc
+    return {"provider": spec.id, "model": value}
+
+
+def provider_model(provider_id: str) -> str:
+    """The model id chosen for *provider_id*, falling back to its probe model.
+
+    This is what the runtime asks for when a node does not name a model
+    explicitly.  The user's choice wins over the built-in default, because the
+    whole point of listing the catalogue was to act on it.
+    """
+    spec = provider_spec(provider_id)
+    if spec is None:
+        return ""
+    return _selected_model(spec) or spec.probe_model
+
+
+def list_provider_models(provider_id: str, timeout: float = 20.0) -> Dict[str, Any]:
+    """Ask the provider which models this credential may address.
+
+    Returns a *catalogue*, and says so in the payload.  Measured against a live
+    NVIDIA key on 2026-10-18: ``/v1/models`` answered 200 with 81 ids, yet many
+    of them answer HTTP 410 on an actual completion, and
+    ``deepseek-ai/deepseek-v4.1-flash`` accepted the connection and then returned
+    zero bytes for 300 s.  Presenting such a list as "available models" would
+    be the same mistake as presenting it as an availability guarantee, so the
+    GUI offers it as a catalogue and the connectivity test remains the thing
+    that establishes whether a given id works.
+    """
+    spec = provider_spec(provider_id)
+    if spec is None:
+        raise KeyError(
+            f"unknown provider {provider_id!r}; known: {', '.join(sorted(_BY_ID))}"
+        )
+    if not spec.models_path:
+        return {
+            "provider": spec.id,
+            "ok": False,
+            "outcome": PROBE_UNSUPPORTED,
+            "models": [],
+            "detail": "this provider publishes no model catalogue endpoint",
+        }
+
+    secret = _stored_secrets().get(spec.id, "")
+    if not secret and spec.kind != "local":
+        return {
+            "provider": spec.id,
+            "ok": False,
+            "outcome": PROBE_NO_CREDENTIAL,
+            "models": [],
+            "detail": "save a key for this provider first -- the catalogue is account-specific",
+        }
+
+    base_url = _effective_base_url(spec)
+    if not base_url:
+        return {
+            "provider": spec.id,
+            "ok": False,
+            "outcome": PROBE_UNSUPPORTED,
+            "models": [],
+            "detail": "set a base URL for this provider first",
+        }
+
+    url = base_url.rstrip("/") + spec.models_path
+    local = spec.kind == "local"
+    args, err = _curl_bootstrap(spec, url, 5.0 if local else timeout)
+    if err is not None:
+        return {
+            "provider": spec.id,
+            "ok": False, "outcome": err[1], "models": [],
+            "detail": err[2],
+        }
+
+    headers = {"Content-Type": "application/json"}
+    if not local:
+        if spec.probe_style == "anthropic":
+            headers["x-api-key"] = secret
+        elif secret:
+            headers["Authorization"] = f"Bearer {secret}"
+    for key, value in spec.probe_headers:
+        headers[key] = value
+    for key, value in headers.items():
+        args += ["-H", f"{key}: {value}"]
+    args += ["-X", "GET"]
+
+    code, body_text, err = _curl_response(args, url, secret, 5.0 if local else timeout)
+    if err is not None:
+        return {
+            "provider": spec.id, "ok": False, "outcome": err[1], "models": [],
+            "detail": err[2],
+        }
+
+    if code != "200":
+        ok, outcome, detail = _classify_http(code, body_text, spec, secret)
+        return {
+            "provider": spec.id, "ok": False, "outcome": outcome, "models": [],
+            "detail": detail, "http_status": code,
+        }
+
+    models = _parse_model_listing(body_text, spec)
+    if not models:
+        # A 200 that lists nothing is not an empty catalogue: it is a gateway
+        # answering a different shape than the one parsed here, and saying
+        # "0 models available" would send the user off to regenerate a key that
+        # demonstrably works.
+        return {
+            "provider": spec.id,
+            "ok": False,
+            "outcome": PROBE_BAD_RESPONSE,
+            "models": [],
+            "detail": (
+                f"{url} answered HTTP 200 but the response listed no model ids "
+                "-- this gateway may not implement the catalogue endpoint"
+            ),
+        }
+
+    selected = _selected_model(spec)
+    ids = [entry["id"] for entry in models]
+    truncated = len(models) > MODEL_LIST_LIMIT
+    if truncated:
+        models = models[:MODEL_LIST_LIMIT]
+    if selected and selected not in ids and not truncated:
+        # Keep a hand-typed id visible instead of dropping it silently -- the
+        # user can still reach the model by name even when the catalogue does
+        # not carry it.
+        models = [{"id": selected, "owned_by": "", "detail": "manually set"}, *models]
+
+    return {
+        "provider": spec.id,
+        "ok": True,
+        "outcome": PROBE_OK,
+        "base_url": base_url,
+        "models": models,
+        "count": len(models),
+        "total": len(ids),
+        "truncated": truncated,
+        "selected": selected,
+        "default_model": spec.probe_model,
+        "catalogue_only": True,
+        "detail": (
+            f"{len(ids)} model id(s) registered at {url}"
+            + (" -- a catalogue, not a verified availability list; use 测试 to confirm one"
+               if len(ids) > 1 else "")
+        ),
     }
 
 
@@ -776,6 +1064,97 @@ def _is_loopback(url: str) -> bool:
     return host in {"127.0.0.1", "localhost", "::1", "[::1]", "0.0.0.0"}
 
 
+def _curl_bootstrap(spec: ProviderSpec, url: str, timeout: float) -> Tuple[Optional[List[str]], Tuple[bool, ProbeOutcome, str]]:
+    """Shared curl plumbing: locate curl and build the fixed argv prefix.
+
+    Returns ``(argv_prefix, error)``; exactly one of the two is ``None``.
+
+    The proxy split lives here and nowhere else, on purpose.  A loopback URL
+    must bypass ``http_proxy`` (this machine exports one, and a local Ollama
+    answered through it would look like "upstream connect failed"), while cloud
+    providers must keep using it.  When the model listing was written with its
+    own copy of this argv, the two copies drifted within the same file -- and
+    the symptom (local models refuse to list) points nowhere near the proxy.
+    """
+    exe = shutil.which("curl")
+    if not exe:
+        return None, (
+            False, PROBE_UNAVAILABLE,
+            "curl is not available on this machine, so the request could not run",
+        )
+    args = [
+        exe, "-sS", "-o", "-", "-w", "\n__HTTP__%{http_code}",
+        "--max-time", str(timeout),
+    ]
+    if _is_loopback(url):
+        args += ["--noproxy", "*"]
+    return args, None
+
+
+def _curl_response(
+    args: List[str], url: str, api_key: str, timeout: float,
+) -> Tuple[str, str, Optional[Tuple[bool, ProbeOutcome, str]]]:
+    """Run curl and split its output into ``(http code, body, error)``.
+
+    ``error`` is ``None`` on a completed HTTP exchange.  The ``__HTTP__000``
+    case is handled here because curl emits its write-out template even when
+    the connection never completed: reading that as an HTTP result reports a
+    DNS failure or a refused connection as "the provider rejected the
+    request" -- exactly the diagnosis the user needed, suppressed.
+    """
+    try:
+        proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
+            [*args, url], capture_output=True, text=True, timeout=timeout + 5,
+        )
+    except subprocess.TimeoutExpired:
+        return "", "", (
+            False, PROBE_TIMEOUT,
+            f"no answer within {timeout:.0f} s -- check the address and the network",
+        )
+    except OSError as exc:
+        return "", "", (False, PROBE_UNAVAILABLE, f"could not start curl: {exc}")
+
+    raw = proc.stdout or ""
+    if "__HTTP__" not in raw:
+        err = _redact((proc.stderr or "").strip(), api_key)
+        if proc.returncode in {6, 7} or "resolve" in err.lower() or "Could not resolve" in err:
+            return "", "", (
+                False, PROBE_NETWORK,
+                f"could not reach {url} -- check the host name and your network",
+            )
+        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
+            return "", "", (False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}")
+        if "timed out" in err.lower():
+            return "", "", (False, PROBE_TIMEOUT, f"the request timed out: {err}")
+        return "", "", (
+            False, PROBE_NETWORK,
+            err or f"curl exited with {proc.returncode} and no response",
+        )
+
+    body_text, _, code = raw.rpartition("__HTTP__")
+    code = code.strip()
+    if code == "000" or not code:
+        err = _redact((proc.stderr or "").strip(), api_key)
+        if proc.returncode in {5, 6, 7, 28} or "resolve" in err.lower():
+            return "", "", (
+                False, PROBE_NETWORK,
+                f"could not reach {url} -- check the host name, the address and your network"
+                + (f" ({err})" if err else ""),
+            )
+        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
+            return "", "", (False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}")
+        if proc.returncode == 28 or "timed out" in err.lower():
+            return "", "", (
+                False, PROBE_TIMEOUT,
+                f"no answer within {timeout:.0f} s -- check the address and the network",
+            )
+        return "", "", (
+            False, PROBE_NETWORK,
+            err or f"the request to {url} did not complete (curl exit {proc.returncode})",
+        )
+    return code, body_text.strip(), None
+
+
 def _curl_probe(
     spec: ProviderSpec, base_url: str, api_key: str, timeout: float = 20.0,
 ) -> Tuple[bool, ProbeOutcome, str]:
@@ -786,89 +1165,24 @@ def _curl_probe(
     that come back are far more useful to a user than a stack trace.  A
     one-token request also keeps the probe from costing anything meaningful.
     """
-    exe = shutil.which("curl")
-    if not exe:
-        return False, PROBE_UNAVAILABLE, (
-            "curl is not available on this machine, so the probe could not run"
-        )
-
     url = base_url.rstrip("/") + spec.probe_path
+    args, err = _curl_bootstrap(spec, url, timeout)
+    if err is not None:
+        return err
+
     headers = _probe_headers(spec, api_key)
     body = _probe_body(spec)
-
-    args = [
-        exe, "-sS", "-o", "-", "-w", "\n__HTTP__%{http_code}",
-        "--max-time", str(timeout),
-    ]
-    # Loopback must never go through a proxy.  Corporate and campus networks
-    # routinely export http_proxy/https_proxy (this machine does), and a probe
-    # for a *local* Ollama or vLLM would then be answered by the proxy with
-    # "upstream connect failed" -- reporting the local server as unreachable
-    # when it is running right there.  Cloud providers keep using the proxy,
-    # which is exactly what those users need.
-    if _is_loopback(url):
-        args += ["--noproxy", "*"]
     for key, value in headers.items():
         args += ["-H", f"{key}: {value}"]
     if body is None:
         args += ["-X", "GET"]
     else:
         args += ["-X", "POST", "-d", json.dumps(body)]
-    args.append(url)
 
-    try:
-        proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
-            args, capture_output=True, text=True, timeout=timeout + 5,
-        )
-    except subprocess.TimeoutExpired:
-        return False, PROBE_TIMEOUT, (
-            f"no answer within {timeout:.0f} s -- check the address and the network"
-        )
-    except OSError as exc:
-        return False, PROBE_UNAVAILABLE, f"could not start curl: {exc}"
-
-    raw = proc.stdout or ""
-    if "__HTTP__" not in raw:
-        # No HTTP status at all: the request never completed.
-        err = _redact((proc.stderr or "").strip(), api_key)
-        if proc.returncode in {6, 7} or "resolve" in err.lower() or "Could not resolve" in err:
-            return False, PROBE_NETWORK, (
-                f"could not reach {url} -- check the host name and your network"
-            )
-        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
-            return False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}"
-        if "timed out" in err.lower():
-            return False, PROBE_TIMEOUT, f"the request timed out: {err}"
-        return False, PROBE_NETWORK, (
-            err or f"curl exited with {proc.returncode} and no response"
-        )
-
-    body_text, _, code = raw.rpartition("__HTTP__")
-    code = code.strip()
-
-    # curl's -w still emits the status line when the connection never
-    # completed, leaving 000.  Treating that as an HTTP result would report a
-    # DNS failure or a refused connection as "HTTP 000: the provider rejected
-    # the request", which is precisely the diagnosis the user needs and would
-    # otherwise not get.
-    if code == "000" or not code:
-        err = _redact((proc.stderr or "").strip(), api_key)
-        if proc.returncode in {5, 6, 7, 28} or "resolve" in err.lower():
-            return False, PROBE_NETWORK, (
-                f"could not reach {url} -- check the host name, the address and your network"
-                + (f" ({err})" if err else "")
-            )
-        if "SSL" in err or "certificate" in err.lower() or "TLS" in err:
-            return False, PROBE_NETWORK, f"TLS handshake failed: {err or 'unknown reason'}"
-        if proc.returncode == 28 or "timed out" in err.lower():
-            return False, PROBE_TIMEOUT, (
-                f"no answer within {timeout:.0f} s -- check the address and the network"
-            )
-        return False, PROBE_NETWORK, (
-            err or f"the request to {url} did not complete (curl exit {proc.returncode})"
-        )
-
-    return _classify_http(code, body_text.strip(), spec, api_key)
+    code, body_text, err = _curl_response(args, url, api_key, timeout)
+    if err is not None:
+        return err
+    return _classify_http(code, body_text, spec, api_key)
 
 
 def _effective_base_url(spec: ProviderSpec) -> str:
@@ -927,6 +1241,17 @@ def test_credential(provider_id: str) -> Dict[str, Any]:
             "detail": "this provider has no built-in probe endpoint; it will be used on the next completion",
         }
 
+    # Probe the model that will actually be used.  When the user has picked one
+    # from the catalogue, that *is* the deployment: probing the built-in
+    # default would report "connected" for a default the runtime never sends,
+    # while the model the user chose -- possibly a retired id -- went untested.
+    selected = _selected_model(spec)
+    if selected and selected != spec.probe_model:
+        spec = replace(spec, probe_model=selected)
+        used_model = selected
+    else:
+        used_model = spec.probe_model
+
     if spec.kind == "local":
         # Local servers do not authenticate; probe the address instead.
         ok, outcome, detail = _curl_probe(spec, base_url, "", timeout=5.0)
@@ -952,7 +1277,11 @@ def test_credential(provider_id: str) -> Dict[str, Any]:
         }
 
     ok, outcome, detail = _curl_probe(spec, base_url, secret)
-    result = {"provider": spec.id, "ok": ok, "outcome": outcome, "detail": detail}
+    result = {
+        "provider": spec.id, "ok": ok, "outcome": outcome, "detail": detail,
+        "model": used_model,
+        "model_source": "user" if selected else "default",
+    }
     if base_url != spec.default_base_url:
         # Say *where* we looked, or a failure on a custom gateway is undebuggable.
         result["base_url"] = base_url

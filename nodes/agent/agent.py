@@ -33,6 +33,7 @@ The node emits four ports so an agent can be dropped anywhere in a graph::
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
 
 from workflow_engine.engine import WorkflowEngine
@@ -61,6 +62,33 @@ __all__ = [
 ]
 
 
+def _workers(node: "_AgentBase") -> int:
+    """How many same-generation nodes may run at once.
+
+    This was hardcoded to ``max_workers=1``, which was a defensible default for
+    a single linear chain and a poor one in general: the engine groups nodes into
+    topological generations, and independent calculations inside one generation
+    (bands and density of states on the same relaxed cell, four parallel
+    characterisations of one sample) then ran strictly one after another.  The
+    reference case is exactly that shape, and serialising it made the agent look
+    slower than the physics.
+
+    Parallelism is opt-out rather than opt-in because ``1`` stays available for
+    anyone debugging node state, and ``0`` means "half the cores" so the default
+    is not a hardcoded machine size.  Clamped to at least 1: the engine treats
+    ``max_workers=0`` as invalid, and a plan that cannot run is worse than a
+    slow one.
+    """
+    raw = node.get_param("max_workers", 4)
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        value = 4
+    if value <= 0:
+        return max(1, (os.cpu_count() or 2) // 2)
+    return max(1, min(32, value))
+
+
 class _AgentBase(ScientificNode):
     """Shared plumbing: catalogue access, plan/run/reason."""
 
@@ -82,6 +110,10 @@ class _AgentBase(ScientificNode):
                       options=[("zh", "中文"), ("en", "English")]),
         ParameterSpec("use_llm", "boolean", True, "允许调用 LLM 规划（不可用时自动回退）"),
         ParameterSpec("max_nodes", "integer", 12, "生成工作流的最大节点数", min=1, max=40),
+        ParameterSpec("max_workers", "integer", 4,
+                      "同一代节点的并发数。1 = 严格串行；>1 让同代互不依赖的节点并行"
+                      "（例如能带与态密度同时算）。设为 0 时按CPU 核数的一半取值",
+                      min=0, max=32),
         ParameterSpec("remember", "boolean", True, "把本次实验写入 Agent 记忆"),
     ]
 
@@ -186,7 +218,7 @@ class _AgentBase(ScientificNode):
                     self.node_type(),
                     "generated workflow is invalid: " + "; ".join(issues),
                 )
-        engine = WorkflowEngine(max_workers=1, use_cache=False)
+        engine = WorkflowEngine(max_workers=_workers(self), use_cache=False)
         return engine.run(workflow).to_dict()
 
     def _reason(self, result: Dict[str, Any]) -> Dict[str, Any]:
@@ -367,7 +399,9 @@ def execute_plan(
                 node.node_type(),
                 "generated workflow is invalid: " + "; ".join(issues),
             )
-    engine = WorkflowEngine(max_workers=1, use_cache=False, cancel_check=cancel_check)
+    engine = WorkflowEngine(
+        max_workers=_workers(node), use_cache=False, cancel_check=cancel_check
+    )
     return engine.run(workflow).to_dict()
 
 

@@ -17,6 +17,7 @@ import type {
   FileProbe,
   FoundationModel,
   FragmentationResult,
+  ProviderModelList,
   NodeCategory,
   NodeSpec,
   RegistryPayload,
@@ -183,11 +184,31 @@ export const api = {
       "/credentials/providers"
     ),
 
-  setCredential: (provider: string, secret: string, baseUrl = "") =>
+  setCredential: (provider: string, secret: string, baseUrl = "", model = "") =>
     request<CredentialStoreResult>("/credentials", {
       method: "POST",
-      body: JSON.stringify({ provider, secret, base_url: baseUrl }),
+      body: JSON.stringify({ provider, secret, base_url: baseUrl, model }),
     }),
+
+  /**
+   * Fetch the model catalogue this credential can address.
+   *
+   * A catalogue, not a verified availability list -- the response carries
+   * `catalogue_only` so the GUI can say so.  Returns 200 with `ok: false` when
+   * there is no key yet, because "save a key first" is a displayable answer.
+   */
+  providerModels: (provider: string) =>
+    request<ProviderModelList>(
+      `/credentials/${encodeURIComponent(provider)}/models`,
+      { method: "GET" }
+    ),
+
+  /** Remember which model this provider should serve; "" restores the default. */
+  setProviderModel: (provider: string, model: string) =>
+    request<{ provider: string; model: string }>(
+      `/credentials/${encodeURIComponent(provider)}/model`,
+      { method: "PUT", body: JSON.stringify({ model }) }
+    ),
 
   deleteCredential: (provider: string) =>
     request<CredentialStoreResult>(`/credentials/${encodeURIComponent(provider)}`, {

@@ -1,15 +1,15 @@
 {
-  "total_nodes": 99,
+  "total_nodes": 100,
   "categories": 30,
   "modules_scanned": 56,
   "availability_summary": {
     "executable": 86,
     "experimental": 5,
-    "unavailable": 8
+    "unavailable": 9
   },
   "capability_summary": {
     "deduces_fragmentation_pathway": 1,
-    "experimental": 13,
+    "experimental": 14,
     "models_double_sei_energetics": 1,
     "models_electrolyte_aging": 1,
     "models_nanopore_desolvation": 1,
@@ -18,13 +18,14 @@
     "models_seismic_fwi": 1,
     "models_seismic_submission": 1,
     "nondeterministic": 2,
-    "requires_external_software": 9,
+    "requires_external_software": 10,
     "requires_gpu": 4,
     "requires_network": 15,
     "sensitive_data": 1,
     "writes_files": 3
   },
   "missing_software_summary": {
+    "abacus": 1,
     "cp2k.psmp": 1,
     "g16": 1,
     "gmx": 1,
@@ -37,15 +38,15 @@
   "capability_status_summary": {
     "executable": 86,
     "experimental": 1,
-    "unavailable": 8,
+    "unavailable": 9,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 99
+    "internal_approximation": 100
   },
   "reproducibility_summary": {
-    "deterministic": 97,
+    "deterministic": 98,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 94
+  "nodes_without_validation_evidence": 95
 }

@@ -61,6 +61,13 @@ SUITE_BY_STEM: Dict[str, str] = {
     "test_v07_errors": "integration",
     "test_v07_1_license_report": "integration",
     "test_v07_gpu": "integration",
+    # Solid-state engine + agent planning path: pure-function physics checks
+    # alongside one full engine run, so the whole file is classified as
+    # integration rather than falling through to the unit default.
+    "test_v07_3_solid_state": "integration",
+    # Model-catalogue parsing / selection plus static checks of the TypeScript
+    # theme contract: no network, but it reads real frontend and desktop sources.
+    "test_v07_3_model_list_and_theme": "integration",
     # -- unit: single-module behaviour ---------------------------------------
     "test_nodes": "unit",
     "test_v07_2_version_consistency": "unit",

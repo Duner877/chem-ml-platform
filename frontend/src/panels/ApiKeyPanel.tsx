@@ -18,10 +18,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { useEditor } from "../store";
 import { translate } from "../i18n";
-import type { CredentialProbe, CredentialProvider, CredentialStore } from "../types";
+import type {
+  CredentialProbe,
+  CredentialProvider,
+  CredentialStore,
+  ProviderModelList,
+} from "../types";
 
 /** Which button is currently in flight, so one action's spinner is honest. */
-type Pending = "" | "save" | "test" | "delete";
+type Pending = "" | "save" | "test" | "delete" | "models" | "model";
 
 /** Localised pick from a backend bilingual map, falling back to English. */
 function pick(map: Record<string, string> | undefined, lang: "zh" | "en"): string {
@@ -66,6 +71,21 @@ export default function ApiKeyPanel() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [probe, setProbe] = useState<CredentialProbe | null>(null);
+  const [models, setModels] = useState<ProviderModelList | null>(null);
+  const [modelQuery, setModelQuery] = useState("");
+  const [modelDraft, setModelDraft] = useState("");
+
+  /**
+   * A fetched listing belongs to the provider it was fetched from.  Keeping it
+   * in state per selection means switching the picker can never leave NVIDIA's
+   * 81 ids sitting under DeepSeek's name -- a list that looks authoritative
+   * and is not.
+   */
+  const resetModels = useCallback(() => {
+    setModels(null);
+    setModelQuery("");
+    setModelDraft("");
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -114,7 +134,8 @@ export default function ApiKeyPanel() {
     setNotice("");
     setSecret("");
     setBaseUrl("");
-  }, [selected]);
+    resetModels();
+  }, [selected, resetModels]);
 
   function reset() {
     setSecret("");
@@ -123,6 +144,7 @@ export default function ApiKeyPanel() {
     setProbe(null);
     setNotice("");
     setError("");
+    resetModels();
   }
 
   async function save() {
@@ -170,6 +192,62 @@ export default function ApiKeyPanel() {
     }
   }
 
+  /**
+ * Fetch the provider's own model catalogue.
+ *
+ * The result is labelled a catalogue everywhere it appears.  NVIDIA NIM answers
+ * `/v1/models` with 81 ids while many of them return 410 on an actual call, so
+ * showing this as "available models" would be a promise the provider never made.
+ */
+async function fetchModels() {
+    if (!selected) return;
+    setPending("models");
+    setError("");
+    try {
+      const result = await api.providerModels(selected);
+      setModels(result);
+      setModelQuery("");
+      // Seed the draft with what is stored, not with what was typed: the
+      // stored value is what inference will use.
+      setModelDraft(result.selected ?? "");
+      if (result.ok) {
+        pushLog(`$ model catalogue ${selected}: ${result.count ?? 0} id(s)`);
+      } else {
+        pushLog(`! model catalogue ${selected}: ${result.detail}`);
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setPending("");
+    }
+}
+
+/** Remember the chosen id so nodes that name no model will use it. */
+async function applyModel(model: string) {
+    if (!selected) return;
+    setPending("model");
+    setError("");
+    try {
+      await api.setProviderModel(selected, model);
+      const fresh = await api.credentials();
+      setStore(fresh);
+      setModels((prev) => (prev ? { ...prev, selected: model } : prev));
+      setModelDraft(model);
+      setNotice(
+        model
+          ? translate(lang, "keyModelSaved").replace("{model}", model)
+          : translate(lang, "keyModelCleared")
+      );
+      pushLog(`$ model for ${selected}: ${model || "(default)"}`);
+      // A probe made before the change describes a model no longer in use.
+      setProbe(null);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setPending("");
+    }
+  }
+
   async function remove() {
     if (!selected) return;
     setPending("delete");
@@ -196,6 +274,21 @@ export default function ApiKeyPanel() {
   const docsUrl = status?.docs_url || provider?.docs_url || "";
   const note = pick(status?.notes ?? provider?.notes, lang);
   const defaultBase = status?.default_base_url || provider?.default_base_url || "";
+  const defaultModel = provider?.probe_model || models?.default_model || "";
+  const selectedModel = status?.selected_model || "";
+  const hasCatalogue = provider?.has_catalogue ?? false;
+
+  /**
+   * Filter as the user types.  Substring rather than fuzzy: an 81-entry list
+   * is short enough to scan, and a fuzzy matcher that reorders entries makes
+   * it impossible to find an id you can already see.
+   */
+  const visibleModels = useMemo(() => {
+    const all = models?.models ?? [];
+    const query = modelQuery.trim().toLowerCase();
+    if (!query) return all;
+    return all.filter((item) => item.id.toLowerCase().includes(query));
+  }, [models, modelQuery]);
 
   return (
     <div className="flex h-full flex-col">
@@ -351,6 +444,154 @@ export default function ApiKeyPanel() {
             >
               {translate(lang, "keyDocs")}
             </a>
+          )}
+        </section>
+
+        {/* --- model catalogue ---------------------------------------------- */}
+        <section className="mb-3 rounded-md border border-line bg-canvas px-2 py-2">
+          <div className="flex items-center gap-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-accent/80">
+              {translate(lang, "keyModelTitle")}
+            </label>
+            {hasCatalogue && (
+              <button
+                type="button"
+                onClick={fetchModels}
+                disabled={pending !== "" || !selected}
+                className="ml-auto rounded border border-line px-2 py-0.5 text-[10px] text-[rgb(var(--c-text-dim))] transition hover:border-accent hover:text-accent disabled:opacity-40"
+              >
+                {pending === "models"
+                  ? translate(lang, "keyModelFetching")
+                  : models
+                    ? translate(lang, "keyModelRefresh")
+                    : translate(lang, "keyModelFetch")}
+              </button>
+            )}
+          </div>
+
+          {/* What will actually be sent, stated before anything is fetched. */}
+          <p className="mt-1.5 text-[10px] leading-snug text-[rgb(var(--c-text-dim))]">
+            {selectedModel ? (
+              <span className="font-mono text-accent">{selectedModel}</span>
+            ) : defaultModel ? (
+              <span className="font-mono">{defaultModel}</span>
+            ) : (
+              <span className="text-[rgb(var(--c-text-faint))]">—</span>
+            )}
+            <span className="ml-1 text-[9px] text-[rgb(var(--c-text-faint))]">
+              {selectedModel
+                ? `· ${translate(lang, "keyModelCurrent")}`
+                : defaultModel
+                  ? `· ${translate(lang, "keyModelDefault")}`
+                  : ""}
+            </span>
+          </p>
+
+          {models && (
+            <p
+              className={`mt-1 text-[9px] leading-snug ${
+                models.ok ? "text-[rgb(var(--c-text-faint))]" : "text-warn"
+              }`}
+            >
+              {models.detail}
+            </p>
+          )}
+          {!models && hasCatalogue && (
+            <p className="mt-1 text-[9px] leading-snug text-[rgb(var(--c-text-faint))]">
+              {translate(lang, "keyModelPickFirst")}
+            </p>
+          )}
+          {!hasCatalogue && (
+            <p className="mt-1 text-[9px] leading-snug text-[rgb(var(--c-text-faint))]">
+              {translate(lang, "keyModelNoneOffered")}
+            </p>
+          )}
+
+          {/* A hand-typed id always stays reachable: the catalogue is not
+              authoritative (NVIDIA lists retired ids), so the model a user
+              knows works may be absent from it.  Kept as a draft -- writing on
+              every keystroke would fire a request per character. */}
+          <div className="mt-1.5 flex gap-1">
+            <input
+              type="text"
+              value={modelDraft}
+              placeholder={translate(lang, "keyModelPlaceholder")}
+              onChange={(event) => setModelDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") applyModel(modelDraft.trim());
+              }}
+              className="min-w-0 flex-1 rounded-md border border-line bg-panel px-2 py-1.5 font-mono text-[10px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
+            />
+            <button
+              type="button"
+              onClick={() => applyModel(modelDraft.trim())}
+              disabled={pending === "model" || modelDraft.trim() === selectedModel}
+              title={translate(lang, "keyModelApply")}
+              className="shrink-0 rounded-md border border-line px-2 py-1 text-[10px] text-[rgb(var(--c-text-dim))] transition hover:border-accent hover:text-accent disabled:opacity-40"
+            >
+              {pending === "model" ? "…" : translate(lang, "keyModelApply")}
+            </button>
+          </div>
+
+          {models?.ok && (
+            <>
+              <input
+                type="text"
+                value={modelQuery}
+                onChange={(event) => setModelQuery(event.target.value)}
+                placeholder={translate(lang, "keyModelFilter")}
+                className="mt-1.5 w-full rounded-md border border-line bg-panel px-2 py-1.5 font-mono text-[10px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
+              />
+              <select
+                value=""
+                onChange={(event) => {
+                  if (event.target.value) {
+                    setModelDraft(event.target.value);
+                    applyModel(event.target.value);
+                  }
+                }}
+                size={visibleModels.length > 12 ? 12 : Math.max(visibleModels.length, 3)}
+                className="mt-1.5 w-full rounded-md border border-line bg-panel px-2 py-1 font-mono text-[10px] text-[rgb(var(--c-text))] outline-none focus:border-accent"
+              >
+                {visibleModels.length === 0 ? (
+                  <option value="">
+                    {translate(lang, "keyModelSearchNone").replace("{query}", modelQuery)}
+                  </option>
+                ) : (
+                  visibleModels.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.id}
+                      {item.id === selectedModel ? `  · ${translate(lang, "keyModelCurrent")}` : ""}
+                      {item.id === defaultModel && item.id !== selectedModel
+                        ? `  · ${translate(lang, "keyModelDefault")}`
+                        : ""}
+                      {item.detail ? `  · ${item.detail}` : ""}
+                    </option>
+                  ))
+                )}
+              </select>
+              <p className="mt-1 text-[9px] text-[rgb(var(--c-text-faint))]">
+                {translate(lang, "keyModelCount").replace(
+                  "{count}",
+                  String(models.total ?? models.count ?? 0)
+                )}
+                {models.truncated ? ` · ${models.count}/${models.total}` : ""}
+              </p>
+            </>
+          )}
+
+          {/* v0.7.3: the catalogue is explicitly not an availability promise.
+              NVIDIA lists 81 ids of which many answer 410, so this note stays
+              on screen next to the picker rather than in a footnote. */}
+          {models?.ok && (
+            <p className="mt-1 text-[9px] leading-relaxed text-[rgb(var(--c-text-faint))]">
+              {translate(lang, "keyModelNote")}
+            </p>
+          )}
+          {selectedModel && (
+            <p className="mt-1 text-[9px] text-[rgb(var(--c-text-faint))]">
+              {translate(lang, "keyModelSavedHint")}
+            </p>
           )}
         </section>
 

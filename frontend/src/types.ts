@@ -192,6 +192,12 @@ export interface CredentialStatus {
   docs_url: string;
   notes: Record<string, string>;
   default_base_url: string;
+  /** Model id the user picked from the provider's catalogue ("" = default). */
+  selected_model?: string;
+  /** The model id that will actually be sent when a node names none. */
+  effective_model?: string;
+  /** Whether this provider publishes a catalogue endpoint at all. */
+  has_catalogue?: boolean;
 }
 
 /** The catalogue entry used to render the picker before anything is stored. */
@@ -203,6 +209,40 @@ export interface CredentialProvider {
   docs_url: string;
   default_base_url: string;
   notes: Record<string, string>;
+  /** Model the connectivity check will ask for, unless a model is chosen. */
+  probe_model?: string;
+  has_catalogue?: boolean;
+}
+
+/** One entry from a provider's ``/models`` listing. */
+export interface ProviderModelEntry {
+  id: string;
+  owned_by?: string;
+  detail?: string;
+}
+
+/**
+ * A fetched model listing.
+ *
+ * `catalogue_only` is always true and must stay that way: NVIDIA NIM answers
+ * ``/v1/models`` with 81 ids while a large share of them return HTTP 410 on an
+ * actual completion.  Calling that an availability list would be a claim the
+ * provider does not make, so the GUI labels it a catalogue and leaves the
+ * connectivity test as the thing that establishes whether one id works.
+ */
+export interface ProviderModelList {
+  provider: string;
+  ok: boolean;
+  outcome?: string;
+  detail: string;
+  models: ProviderModelEntry[];
+  count?: number;
+  total?: number;
+  truncated?: boolean;
+  selected?: string;
+  default_model?: string;
+  base_url?: string;
+  http_status?: string;
 }
 
 export interface CredentialStore {

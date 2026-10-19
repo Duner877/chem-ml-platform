@@ -21,7 +21,9 @@ from ai_runtime.credentials import (
     credential_backend,
     delete_credential,
     list_credentials,
+    list_provider_models,
     set_credential,
+    set_provider_model,
     test_credential,
 )
 
@@ -32,6 +34,14 @@ class CredentialPayload(BaseModel):
     provider: str = Field(description="Provider id, e.g. openai / deepseek / ollama")
     secret: str = Field(description="The API key or, for a local provider, the base URL")
     base_url: str = Field(default="", description="Optional endpoint override")
+    model: str = Field(
+        default="",
+        description="Optional model id to remember for this provider; empty clears it",
+    )
+
+
+class ModelChoicePayload(BaseModel):
+    model: str = Field(default="", description="Model id to use, or empty to fall back to the default")
 
 
 @router.get("")
@@ -64,6 +74,10 @@ async def read_providers() -> Dict[str, Any]:
                 # "key is wrong" and "this endpoint does not serve that model"
                 # is otherwise only discoverable by getting it wrong.
                 "probe_model": spec.probe_model,
+                # Whether this provider publishes a model catalogue, so the GUI
+                # can offer the button without asking and getting an error.
+                "models_path": spec.models_path,
+                "has_catalogue": bool(spec.models_path),
             }
             for spec in PROVIDERS
         ],
@@ -79,7 +93,49 @@ async def create(payload: CredentialPayload) -> Dict[str, Any]:
     back to offline.
     """
     try:
-        return set_credential(payload.provider, payload.secret, payload.base_url)
+        result = set_credential(payload.provider, payload.secret, payload.base_url)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload.model:
+        # Saving a key and a model in one call is the natural GUI gesture: pick
+        # the provider, paste the key, choose the id.  Failing here must not
+        # undo the key, so the model's own error is reported separately.
+        try:
+            set_provider_model(payload.provider, payload.model)
+        except (KeyError, ValueError) as exc:
+            result["model_warning"] = str(exc)
+        else:
+            result["model"] = payload.model
+    return result
+
+
+@router.get("/{provider}/models")
+async def read_models(provider: str) -> Dict[str, Any]:
+    """Fetch the model catalogue this credential can address.
+
+    The response is a *catalogue*, flagged as such (``catalogue_only``).  NVIDIA
+    NIM lists 81 ids while a large share of them answer HTTP 410 on an actual
+    completion, so presenting the list as "available models" would be a claim
+    the provider does not support; the connectivity test is what establishes
+    whether a given id works.
+
+    Returns 200 with ``ok: false`` for the same reason ``/{provider}/test``
+    does: "this key has no catalogue" is a displayable answer, not a transport
+    failure.
+    """
+    try:
+        return list_provider_models(provider)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.put("/{provider}/model")
+async def choose_model(provider: str, payload: ModelChoicePayload) -> Dict[str, Any]:
+    """Remember which model this provider should serve by default."""
+    try:
+        return set_provider_model(provider, payload.model)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:

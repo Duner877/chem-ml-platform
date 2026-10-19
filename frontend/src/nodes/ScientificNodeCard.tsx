@@ -10,7 +10,7 @@ import { memo, useCallback } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 import { useEditor, useThemeTokens, type NodeStatus } from "../store";
-import { portColor } from "../theme";
+import { portColor, resolveTheme, type ThemeSetting } from "../theme";
 import FilePickerField from "../components/FilePickerField";
 import type { NodeParamSpec, NodeSpec } from "../types";
 
@@ -76,9 +76,18 @@ const CATEGORY_RAMP: Record<string, readonly string[]> = {
   ],
 };
 
-/** Accent for ``category`` under ``theme`` (falls back to a neutral step). */
+/**
+ * Accent for ``category`` under ``theme`` (falls back to a neutral step).
+ *
+ * The lookup is keyed by the *resolved* theme, so `wb-system` cannot slip
+ * through: it is a setting, not a key in this ramp, and letting it fall to the
+ * `??` branch would paint category accents from the dark ramp onto a light
+ * canvas -- legible enough to look fine and wrong in the one direction nobody
+ * re-checks.
+ */
 function categoryAccent(category: string, theme: string): string {
-  const ramp = CATEGORY_RAMP[theme] ?? CATEGORY_RAMP["wb-dark"];
+  const resolved = CATEGORY_RAMP[theme] ? theme : resolveTheme(theme as ThemeSetting);
+  const ramp = CATEGORY_RAMP[resolved] ?? CATEGORY_RAMP["wb-dark"];
   for (const [prefix, step] of CATEGORY_ACCENTS) {
     if (category.startsWith(prefix)) return ramp[step] ?? ramp[3];
   }

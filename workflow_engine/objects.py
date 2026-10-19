@@ -332,7 +332,22 @@ class Material(ScientificObject):
 
     def summary(self) -> str:
         formula = " ".join(f"{c.formula}" for c in self.composition) or "unknown"
-        extra = ", ".join(f"{k}={v:.3g}" for k, v in list(self.properties.items())[:3])
+        # ``properties`` is annotated ``Dict[str, float]`` but is not enforced at
+        # runtime, and a summary must never be the thing that raises: this runs
+        # inside report building, where a formatting failure surfaces as a failed
+        # workflow with no clue which node produced the bad value.  Formatting a
+        # non-float as-is is the honest fallback -- it shows the value instead of
+        # hiding it, and it cannot crash.
+        parts: List[str] = []
+        for key, value in list(self.properties.items())[:3]:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                parts.append(f"{key}={value}")
+            else:
+                try:
+                    parts.append(f"{key}={value:.3g}")
+                except (TypeError, ValueError):
+                    parts.append(f"{key}={value!r}")
+        extra = ", ".join(parts)
         return f"{self.name or formula} [{formula}]" + (f" ({extra})" if extra else "")
 
     def preview(self) -> Dict[str, Any]:

@@ -40,4 +40,10 @@ contextBridge.exposeInMainWorld("chemmlDesktop", {
   onBackendRestarting: (cb) => ipcRenderer.on("backend-restarting", (_e, data) => cb(data)),
   onRuntimeDiagnosis: (cb) => ipcRenderer.on("runtime-diagnosis", (_e, data) => cb(data)),
   onPortInfo: (cb) => ipcRenderer.on("port-info", (_e, data) => cb(data)),
+  // v0.7.3: "follow the system" needs the *shell's* idea of the OS
+  // appearance.  The renderer's `prefers-color-scheme` usually agrees, but on
+  // some Windows builds it only re-evaluates when something forces it, so the
+  // main process mirrors `nativeTheme` here as an authoritative second signal.
+  systemTheme: () => ipcRenderer.invoke("system-theme"),
+  onSystemThemeChange: (cb) => ipcRenderer.on("system-theme-changed", (_e, data) => cb(data)),
 });

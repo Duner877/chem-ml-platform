@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { translate } from "../i18n";
 import { useEditor } from "../store";
+import { resolveTheme } from "../theme";
 import { isMassSpectrum, type SpectrumLike } from "../spectra";
 import { IconMinus, IconPlus } from "../components/Icons";
 
@@ -81,6 +82,11 @@ export function SpectrumPlot({
   className?: string;
 }) {
   const { theme } = useEditor();
+  // The SVG carries the *resolved* theme, not the setting: `wb-system` is a
+  // menu choice with no token set behind it, and writing it here would produce
+  // a `data-theme` value no stylesheet can match -- so an exported plot would
+  // silently lose whatever the theme attribute was driving.
+  const resolvedTheme = resolveTheme(theme);
   const ms = isMassSpectrum(spectrum);
   const axis = "rgb(var(--c-text-dim))";
   // Monochrome language: the trace is drawn in the primary text colour, so it
@@ -139,7 +145,7 @@ export function SpectrumPlot({
       viewBox={`0 0 ${PLOT_W} ${PLOT_H}`}
       className={className}
       role="img"
-      data-theme={theme}
+      data-theme={resolvedTheme}
     >
       {yTicks.map((t) => (
         <g key={`y${t}`}>

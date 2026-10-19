@@ -4735,6 +4735,40 @@
     },
     {
       "type": "data",
+      "name": "abacus",
+      "version": "0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "external"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "false"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://abacus.ustc.edu.cn/"
+        }
+      ],
+      "description": "External program; detected on PATH, never bundled or redistributed."
+    },
+    {
+      "type": "data",
       "name": "cp2k",
       "version": "0",
       "scope": "required",

@@ -29,6 +29,7 @@ from .md import (
     OpenMMBackend,
 )
 from .materials import (
+    ABACUSBackend,
     MATERIALS_BACKENDS,
     QuantumESPRESSOBackend,
     TightBindingBackend,

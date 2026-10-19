@@ -28,7 +28,7 @@
  * Packaging: see `docs/V07_2_DESKTOP_RUNTIME.md` for the runtime strategy,
  * supported platforms, data-retention policy and the clean-VM test record.
  */
-const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu, nativeTheme } = require("electron");
 const { spawn } = require("child_process");
 const crypto = require("crypto");
 const path = require("path");
@@ -391,7 +391,13 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    backgroundColor: "#0b0d12",
+    // Matches the dark canvas token.  Painted before the page loads, so it is
+    // what the user sees during startup: hard-coding it while the app also
+    // offers a white theme produces a black flash on every launch for light
+    // users, which is most of what "the theme feels wrong" usually means.
+    // `nativeTheme` decides the colour, so "follow the system" opens in the
+    // right one without waiting for the renderer.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#0b0d12" : "#f7f8fa",
     title: "Chem ML Platform",
     show: false,
     titleBarStyle: "hidden",
@@ -684,6 +690,31 @@ ipcMain.handle("window-control", (_event, action) => {
 ipcMain.handle("window-state", () => ({
   maximized: Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isMaximized()),
 }));
+
+/**
+ * System appearance, for the renderer's "follow the system" theme (v0.7.3).
+ *
+ * The renderer can read `prefers-color-scheme` itself, and usually does it
+ * correctly.  Two reasons this channel exists anyway:
+ *
+ *  - `nativeTheme.shouldUseDarkColors` is what actually drives native chrome
+ *    (menus, dialogs, the window frame), so if the two disagree the app looks
+ *    half-themed -- and the *shell* is the one users notice first.
+ *  - `nativeTheme.themeSource = "system"` is the only reliable way to be told
+ *    when Windows flips at sunset.  The renderer subscribes to it and repaints.
+ *
+ * Deliberately reports only the boolean.  The renderer keeps its own
+ * `matchMedia` fallback, so this is an override rather than a dependency.
+ */
+ipcMain.handle("system-theme", () => ({
+  dark: nativeTheme.shouldUseDarkColors,
+  source: nativeTheme.themeSource,
+}));
+
+// Announce appearance changes; harmless with no window open yet.
+nativeTheme.on("updated", () => {
+  send("system-theme-changed", { dark: nativeTheme.shouldUseDarkColors });
+});
 
 /**
  * Native file picker for ``file`` typed node parameters (v0.7.2).

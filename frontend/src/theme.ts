@@ -1,9 +1,15 @@
 /** Theme tokens: the single source of truth for every colour in the GUI.
  *
- * Two themes ship with the platform:
+ * Two token sets ship with the platform:
  *
- * 1. ``wb-light``  -- the WorkBuddy white theme (light surfaces, dark text);
- * 2. ``wb-dark``   -- the WorkBuddy black theme (near-black surfaces).
+ * 1. ``wb-light``  -- the white theme (light surfaces, dark text);
+ * 2. ``wb-dark``   -- the black theme (near-black surfaces).
+ *
+ * A third *menu entry*, ``wb-system``, follows the OS appearance.  It is a
+ * setting rather than a token set: `resolveTheme()` maps it onto one of the two
+ * above at apply time, and it keeps following afterwards through
+ * `onSystemThemeChange`.  See {@link ThemeSetting} for why it must not become
+ * a third entry in `THEMES`.
  *
  * The first launch starts in ``wb-dark``; the user's choice is persisted in
  * ``localStorage`` and restored on every subsequent start.
@@ -26,6 +32,25 @@
  */
 
 export type ThemeId = "wb-light" | "wb-dark";
+
+/**
+ * What the user picks: a concrete theme, or "follow the system".
+ *
+ * `wb-system` is deliberately **not** a member of {@link ThemeId}.  It is a
+ * mode, not a third set of tokens -- it resolves to `wb-dark` or `wb-light` at
+ * apply time.  Modelling it as a peer in the token table would fail silently:
+ * `THEMES["wb-system"]` is `undefined`, so the five indexing sites fall back
+ * to `DEFAULT_THEME` and paint black on a light system while the menu still
+ * says "follow the system".  Resolution goes through {@link resolveTheme},
+ * which cannot express that state.
+ */
+export type ThemeSetting = ThemeId | "wb-system";
+
+/** Every selectable entry, in menu order. */
+export const THEME_SETTINGS: ThemeSetting[] = ["wb-dark", "wb-light", "wb-system"];
+
+/** The two entries that actually carry tokens. */
+export const THEME_IDS: ThemeId[] = ["wb-dark", "wb-light"];
 
 export interface ThemeTokens {
   /** App background (canvas). */
@@ -196,8 +221,6 @@ export const THEMES: Record<ThemeId, ThemeTokens> = {
   "wb-dark": WB_DARK,
 };
 
-export const THEME_IDS: ThemeId[] = ["wb-dark", "wb-light"];
-
 /** Theme used on the very first launch (before the user picks one). */
 export const DEFAULT_THEME: ThemeId = "wb-dark";
 
@@ -207,12 +230,136 @@ const STORAGE_KEY = "chemml-theme";
 /** CSS custom property prefix -- kept in sync with ``tailwind.config.js``. */
 const CSS_PREFIX = "--c-";
 
+/**
+ * The desktop bridge, when the GUI runs inside Electron.
+ *
+ * Declared structurally rather than imported so this module stays free of any
+ * dependency on the shell: in a browser it is simply absent.
+ */
+interface DesktopThemeBridge {
+  systemTheme?: () => Promise<{ dark: boolean; source?: string } | null>;
+  onSystemThemeChange?: (cb: (data: { dark: boolean }) => void) => void;
+}
+
+function desktopBridge(): DesktopThemeBridge | null {
+  if (typeof window === "undefined") return null;
+  const host = window as unknown as { chemmlDesktop?: DesktopThemeBridge };
+  return host.chemmlDesktop ?? null;
+}
+
+/** Last known answer from the Electron shell, per bridge instance. */
+const systemThemeCache = new WeakMap<object, boolean>();
+
+/**
+ * True when the OS asks for a dark UI.
+ *
+ * `matchMedia` is the primary signal and works in both the browser and
+ * Electron's renderer.  In Electron the *shell's* answer wins, because
+ * `nativeTheme.shouldUseDarkColors` is what paints native chrome -- when the two
+ * disagree the app looks half-themed, and the shell is what the eye reads first.
+ *
+ * A missing capability (SSR, an old webview, a bridge that has not answered
+ * yet) resolves to the dark default, which is also the first-launch theme, so
+ * the fallback path is the same one we would have chosen anyway rather than a
+ * different-looking surprise.
+ */
+export function systemPrefersDark(): boolean {
+  const bridge = desktopBridge();
+  if (bridge?.systemTheme) {
+    // Synchronous by necessity: theme resolution happens inside React render
+    // and inside a zustand selector, where a promise cannot be awaited.  The
+    // bridge caches the shell's answer after the first read, so this is a
+    // plain lookup after startup; a slow first call simply renders the default
+    // once and `onSystemThemeChange` corrects it.
+    const cached = systemThemeCache.get(bridge);
+    if (cached !== undefined) return cached;
+    void bridge
+      .systemTheme()
+      .then((answer) => {
+        if (answer && typeof answer.dark === "boolean") {
+          systemThemeCache.set(bridge, answer.dark);
+        }
+      })
+      .catch(() => undefined);
+  }
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return DEFAULT_THEME === "wb-dark";
+  }
+  try {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  } catch {
+    return DEFAULT_THEME === "wb-dark";
+  }
+}
+
+/**
+ * Turn a user *setting* into the concrete theme whose tokens get painted.
+ *
+ * Every consumer of tokens must go through this.  Indexing ``THEMES`` with a
+ * setting directly is the bug described on {@link ThemeSetting}.
+ */
+export function resolveTheme(setting: ThemeSetting): ThemeId {
+  if (setting === "wb-system") {
+    return systemPrefersDark() ? "wb-dark" : "wb-light";
+  }
+  return THEMES[setting] ? setting : DEFAULT_THEME;
+}
+
+/**
+ * Subscribe to OS appearance changes; returns an unsubscribe function.
+ *
+ * Called by the store so a machine that switches to dark at sunset actually
+ * repaints.  Without it "follow the system" would only be true at launch -- the
+ * most common way this feature is judged broken.
+ *
+ * Both signals are wired.  `matchMedia` covers the browser and is the one that
+ * works everywhere; in Electron the shell's `nativeTheme` also announces the
+ * change, and updating the cache from it is what keeps the *next* synchronous
+ * `systemPrefersDark()` read correct.  Duplicates are harmless -- the handler
+ * repaints the same resolved theme either way.
+ */
+export function onSystemThemeChange(handler: () => void): () => void {
+  const bridge = desktopBridge();
+  if (bridge?.onSystemThemeChange) {
+    bridge.onSystemThemeChange((data) => {
+      if (bridge && typeof data?.dark === "boolean") {
+        systemThemeCache.set(bridge, data.dark);
+      }
+      handler();
+    });
+  }
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => undefined;
+  }
+  let query: MediaQueryList;
+  try {
+    query = window.matchMedia("(prefers-color-scheme: dark)");
+  } catch {
+    return () => undefined;
+  }
+  const listener = () => handler();
+  // Safari < 14 and older WebKit only have the deprecated form.
+  if (typeof query.addEventListener === "function") {
+    query.addEventListener("change", listener);
+    return () => query.removeEventListener("change", listener);
+  }
+  query.addListener(listener);
+  return () => query.removeListener(listener);
+}
+
 function channel(value: string): string {
   return value.trim();
 }
 
-/** Write every token of ``themeId`` onto ``<html>`` as ``--c-*`` channels. */
-export function applyTheme(themeId: ThemeId): void {
+/**
+ * Paint the tokens for ``setting`` onto `<html>` and remember the choice.
+ *
+ * The *setting* is persisted, not the resolved theme: storing the resolved id
+ * would turn "follow the system" into a frozen snapshot on the next launch,
+ * which is the one behaviour it must never have.
+ */
+export function applyTheme(setting: ThemeSetting): void {
+  const themeId = resolveTheme(setting);
   if (typeof document === "undefined") return;
   const tokens = THEMES[themeId] ?? THEMES[DEFAULT_THEME];
   const root = document.documentElement;
@@ -240,23 +387,27 @@ export function applyTheme(themeId: ThemeId): void {
   for (const [name, value] of simple) {
     root.style.setProperty(`${CSS_PREFIX}${name}`, channel(value));
   }
+  // data-theme carries the *resolved* id so CSS and the Electron shell can
+  // read what is actually on screen; data-theme-setting carries the choice so
+  // "is this following the system" stays answerable.
   root.setAttribute("data-theme", themeId);
+  root.setAttribute("data-theme-setting", setting);
   try {
-    localStorage.setItem(STORAGE_KEY, themeId);
+    localStorage.setItem(STORAGE_KEY, setting);
   } catch {
     /* private mode -- the theme simply is not remembered */
   }
 }
 
 /**
- * Theme id persisted by a previous session.  First launch (no stored choice)
- * starts in the WorkBuddy black theme; later launches restore the user's pick.
+ * Theme setting persisted by a previous session.  First launch (no stored
+ * choice) starts in the WorkBuddy black theme; later launches restore the pick.
  */
-export function storedTheme(): ThemeId {
+export function storedTheme(): ThemeSetting {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
-    if (value && (THEME_IDS as string[]).includes(value)) {
-      return value as ThemeId;
+    if (value && (THEME_SETTINGS as string[]).includes(value)) {
+      return value as ThemeSetting;
     }
   } catch {
     /* ignore */
@@ -264,12 +415,12 @@ export function storedTheme(): ThemeId {
   return DEFAULT_THEME;
 }
 
-/** Theme to start with: ``?theme=<id>`` (deep link) beats the stored choice. */
-export function initialTheme(): ThemeId {
+/** Setting to start with: ``?theme=<id>`` (deep link) beats the stored choice. */
+export function initialTheme(): ThemeSetting {
   if (typeof window !== "undefined") {
     const requested = new URLSearchParams(window.location.search).get("theme");
-    if (requested && (THEME_IDS as string[]).includes(requested)) {
-      return requested as ThemeId;
+    if (requested && (THEME_SETTINGS as string[]).includes(requested)) {
+      return requested as ThemeSetting;
     }
   }
   return storedTheme();

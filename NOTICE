@@ -188,6 +188,7 @@ installed by the user. None of them are bundled or redistributed; the
 user must obtain their own licence. The platform falls back to internal
 approximations when a program is missing.
 
+  abacus — LGPL-3.0 <https://abacus.ustc.edu.cn/>
   cp2k — GPL-2.0 <https://www.cp2k.org/>
   gaussian — Commercial license; NOT bundled with the platform <https://gaussian.com/>
   gromacs — LGPL-2.1 <https://www.gromacs.org/>

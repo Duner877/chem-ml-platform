@@ -76,6 +76,15 @@ class AIConfig:
     api_keys: Dict[str, str] = field(default_factory=dict)
     #: ``provider name -> base url`` overrides (Ollama / vLLM endpoints).
     base_urls: Dict[str, str] = field(default_factory=dict)
+    #: ``provider name -> model id`` chosen by the user in the API-key panel.
+    #:
+    #: v0.7.3 added this so the model list fetched from the provider's own
+    #: ``/models`` endpoint could actually be *used*.  A catalogue the user can
+    #: read but not select from is a read-only display: the runtime kept
+    #: sending whatever the node's default was, so a user who picked
+    #: ``openai/gpt-oss-20b`` because NVIDIA's other 80 ids were retired got the
+    #: retired one anyway.  Keyed by the same provider id as ``base_urls``.
+    models: Dict[str, str] = field(default_factory=dict)
 
     # -- (de)serialisation --------------------------------------------------- #
     def to_dict(self) -> Dict[str, Any]:
@@ -101,6 +110,7 @@ class AIConfig:
         self.model = str(self.model or "")
         self.api_keys = {str(k): str(v) for k, v in dict(self.api_keys or {}).items()}
         self.base_urls = {str(k): str(v) for k, v in dict(self.base_urls or {}).items()}
+        self.models = {str(k): str(v) for k, v in dict(self.models or {}).items()}
         return self
 
 

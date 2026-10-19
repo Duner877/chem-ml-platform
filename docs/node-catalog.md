@@ -3,10 +3,10 @@
 > 本文件由 `scripts/node_catalog.py` 自动生成，请勿手工编辑。
 > 数据来源：`node_registry/registry.json`（节点注册表扫描结果）。
 
-- 节点总数：**99**
+- 节点总数：**100**
 - 分类数：**30**
 - 扫描模块：**56**
-- 尚无验证证据的节点：**94**（未验证 ≠ 不可用，但**不得**宣传为已验证）
+- 尚无验证证据的节点：**95**（未验证 ≠ 不可用，但**不得**宣传为已验证）
 
 ## 能力标签说明
 
@@ -46,7 +46,7 @@
 | --- | --- |
 | `executable` | 86 |
 | `experimental` | 5 |
-| `unavailable` | 8 |
+| `unavailable` | 9 |
 
 ## capability_status 汇总（v0.7.2）
 
@@ -54,20 +54,20 @@
 | --- | --- |
 | `executable` | 86 |
 | `experimental` | 1 |
-| `unavailable` | 8 |
+| `unavailable` | 9 |
 | `verified` | 4 |
 
 ## execution_mode 汇总（v0.7.2）
 
 | execution_mode | 节点数 |
 | --- | --- |
-| `internal_approximation` | 99 |
+| `internal_approximation` | 100 |
 
 ## 可复现级别汇总（v0.7.2）
 
 | reproducibility_level | 节点数 |
 | --- | --- |
-| `deterministic` | 97 |
+| `deterministic` | 98 |
 | `nondeterministic` | 2 |
 
 ## 能力汇总
@@ -75,7 +75,7 @@
 | 能力标签 | 节点数 |
 | --- | --- |
 | `deduces_fragmentation_pathway` | 1 |
-| `experimental` | 13 |
+| `experimental` | 14 |
 | `models_double_sei_energetics` | 1 |
 | `models_electrolyte_aging` | 1 |
 | `models_nanopore_desolvation` | 1 |
@@ -84,7 +84,7 @@
 | `models_seismic_fwi` | 1 |
 | `models_seismic_submission` | 1 |
 | `nondeterministic` | 2 |
-| `requires_external_software` | 9 |
+| `requires_external_software` | 10 |
 | `requires_gpu` | 4 |
 | `requires_network` | 15 |
 | `sensitive_data` | 1 |
@@ -187,6 +187,7 @@
 | `GROMACSNode` | Simulation/MD | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `gmx`（缺失：`gmx`） |
 | `LAMMPSNode` | Simulation/MD | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `lmp`（缺失：`lmp`） |
 | `OpenMMNode` | Simulation/MD | `experimental` | `experimental` | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `python` |
+| `ABACUSNode` | Simulation/Materials | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `abacus`（缺失：`abacus`） |
 | `QuantumESPRESSONode` | Simulation/Materials | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `pw.x`（缺失：`pw.x`） |
 | `VASPNode` | Simulation/Materials | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `vasp_std`（缺失：`vasp_std`） |
 | `CP2KNode` | Simulation/Quantum | `unavailable` | `unavailable`（已降级） | `internal_approximation` | 是 | — | `requires_external_software`, `experimental` | `cp2k.psmp`（缺失：`cp2k.psmp`） |

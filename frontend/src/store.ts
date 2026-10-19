@@ -19,11 +19,14 @@ import type { NodeSpec, RunResult } from "./types";
 import type { Lang } from "./i18n";
 import {
   DEFAULT_THEME,
+  THEME_SETTINGS,
   applyTheme,
   initialTheme,
+  onSystemThemeChange,
   portColor,
+  resolveTheme,
   THEMES,
-  type ThemeId,
+  type ThemeSetting,
   type ThemeTokens,
 } from "./theme";
 
@@ -41,7 +44,7 @@ export type DockTab =
 
 export interface EditorState {
   lang: Lang;
-  theme: ThemeId;
+  theme: ThemeSetting;
   specs: Record<string, NodeSpec>;
   categories: { name: string; count: number }[];
   nodes: Node[];
@@ -79,7 +82,7 @@ export interface EditorState {
 
   setLang: (lang: Lang) => void;
   toggleLang: () => void;
-  setTheme: (theme: ThemeId) => void;
+  setTheme: (theme: ThemeSetting) => void;
   cycleTheme: () => void;
   setSpecs: (specs: NodeSpec[]) => void;
   setSearch: (query: string) => void;
@@ -128,11 +131,17 @@ function nextId(prefix: string): string {
 
 /** Active theme tokens (kept in sync with the CSS variables by ``applyTheme``). */
 export function useThemeTokens(): ThemeTokens {
-  return THEMES[useEditor((state) => state.theme)] ?? THEMES[DEFAULT_THEME];
+  return THEMES[resolveTheme(useEditor((state) => state.theme))] ?? THEMES[DEFAULT_THEME];
 }
 
-/** Order used by the theme cycler (top bar button / keyboard shortcut). */
-const THEME_CYCLE: ThemeId[] = ["wb-dark", "wb-light"];
+/**
+ * Order used by the theme cycler (top bar button / keyboard shortcut).
+ *
+ * `THEME_SETTINGS`, not a local copy: a second list is exactly how the menu and
+ * the cycler drift apart, and a "follow the system" entry that the cycler
+ * skipped would look like a bug in whichever direction it was missed.
+ */
+const THEME_CYCLE: ThemeSetting[] = THEME_SETTINGS;
 
 /** Colour a connector by the data type of its *source* port (ComfyUI style). */
 function edgeStyleFor(
@@ -147,8 +156,8 @@ function edgeStyleFor(
 }
 
 /** Re-stamp every edge after a theme switch (edge colours are theme tokens). */
-function recolourEdges(state: EditorState, theme: ThemeId): Edge[] {
-  const tokens = THEMES[theme] ?? THEMES[DEFAULT_THEME];
+function recolourEdges(state: EditorState, theme: ThemeSetting): Edge[] {
+  const tokens = THEMES[resolveTheme(theme)] ?? THEMES[DEFAULT_THEME];
   return state.edges.map((edge) => {
     const source = state.nodes.find((node) => node.id === edge.source);
     const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
@@ -245,7 +254,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   onConnect: (connection: Connection) => {
     const source = get().nodes.find((node) => node.id === connection.source);
     const sourceType = (source?.data as unknown as { type?: string } | undefined)?.type;
-    const tokens = THEMES[get().theme] ?? THEMES[DEFAULT_THEME];
+    const tokens = THEMES[resolveTheme(get().theme)] ?? THEMES[DEFAULT_THEME];
     set({
       edges: addEdge(
         {
@@ -404,7 +413,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       if (!source || !target) continue;
       const sourceNode = nodes.find((node) => node.id === source);
       const sourceType = (sourceNode?.data as unknown as { type?: string } | undefined)?.type;
-      const tokens = THEMES[get().theme] ?? THEMES[DEFAULT_THEME];
+      const tokens = THEMES[resolveTheme(get().theme)] ?? THEMES[DEFAULT_THEME];
       edges.push({
         id: nextId("e"),
         source,
@@ -431,3 +440,24 @@ export const useEditor = create<EditorState>((set, get) => ({
       })),
     }),
 }));
+
+/**
+ * Keep "follow the system" honest after launch.
+ *
+ * Registered once, at module load, rather than inside a component: the
+ * subscription has to outlive whichever panel happened to be mounted when the
+ * OS flipped.  A no-op unless the current setting is `wb-system`, so a user who
+ * picked black explicitly never has their explicit choice overridden by the
+ * machine.
+ *
+ * This also matters for correctness of the *edges*, not just the CSS variables:
+ * connector colours come from theme tokens held in React Flow edge styles, so a
+ * repaint that only rewrote `--c-*` would leave coloured connectors behind on a
+ * background that changed.
+ */
+onSystemThemeChange(() => {
+  const state = useEditor.getState();
+  if (state.theme !== "wb-system") return;
+  applyTheme("wb-system");
+  useEditor.setState({ edges: recolourEdges(state, "wb-system") });
+});
