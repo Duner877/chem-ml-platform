@@ -355,3 +355,135 @@ python scripts/dataset_governance.py --check
 python -m node_registry --write && python scripts/node_catalog.py --check
 python scripts/package.py --name Chem-ML-Platform-v0.7.3 --output ../Chem-ML-Platform-v0.7.3.zip
 ```
+
+---
+
+## 8. 追加交付：第三方模型列表 · 固态 DFT 复刻 · 三档主题
+
+本节记录 0.7.3 版本内追加的三项需求。**同样遵守第一原则：只写实际跑过的命令与真实回显。**
+
+### 8.1 第三方 API 模型列表（GUI 可获取并修改）
+
+用户在 API Key 面板可直接拉取服务商模型清单、筛选、选定并保存为该 provider 的默认模型。
+
+- 后端：`GET /api/credentials/{provider}/models`、`PUT /api/credentials/{provider}/model`
+  （**用 `app.openapi()["paths"]` 确认挂载**，`app.routes` 看不到嵌套路由）
+- 前端：`ApiKeyPanel.tsx` 的模型目录区块，含子串筛选与 12 行上限的下拉
+- 运行时：`nodes/ai/llm.py::_configured_model()` 读取用户所选模型
+
+**为什么必须区分「目录」与「可用」**——用用户提供的 NVIDIA `nvapi-` Key 实测：
+
+| 事实 | 实测值 |
+| --- | --- |
+| `GET /v1/models` 返回的 id 数 | **81** |
+| 其中调用即 410 Gone / 404 的 | 大多数 |
+| `deepseek-ai/deepseek-v4.1-flash` | 在目录内，连接成功后**连续 300 秒零字节** |
+| `openai/gpt-oss-20b` | HTTP 200，约 1.0 s |
+| `stepfun-ai/step-5-preview` | HTTP 200，约 1.7 s |
+
+因此接口返回体带 `catalogue_only: True`，面板常驻提示「目录 ≠ 可用清单」。
+410 归类为 `model_unsupported`、503 为 `rate_limited`，**绝不并入 `invalid_key`**
+——否则一个退役模型 id 会让用户以为自己的 Key 失效了。
+
+另一个实测细节：**推理模型 token 预算不足时返回 `content: null` + `finish_reason: length`**。
+`str(message.get("content",""))` 会把 `null` 读成字符串 `"None"`——非空但毫无内容，
+下游模型于是自信地写出一篇答非所问的文章且不报错。本轮沿用 400/3000 token 的实测结论。
+
+### 8.2 复刻真实案例（Agent 自主规划）
+
+参考案例为一次真实会话（`Al原胞优化与能带态密度计算`，plan_id 12694 / execution_id 15244）。
+关键约束是**路径与产物均由 Agent 自行规划**，因此不只是跑通结果。
+
+本轮修掉的**静默失效**缺陷（每条都有回归测试，且已反向验证）：
+
+| # | 缺陷 | 后果 | 现状 |
+| --- | --- | --- | --- |
+| 1 | `Planner` 目录键只读 `type`，而注册表产出 `node_type` | **catalog 恒为空**，prompt 写「(no node catalogue available)」，随后回退配方并**报告成功**——LLM 规划整条路径死了却零报错 | 100/100 节点入目录 |
+| 2 | 规划 prompt 只有 `description[:90]`，无参数 schema | 模型无从得知 `ABACUSNode` 有 `calculation`，只输出 `params:{}`，**计划看着规划过了、实际跑的是默认计算** | prompt 注入端口 + 参数名 + 枚举取值 + 默认值 |
+| 3 | 模型编造的参数名照单全收 | 节点把未知参数存进 `self.params` 后永不读取 → **通过校验、运行成功、什么也没做** | 丢弃并记入 `plan.notes`；枚举标签回显改写而非丢弃整份计划 |
+| 4 | 配方含 **16 处**注册表里不存在的参数 | `technique`→`mode`、`height/limit`→`prominence/max_peaks`、`order`→`polyorder`、`target`→`target_property`、`asls`→`als`、`B3LYP`→`b3lyp`…全部静默失效 | 逐项对齐，测试锁死 |
+| 5 | `_relax` **原样返回输入 material** | 下游 band/PDOS 按原始晶格常数重算：报告写「a 4.050 → 3.987 Å」而**能带画的是 a=4.050 Å**，每个数字都自洽地错在同一个晶胞上 | 返回弛豫后晶胞的**拷贝**（避免污染共享上游产物的其他分支） |
+| 6 | `_resolve_lattice_constant` 读 `material.lattice` | 该字段**不存在**（实为 `structure`），`getattr(...,None)` 吞掉 miss → Material 上显式传的晶胞被静默忽略 | 读 `structure` |
+| 7 | `Material.summary()` 用 `:.3g` 格式化 `properties` | 字段标注 `Dict[str,float]` 但运行时不强约束，遇字符串抛 ValueError，且发生在报告构建内部 → 表现为「工作流失败」却看不出是哪个节点 | 非数值原样输出 |
+| 8 | `max_workers` 硬编码 1 | 同代独立计算（能带 ∥ 态密度）被强制串行 | 可配置（0 = 核数一半）；**放开前先查了写冲突**——所有固态节点都写固定文件名（`tb.in`/`INPUT`/`Al_primitive.STRU`），同代并跑互相覆盖且**存活哪个取决于线程调度**，故节点目录改按 `node_id` 划分 |
+
+#### 紧束缚引擎的物理修正
+
+引擎此前能跑但物理不正确，四处修正均以实测数字锁定：
+
+1. **Born 排斥势**：旧式非对称归一化 `1/dev² + dev⁶ − 2` 在 `dev = 0.864` 时为 **−0.246**
+   （实测 `rep(3.5) = −5.87 eV`）——**「墙」其实是井**，Al 落在 3.527 Å（实验 4.05）。
+   改为完全平方 `κ·CN·(dev − 1/dev)²`，**在数学上不可能为负**，一次消除整类错误。
+2. **分数占据 + 自洽费米面**：硬填 `E ≤ E_F` 使 E(a) **不连续**（每条带跨费米面跳一个带能），
+   实测 Al 曲线**每 ~0.1 Å 一个虚假局域极小**——这正是「从 a=3.60 Å 出发弛豫
+   **报告 11% 误差却声称已收敛且根本没动**」的原因。费米面按电子数二分求解，故展宽
+   （0.15 eV，远大于室温 0.026 eV，用于同时吸收有限 k 采样误差）**不改变占据电子数**。
+3. **k 网格改半开 `[0,1)`**：Brillouin 区是周期的，闭合网格把 Γ（Al 能带最低点）算两遍，
+   积分被固定偏置，与 Born 墙竞争后极小值位置漂移。
+   弛豫结果的 k 点无关性：**极差 2.0 Å → 0.037 Å**。
+4. **跃迁参考长度**改用固定的 `_REFERENCE_BOND`：原先取 `d_nn(a)`，使
+   `exp(−(d−r0)δ)` 恒为 1、`a` 被抵消，**所有材料能带完全相同**。
+
+#### 复刻结果（本机实跑）
+
+```
+Agent 规划：intent=solid_state_dft，7 节点 / 10 边
+validate: PASS   status: completed   errors: 0   692 ms
+  relax  cell-relax Al fcc: a 4.050 -> 3.987 Å（实验 4.05，误差 −1.6%）
+  bands  Al fcc a=3.987 Å，Γ→X→W→K→Γ→L→W→X，gap 0.000 eV，E_F −6.851 eV
+  pdos   Al fcc a=3.987 Å，DOS(E_F)=0.2152 states/eV → 金属
+产物：report_*.md、solid_state_dft_report.html（含执行溯源）
+```
+
+**三处晶格常数一致性已由测试断言**：能带与态密度节点报告的 `a` 必须等于弛豫节点
+输出的 `a`（容差 0.01 Å）——即缺陷 5 不会再复发。
+
+并行正确性：串行（1 worker）与 4 / 8 worker 的产物**逐字节一致**
+（掩码 run_id 后文本完全相同），唯一差异是嵌入的运行号。
+
+**无 torch 宿主机（`D:/python 3.13.6`，桌面版实际使用的解释器）同样跑通**，
+从演示工作流文件 `workflows/11_solid_state_dft.json` 直跑同样 `completed` / 0 错误。
+
+新增演示工作流 `11_solid_state_dft.json` **由 `solid_state_dft` 配方生成**，
+因此 GUI 演示与 Agent 自主规划是同一张图，不会各自漂移。
+
+#### 精度声明（不可省略）
+
+两中心 Slater-Koster 模型，晶格常数误差：Al −1.6%、Ni −0.9%、Ag −1.2%、Cu −1.4%、
+Fe −0.1%、W −2.1%、Mg −0.7%。**定性趋势可信，绝对数值以 DFT 为准。**
+不处理自旋极化、强关联与范德华修正；多元素化合物按过渡金属优先取一种计算。
+
+### 8.3 主题：黑 / 白 / 跟随系统
+
+- 文案由「WorkBuddy 黑/白」改为「**黑**」「**白**」，新增「**跟随系统**」
+- `wb-system` 是**模式不是令牌集**：直接 `THEMES[setting]` 索引会拿到 `undefined`，
+  故 store 内 4 处索引全部改走 `resolveTheme()`，并有测试逐行断言「每个 `THEMES[` 行
+  都必须含 `resolveTheme`」
+- **持久化存 setting 而非 resolved id**：否则用户在深色系统下选「跟随系统」会被记成
+  `wb-dark`，换到浅色桌面后永远回不来。`data-theme`（解析结果）与 `data-theme-setting`
+  （用户选择）分别写入
+- Electron 侧接 `nativeTheme` + `prefers-color-scheme` 双通道；
+  `backgroundColor` 随之切换，消除启动黑闪
+
+### 8.4 本轮验证（真实回显）
+
+| 检查 | 结果 |
+| --- | --- |
+| 全量 pytest | **839 项全绿**（前 781 + 新增 51 + host_dependent 7） |
+| 质量门禁 | 27 阶段，见 §2 与 `output/quality_gate.md` |
+| `version.py --check` | `OK: every artefact agrees on 0.7.3` |
+| `license_report.py --check` | `PASS`（12 py / 153 npm / 10 external） |
+| `dataset_governance.py --check` | `OK: 10 dataset metadata records are consistent` |
+| `node_catalog.py --check` | `OK: README / stats agree with the node registry` |
+| `release_manifest.py --check` | `OK: manifest matches 0.7.3` |
+| 前端 `npm run build` | tsc 干净 + vite 产出 3 文件 |
+| 桌面 `npm run build` | 安装包 75.5 MiB，构建印章与 HEAD 一致 |
+| `package.py` | 428 文件，扫描 clean（无密钥、无禁止路径） |
+| 演示工作流 | **11/11 全部执行成功** |
+| 反向验证 | 退回旧排斥式 + 旧目录键 → 相关测试**如期失败**（9 项），恢复后全绿 |
+
+**已知限制（本轮未做）**：
+- GUI 三档主题的**交互**仍只能由用户在真实桌面上确认（无桌面会话的执行环境里 Electron
+  会 `exitcode=0` 静默退出，memory 陷阱 24）
+- NVIDIA 模型的「目录内但不可用」需逐个实测，本轮只记录已测的 3 个 id
+- 干净虚拟机安装验证、安装包代码签名、Linux/macOS 实机验证 —— 仍为 **NOT PERFORMED**
