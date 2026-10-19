@@ -395,7 +395,7 @@ python scripts/package.py --name Chem-ML-Platform-v0.7.3 --output ../Chem-ML-Pla
 参考案例为一次真实会话（`Al原胞优化与能带态密度计算`，plan_id 12694 / execution_id 15244）。
 关键约束是**路径与产物均由 Agent 自行规划**，因此不只是跑通结果。
 
-本轮修掉的**静默失效**缺陷（每条都有回归测试，且已反向验证）：
+本轮修掉的**静默失效**缺陷（每条都有回归测试）：
 
 | # | 缺陷 | 后果 | 现状 |
 | --- | --- | --- | --- |
@@ -481,7 +481,7 @@ Fe −0.1%、W −2.1%、Mg −0.7%。**定性趋势可信，绝对数值以 DFT
 | 桌面 `npm run build` | 安装包 75.5 MiB，构建印章与 HEAD 一致 |
 | `package.py` | 428 文件，扫描 clean（无密钥、无禁止路径） |
 | 演示工作流 | **11/11 全部执行成功** |
-| 反向验证 | 退回旧排斥式 + 旧目录键 → 相关测试**如期失败**（9 项），恢复后全绿 |
+| 旧实现回退 | 退回旧排斥式 + 旧目录键 → 相关测试如期失败（9 项），恢复后全绿 |
 
 **已知限制（本轮未做）**：
 - GUI 三档主题的**交互**仍只能由用户在真实桌面上确认（无桌面会话的执行环境里 Electron
@@ -552,7 +552,7 @@ Fe −0.1%、W −2.1%、Mg −0.7%。**定性趋势可信，绝对数值以 DFT
 - 输出实回收显：`Al_能带图.png`、`Al_态密度_DOS.png`、`Al_投影态密度_PDOS.png`、
   `Al_弛豫能量收敛.png`、`Al_弛豫力收敛.png`、`Al_弛豫应力收敛.png`。
 
-### 9.6 回归与反向验证
+### 9.6 回归测试
 
 新增 `tests/test_v07_3_product_figures.py`（38 项）锁定：
 多曲线不被拍平、k-major 必须转置、力/应力列存在且同号、首步为 gap 而非 0、
@@ -560,7 +560,7 @@ Fe −0.1%、W −2.1%、Mg −0.7%。**定性趋势可信，绝对数值以 DFT
 中文文件名保留、空谱**大声失败**而非静默跳过（否则工作流会「报告成功」却只交付 5/6 张）、
 并发渲染互不污染、工作流声明的 6 张图与实际产出**逐一对应**。
 
-**反向验证（退回旧实现确认测试确实咬得住）**：
+**退回旧实现确认测试确实咬得住**：
 - 移除 `_MPL_LOCK` → 并发测试 **FAILED**
 - 去掉能带转置 `.T` → `test_band_spectrum_has_one_trace_per_band` **FAILED**
 
@@ -619,14 +619,14 @@ spectrum : None               ← 能带/DOS/PDOS 端口全丢
 |---|---|
 | 误以为 ABACUS 输出文件叫 `band_*.dat` | 查官方文档，实为 `BANDS_<k>.dat` |
 | 误从 `istate.info` 第1 列读总能量，实测得 −145.28 eV | 该列是**本征值**不是总能；只有 `FINAL_ETOT_IS` 是总能。已移除该读取并加测试锁定 |
-| 反向验证时按位置批量替换源码，切掉了后续类定义（`NameError: VASPBackend`） | 恢复后改为「先切出类体再在类体内替换」，四轮逐条独立验证 |
+| 按位置批量替换源码时切掉了后续类定义（`NameError: VASPBackend`） | 改为「先切出类体再在类体内替换」，四轮逐条独立验证 |
 
 还纠正了上一轮的一个诊断错误：`ABACUSNode.required_software = []` 并非「依赖声明
 不完整」。实测 `node_registry/capabilities.py::node_status` 会把 `executable`
 自动并入依赖清单，`resolve_software('abacus')` 返回 `None`、`availability` 为
 `executable`（即「有内置回退」），机制按设计正常工作。
 
-### 10.5 回归与反向验证
+### 10.5 回归测试
 
 新增 `tests/test_v07_3_abacus_external_path.py`（15 项）。断言的是**端口数据**
 而非 `engine` 字符串或返回码——后者恰恰是把断链路伪装成健康的那两个信号。
@@ -640,7 +640,7 @@ spectrum : None               ← 能带/DOS/PDOS 端口全丢
 | 谱端口（真实谱 → `None`） | FAILED，`spectrum port is populated` |
 | 文件名（`BANDS_` → `band_`） | FAILED，抛 `ExternalToolError` |
 
-第一轮反向验证时 `[argv]` 曾**未咬住**：假 abacus 忽略多余参数，所以位置参数
+第一轮退回旧实现时 `[argv]` 曾**未咬住**：假 abacus 忽略多余参数，所以位置参数
 无害。加固夹具使其对位置参数退出码 2 之后才咬住——**一个测不出差异的夹具
 等于没有测试**。
 

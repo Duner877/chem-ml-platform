@@ -1,6 +1,6 @@
 # 贡献指南 / Contributing to Chem ML Platform
 
-感谢你愿意为 Chem ML Platform 做贡献。这个仓库的铁律只有一条：**零伪代码** —— 每个文件都必须能运行。请按下面的流程提交你的工作。
+感谢你愿意为 Chem ML Platform 做贡献。仓库的基本要求是：**不含占位实现** —— 每个文件都必须能运行。请按下面的流程提交你的工作。
 
 ## 行为准则
 
@@ -15,8 +15,8 @@
 ## 开发环境
 
 ```bash
-git clone https://github.com/<you>/Chem-ML-Platform-v0.7.2.git
-cd Chem-ML-Platform-v0.7.2
+git clone https://github.com/Duner877/chem-ml-platform.git
+cd chem-ml-platform
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
