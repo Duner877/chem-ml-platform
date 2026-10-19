@@ -39,8 +39,11 @@ export function niceTicks(min: number, max: number, count = 8): number[] {
 export interface PlotModel {
   xs: number[];
   ys: number[];
+  /** One entry per band; empty for an ordinary single-trace spectrum. */
+  bands: number[][];
   xmin: number;
   xmax: number;
+  ymin: number;
   ymax: number;
   centroid: boolean;
 }
@@ -48,20 +51,40 @@ export interface PlotModel {
 /** Reduce a spectrum to plottable arrays plus the axis range. */
 export function buildModel(spectrum: SpectrumLike): PlotModel {
   const xs = (spectrum.x ?? []).filter((v) => Number.isFinite(v));
-  const ysRaw = (spectrum.y ?? []).filter((v) => Number.isFinite(v));
+  // A band structure arrives as ``curves`` with ``y`` empty.  Falling back to
+  // ``y`` first would draw the empty panel the old flattening produced, and
+  // taking ``min(len(x), len(y))`` of a 2-D ``y`` is exactly the truncation this
+  // replaced -- band 1 followed by the head of band 2, joined into one line.
+  const rawCurves = spectrum.curves ?? [];
+  const bands = rawCurves
+    .map((row) => (row ?? []).map((v) => (Number.isFinite(v) ? v : Number.NaN)))
+    .filter((row) => row.length > 1);
+  const ysRaw = bands.length
+    ? []
+    : (spectrum.y ?? []).filter((v) => Number.isFinite(v));
   const n = Math.min(xs.length, ysRaw.length);
   const xsN = xs.slice(0, n);
   const ysN = ysRaw.slice(0, n);
-  const xmax = xsN.length ? Math.max(...xsN) : 1;
-  const xmin = xsN.length ? Math.min(...xsN) : 0;
-  const ymax = ysN.length ? Math.max(...ysN) : 1;
+  const width = bands.length ? Math.min(xs.length, ...bands.map((r) => r.length)) : 0;
+  const xsB = xs.slice(0, width);
+  const bandsN = bands.map((row) => row.slice(0, width));
+  const allY = bandsN.length ? bandsN.flat().filter((v) => Number.isFinite(v)) : ysN;
+  const xmax = xsN.length ? Math.max(...xsN) : xsB.length ? Math.max(...xsB) : 1;
+  const xmin = xsN.length ? Math.min(...xsN) : xsB.length ? Math.min(...xsB) : 0;
+  const ymax = allY.length ? Math.max(...allY) : 1;
+  // Band structures straddle E_F, so the axis has to include zero or half the
+  // plot sits above the frame; a DOS does not, and forcing it there would
+  // flatten every peak against the top.
+  const ymin = bandsN.length ? Math.min(0, Math.min(...allY)) : 0;
   const padX = (xmax - xmin) * 0.02 || 1;
   return {
-    xs: xsN,
+    xs: bandsN.length ? xsB : xsN,
     ys: ysN,
+    bands: bandsN,
     xmin: Math.max(0, xmin - padX),
     xmax: xmax + padX,
-    ymax: ymax || 1,
+    ymin,
+    ymax,
     centroid: (spectrum.peaks?.length ?? 0) > 0 && xsN.length < 2000,
   };
 }
@@ -96,14 +119,15 @@ export function SpectrumPlot({
   const model = buildModel(spectrum);
   const view = (() => {
     const spanX = (model.xmax - model.xmin) || 1;
-    const spanY = model.ymax || 1;
+    const spanY = (model.ymax - model.ymin) || 1;
     const cx = model.xmin + spanX / 2 + panX;
-    const cy = spanY / 2;
+    const cy = (model.ymax + model.ymin) / 2;
     const halfW = (spanX / 2) * zoom;
     const halfH = (spanY / 2) * zoom;
     return {
       xmin: Math.max(0, cx - halfW),
       xmax: cx + halfW,
+      ymin: cy - halfH,
       ymax: cy + halfH,
     };
   })();
@@ -112,13 +136,32 @@ export function SpectrumPlot({
     PLOT_M.left +
     ((v - view.xmin) / (view.xmax - view.xmin || 1)) * (PLOT_W - PLOT_M.left - PLOT_M.right);
   const py = (v: number) =>
-    PLOT_H - PLOT_M.bottom - (v / view.ymax) * (PLOT_H - PLOT_M.top - PLOT_M.bottom);
+    PLOT_H -
+    PLOT_M.bottom -
+    ((v - view.ymin) / (view.ymax - view.ymin || 1)) * (PLOT_H - PLOT_M.top - PLOT_M.bottom);
 
   const xTicks = niceTicks(view.xmin, view.xmax);
-  const yTicks = niceTicks(0, view.ymax, 4);
+  const yTicks = niceTicks(view.ymin, view.ymax, 4);
 
   const paths = (() => {
-    if (!model.xs.length) return { sticks: "", profile: "" };
+    if (!model.xs.length) return { sticks: "", profile: "", bands: [] as string[] };
+    if (model.bands.length) {
+      return {
+        sticks: "",
+        profile: "",
+        bands: model.bands.map((row) => {
+          const pts: string[] = [];
+          for (let i = 0; i < model.xs.length; i += 1) {
+            const v = row[i];
+            if (!Number.isFinite(v)) continue;
+            const x = px(model.xs[i]);
+            if (x < -2 || x > PLOT_W + 2) continue;
+            pts.push(`${x.toFixed(1)},${py(v).toFixed(1)}`);
+          }
+          return pts.length ? `M${pts.join(" L")}` : "";
+        }),
+      };
+    }
     if (model.centroid) {
       let d = "";
       for (let i = 0; i < model.xs.length; i += 1) {
@@ -126,7 +169,7 @@ export function SpectrumPlot({
         if (x < -2 || x > PLOT_W + 2) continue;
         d += `M${x.toFixed(1)} ${py(0).toFixed(1)} L${x.toFixed(1)} ${py(model.ys[i]).toFixed(1)} `;
       }
-      return { sticks: d.trim(), profile: "" };
+      return { sticks: d.trim(), profile: "", bands: [] as string[] };
     }
     const pts: string[] = [];
     for (let i = 0; i < model.xs.length; i += 1) {
@@ -134,8 +177,9 @@ export function SpectrumPlot({
       if (x < -2 || x > PLOT_W + 2) continue;
       pts.push(`${x.toFixed(1)},${py(model.ys[i]).toFixed(1)}`);
     }
-    return { sticks: "", profile: pts.length ? `M${pts.join(" L")}` : "" };
+    return { sticks: "", profile: pts.length ? `M${pts.join(" L")}` : "", bands: [] as string[] };
   })();
+
 
   const xUnit = spectrum.x_unit || (ms ? "m/z" : "");
   const yUnit = spectrum.y_unit || "";
@@ -164,24 +208,27 @@ export function SpectrumPlot({
       ))}
       {xTicks.map((t) => (
         <g key={`x${t}`}>
-          <line x1={px(t)} x2={px(t)} y1={py(0)} y2={py(0) - 4} stroke={axis} />
+          <line x1={px(t)} x2={px(t)} y1={py(model.ymin)} y2={py(model.ymin) - 4} stroke={axis} />
           <text x={px(t)} y={PLOT_H - PLOT_M.bottom + 14} textAnchor="middle" fontSize="9" fill={axis}>
             {Math.abs(t) >= 1000 ? t.toFixed(0) : Number(t.toPrecision(4))}
           </text>
         </g>
       ))}
+      {/* The baseline sits at the data's own floor, not at a hard zero: a band
+          structure straddles E_F, and pinning the axis line to y=0 would drop
+          the lower half of the plot into the frame margin. */}
       <line
         x1={PLOT_M.left}
         x2={PLOT_W - PLOT_M.right}
-        y1={py(0)}
-        y2={py(0)}
+        y1={py(model.ymin)}
+        y2={py(model.ymin)}
         stroke={axis}
       />
       <line
         x1={PLOT_M.left}
         x2={PLOT_M.left}
         y1={PLOT_M.top}
-        y2={py(0)}
+        y2={py(model.ymin)}
         stroke={axis}
       />
       <text x={PLOT_W - PLOT_M.right} y={PLOT_H - 4} textAnchor="end" fontSize="9" fill={axis}>
@@ -191,10 +238,37 @@ export function SpectrumPlot({
         {yUnit}
       </text>
 
+      {/* E_F reference for a band structure: without it "crosses zero" is
+          something the reader has to infer from the tick labels. */}
+      {model.bands.length > 0 && view.ymin < 0 && view.ymax > 0 && (
+        <line
+          x1={PLOT_M.left}
+          x2={PLOT_W - PLOT_M.right}
+          y1={py(0)}
+          y2={py(0)}
+          stroke={axis}
+          strokeDasharray="4 3"
+        />
+      )}
+      {paths.bands.map((d, i) =>
+        d ? (
+          <path
+            key={`band${i}`}
+            d={d}
+            fill="none"
+            stroke={stroke}
+            // Thinner per band so a dense structure does not read as a solid
+            // block; the opacity keeps four bands separable without colour.
+            strokeWidth={model.bands.length > 6 ? 0.8 : 1.1}
+            strokeOpacity={model.bands.length > 6 ? 0.75 : 0.9}
+          />
+        ) : null
+      )}
       {paths.profile && <path d={paths.profile} fill="none" stroke={stroke} strokeWidth={1.4} />}
       {paths.sticks && (
         <path d={paths.sticks} fill="none" stroke={stroke} strokeWidth={1.1} strokeLinecap="round" />
       )}
+
     </svg>
   );
 }

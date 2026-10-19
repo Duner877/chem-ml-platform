@@ -15,6 +15,9 @@ export interface SpectrumLike {
   name?: string;
   x?: number[];
   y?: number[];
+  /** One trace per band, each the same length as ``x`` (band structures). */
+  curves?: number[][];
+  curve_labels?: string[];
   x_unit?: string;
   y_unit?: string;
   peaks?: Array<{ x?: number; y?: number }>;
