@@ -1,6 +1,6 @@
 {
   "name": "铝原胞弛豫与能带态密度 / Al primitive-cell relaxation, bands and PDOS",
-  "description": "先用内置 Slater-Koster 引擎把铝的面心立方晶格常数弛豫到总能量极小，再在**弛豫后的同一个晶胞**上计算能带与分轨道态密度，最后汇总成 HTML 报告。能带沿 Γ-X-W-K-Γ-L-W-X 高对称点路径，态密度分 s / px / py / pz 四个通道，E_F 处态密度非零即铝为金属。",
+  "description": "先用内置 Slater-Koster 引擎把铝的面心立方晶格常数弛豫到总能量极小，再在**弛豫后的同一个晶胞**上计算能带、总态密度与分轨道态密度，最后交付 6 张关键产物图并汇总成 HTML 报告。能带沿 Γ-X-W-K-Γ-L-W-X 高对称点路径，态密度分 s / px / py / pz 四个通道，E_F 处态密度非零即铝为金属。弛豫的能量 / 力 / 应力各出一张图：三者量纲不同且量级相差三到四个数量级，叠在一张图上只有最靠边的那条曲线看得见。",
   "metadata": {
     "author": "Chem ML Platform",
     "category": "Materials",
@@ -11,10 +11,11 @@
       "DOS",
       "PDOS",
       "lattice relaxation",
+      "convergence",
       "ABACUS"
     ],
     "language": "zh",
-    "task": "Relax an fcc aluminium cell, then compute its band structure and orbital-resolved density of states on the relaxed cell.",
+    "task": "Relax an fcc aluminium cell, then compute its band structure and orbital-resolved density of states on the relaxed cell, and deliver the six product figures.",
     "engine": "internal:tight-binding (Slater-Koster two-centre; writes ABACUS INPUT/STRU decks for a cluster that has ABACUS installed)",
     "data_source": "no external data: the element and lattice type are the inputs",
     "expected_outputs": [
@@ -22,6 +23,14 @@
       "spectrum",
       "table",
       "report"
+    ],
+    "product_figures": [
+      "Al_能带图.png",
+      "Al_态密度_DOS.png",
+      "Al_投影态密度_PDOS.png",
+      "Al_弛豫能量收敛.png",
+      "Al_弛豫力收敛.png",
+      "Al_弛豫应力收敛.png"
     ],
     "provenance_zh": "与 Agent 的 solid_state_dft 配方同源：同一份 DAG 既由规则规划器生成，也存为可从 GUI 直接打开的演示工作流，因此两者不会漂移。弛豫节点返回的是**弛豫后的晶胞**，能带与态密度因此跑在同一个 a 上——这正是本工作流要演示的关键一步。",
     "provenance_en": "Generated from the agent's solid_state_dft recipe, so the GUI demo and the autonomous plan are the same graph and cannot drift apart. The relaxation node emits the relaxed cell, which is what makes bands and PDOS run at the same lattice constant.",
@@ -38,7 +47,7 @@
       },
       "position": {
         "x": 60,
-        "y": 260
+        "y": 300
       },
       "label_en": "Al (fcc)"
     },
@@ -53,7 +62,7 @@
       },
       "position": {
         "x": 300,
-        "y": 260
+        "y": 300
       },
       "label_en": "Lattice relaxation"
     },
@@ -73,6 +82,20 @@
       "label_en": "Band structure"
     },
     {
+      "id": "dos",
+      "type": "ABACUSNode",
+      "label": "总态密度",
+      "params": {
+        "calculation": "dos",
+        "lattice": "fcc"
+      },
+      "position": {
+        "x": 560,
+        "y": 300
+      },
+      "label_en": "Total density of states"
+    },
+    {
       "id": "pdos",
       "type": "ABACUSNode",
       "label": "分轨道态密度",
@@ -82,9 +105,99 @@
       },
       "position": {
         "x": 560,
-        "y": 380
+        "y": 460
       },
       "label_en": "Projected DOS"
+    },
+    {
+      "id": "fig_bands",
+      "type": "FigureExportNode",
+      "label": "产物图：能带",
+      "params": {
+        "kind": "band_structure",
+        "filename": "Al_能带图"
+      },
+      "position": {
+        "x": 820,
+        "y": 100
+      },
+      "label_en": "Figure: band structure"
+    },
+    {
+      "id": "fig_dos",
+      "type": "FigureExportNode",
+      "label": "产物图：总态密度",
+      "params": {
+        "kind": "dos",
+        "filename": "Al_态密度_DOS"
+      },
+      "position": {
+        "x": 820,
+        "y": 250
+      },
+      "label_en": "Figure: total DOS"
+    },
+    {
+      "id": "fig_pdos",
+      "type": "FigureExportNode",
+      "label": "产物图：投影态密度",
+      "params": {
+        "kind": "pdos",
+        "filename": "Al_投影态密度_PDOS"
+      },
+      "position": {
+        "x": 820,
+        "y": 400
+      },
+      "label_en": "Figure: projected DOS"
+    },
+    {
+      "id": "fig_relax_energy",
+      "type": "FigureExportNode",
+      "label": "产物图：弛豫能量收敛",
+      "params": {
+        "kind": "relax_convergence",
+        "filename": "Al_弛豫能量收敛",
+        "trace": 1,
+        "figsize": "7.0x3.4"
+      },
+      "position": {
+        "x": 620,
+        "y": 600
+      },
+      "label_en": "Figure: relaxation energy convergence"
+    },
+    {
+      "id": "fig_relax_force",
+      "type": "FigureExportNode",
+      "label": "产物图：弛豫力收敛",
+      "params": {
+        "kind": "relax_convergence",
+        "filename": "Al_弛豫力收敛",
+        "trace": 2,
+        "figsize": "7.0x3.4"
+      },
+      "position": {
+        "x": 840,
+        "y": 600
+      },
+      "label_en": "Figure: relaxation force convergence"
+    },
+    {
+      "id": "fig_relax_stress",
+      "type": "FigureExportNode",
+      "label": "产物图：弛豫应力收敛",
+      "params": {
+        "kind": "relax_convergence",
+        "filename": "Al_弛豫应力收敛",
+        "trace": 3,
+        "figsize": "7.0x3.4"
+      },
+      "position": {
+        "x": 1060,
+        "y": 600
+      },
+      "label_en": "Figure: relaxation stress convergence"
     },
     {
       "id": "summary",
@@ -94,7 +207,7 @@
         "max_rows": 40
       },
       "position": {
-        "x": 820,
+        "x": 1080,
         "y": 200
       },
       "label_en": "Summary table"
@@ -107,7 +220,7 @@
         "title": "原胞弛豫与能带态密度计算报告"
       },
       "position": {
-        "x": 1060,
+        "x": 1320,
         "y": 240
       },
       "label_en": "Report"
@@ -121,7 +234,7 @@
         "filename": "solid_state_dft_report"
       },
       "position": {
-        "x": 1300,
+        "x": 1560,
         "y": 240
       },
       "label_en": "HTML export"
@@ -143,6 +256,12 @@
     {
       "source": "relax",
       "source_port": "material",
+      "target": "dos",
+      "target_port": "material"
+    },
+    {
+      "source": "relax",
+      "source_port": "material",
       "target": "pdos",
       "target_port": "material"
     },
@@ -151,6 +270,42 @@
       "source_port": "material",
       "target": "summary",
       "target_port": "material"
+    },
+    {
+      "source": "bands",
+      "source_port": "spectrum",
+      "target": "fig_bands",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "dos",
+      "source_port": "spectrum",
+      "target": "fig_dos",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "pdos",
+      "source_port": "spectrum",
+      "target": "fig_pdos",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "relax",
+      "source_port": "spectrum",
+      "target": "fig_relax_energy",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "relax",
+      "source_port": "spectrum",
+      "target": "fig_relax_force",
+      "target_port": "spectrum"
+    },
+    {
+      "source": "relax",
+      "source_port": "spectrum",
+      "target": "fig_relax_stress",
+      "target_port": "spectrum"
     },
     {
       "source": "bands",

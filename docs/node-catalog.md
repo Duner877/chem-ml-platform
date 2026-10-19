@@ -3,10 +3,10 @@
 > 本文件由 `scripts/node_catalog.py` 自动生成，请勿手工编辑。
 > 数据来源：`node_registry/registry.json`（节点注册表扫描结果）。
 
-- 节点总数：**100**
+- 节点总数：**101**
 - 分类数：**30**
 - 扫描模块：**56**
-- 尚无验证证据的节点：**95**（未验证 ≠ 不可用，但**不得**宣传为已验证）
+- 尚无验证证据的节点：**96**（未验证 ≠ 不可用，但**不得**宣传为已验证）
 
 ## 能力标签说明
 
@@ -44,7 +44,7 @@
 
 | 状态 | 节点数 |
 | --- | --- |
-| `executable` | 86 |
+| `executable` | 87 |
 | `experimental` | 5 |
 | `unavailable` | 9 |
 
@@ -52,7 +52,7 @@
 
 | capability_status | 节点数 |
 | --- | --- |
-| `executable` | 86 |
+| `executable` | 87 |
 | `experimental` | 1 |
 | `unavailable` | 9 |
 | `verified` | 4 |
@@ -61,13 +61,13 @@
 
 | execution_mode | 节点数 |
 | --- | --- |
-| `internal_approximation` | 100 |
+| `internal_approximation` | 101 |
 
 ## 可复现级别汇总（v0.7.2）
 
 | reproducibility_level | 节点数 |
 | --- | --- |
-| `deterministic` | 98 |
+| `deterministic` | 99 |
 | `nondeterministic` | 2 |
 
 ## 能力汇总
@@ -88,7 +88,7 @@
 | `requires_gpu` | 4 |
 | `requires_network` | 15 |
 | `sensitive_data` | 1 |
-| `writes_files` | 3 |
+| `writes_files` | 4 |
 
 ## 全部节点
 
@@ -181,6 +181,7 @@
 | `RamanNode` | Instruments/Vibrational | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `MaterialDiscoveryNode` | Questions | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `UnknownCompoundIdentificationNode` | Questions | `executable` | `executable` | `internal_approximation` | 是 | 3 | — | — |
+| `FigureExportNode` | Report | `executable` | `executable` | `internal_approximation` | 是 | — | `writes_files` | — |
 | `ReportBuilderNode` | Report | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |
 | `ReportExportNode` | Report | `executable` | `executable` | `internal_approximation` | 是 | — | `writes_files` | — |
 | `SummaryTableNode` | Report | `executable` | `executable` | `internal_approximation` | 是 | — | — | — |

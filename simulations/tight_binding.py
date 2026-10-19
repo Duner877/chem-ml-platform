@@ -1113,6 +1113,39 @@ def _uniform_kpoints(n: int) -> List[List[float]]:
     return [[kx, ky, kz] for kx in values for ky in values for kz in values]
 
 
+def cell_volume(lattice_key: str, a: float, element: str = "Al") -> float:
+    """Primitive-cell volume in ångström^3 for the isotropic cell ``a``.
+
+    Exposed because the stress needs it: ``sigma = -dE/dV`` is only defined once
+    the volume a derivative is taken against is written down, and for an
+    isotropic scaling ``V(a) = V0 * (a/a0)^3`` it is exactly proportional to
+    ``a^3`` -- so ``dV/da = 3V/a`` without any extra geometry.
+    """
+    return build_lattice(lattice_key, a, element).volume()
+
+
+# eV/Å^3 -> GPa.  1 eV = 1.602176634e-19 J, 1 Å^3 = 1e-30 m^3.
+_EV_PER_A3_TO_GPA = 160.2176634
+
+
+def _stress_gpa(
+    lattice_key: str, element: str, a: float, d_energy_da: float
+) -> float:
+    """Hydrostatic stress ``sigma = -dE/dV`` in GPa.
+
+    ``dE/da`` is the energy gradient along the isotropic scale, and
+    ``dV/da = 3V/a`` for any cell whose vectors all scale with ``a``, so
+    ``dE/dV = (dE/da) * a / (3V)``.  The sign follows the standard convention:
+    a positive derivative means the cell wants to shrink, which is positive
+    (compressive) stress.
+    """
+    volume = cell_volume(lattice_key, a, element)
+    if volume <= 1e-9 or a <= 0.0:
+        return 0.0
+    d_energy_dv = float(d_energy_da) * float(a) / (3.0 * volume)
+    return -d_energy_dv * _EV_PER_A3_TO_GPA
+
+
 def relax_lattice(
     lattice_key: str,
     element: str,
@@ -1132,20 +1165,43 @@ def relax_lattice(
 
     Returns the converged ``a``, the energy curve, and the per-step trace -- a
     relaxation report without the history is not a relaxation report.
+
+    The history carries **force** (``-dE/da``, eV/Å) and **stress**
+    (``-dE/dV``, GPa) alongside the energy.  Those are not decorations: they are
+    the quantities an optimiser is actually judged on, and they are already
+    computed here as the central-difference gradient, so recording them costs
+    nothing.  A relaxation that reports only "energy went down" cannot show that
+    the residual force reached zero -- and an energy curve alone is exactly the
+    kind of plot that converges on a surface with steps in it (see
+    :func:`total_energy` on hard occupations).
     """
     length = float(a0)
     if length <= 0.0:
         raise ValueError(f"initial lattice constant must be positive, got {a0!r}")
 
     current = total_energy(lattice_key, element, length, shells=shells, n_kpoints=n_kpoints)
-    history: List[Dict[str, float]] = [
-        {"step": 0, "a": round(length, 6), "energy_ev": round(current, 6)}
+    # The starting point has no gradient yet -- it is measured at the top of the
+    # first iteration.  Seeding the trace with a fabricated zero force and zero
+    # stress would draw a flat start on the force and stress plots that no
+    # calculation ever produced; the plots then claim a residual force of exactly
+    # zero at the input geometry, which is the one thing a relaxation has not
+    # established.  ``None`` renders as a gap instead.
+    history: List[Dict[str, Any]] = [
+        {
+            "step": 0,
+            "a": round(length, 6),
+            "energy_ev": round(current, 6),
+            "force_ev_per_angstrom": None,
+            "stress_gpa": None,
+        }
     ]
     best = (current, length)
     converged = False
     # Local, shrinking copy: a step that walks uphill must not poison the next
     # iteration, and mutating the caller's parameter would leak across runs.
     step = float(step_size)
+    final_force = 0.0
+    final_stress = 0.0
 
     for index in range(1, max(1, int(steps)) + 1):
         # Central difference on the energy; |dE/da| is the pressure proxy.
@@ -1153,6 +1209,8 @@ def relax_lattice(
         forward = total_energy(lattice_key, element, length + delta, shells=shells, n_kpoints=n_kpoints)
         backward = total_energy(lattice_key, element, max(1e-3, length - delta), shells=shells, n_kpoints=n_kpoints)
         gradient = (forward - backward) / (2.0 * delta)
+        force = -float(gradient)
+        stress = _stress_gpa(lattice_key, element, length, gradient)
 
         # Convergence is judged on the *relative* energy gradient, not an
         # absolute one.  An absolute tolerance of 1e-3 eV/Å is meaningless when
@@ -1161,6 +1219,15 @@ def relax_lattice(
         scale = max(1.0, abs(current) / 100.0)
         if abs(gradient) < float(tolerance) * scale:
             converged = True
+            final_force = force
+            final_stress = stress
+            history.append({
+                "step": index,
+                "a": round(length, 6),
+                "energy_ev": round(current, 6),
+                "force_ev_per_angstrom": round(force, 8),
+                "stress_gpa": round(stress, 6),
+            })
             break
 
         # Propose a step, then keep the best energy seen rather than the last.
@@ -1175,7 +1242,15 @@ def relax_lattice(
         trial = total_energy(
             lattice_key, element, proposal, shells=shells, n_kpoints=n_kpoints
         )
-        history.append({"step": index, "a": round(proposal, 6), "energy_ev": round(trial, 6)})
+        history.append({
+            "step": index,
+            "a": round(proposal, 6),
+            "energy_ev": round(trial, 6),
+            "force_ev_per_angstrom": round(force, 8),
+            "stress_gpa": round(stress, 6),
+        })
+        final_force = force
+        final_stress = stress
         if trial < best[0]:
             best = (trial, proposal)
             length = proposal
@@ -1184,7 +1259,13 @@ def relax_lattice(
             # The step walked uphill: halve it and retry from where we are.
             step = max(1e-4, step * 0.5)
             history.append(
-                {"step": index, "a": round(length, 6), "energy_ev": round(current, 6)}
+                {
+                    "step": index,
+                    "a": round(length, 6),
+                    "energy_ev": round(current, 6),
+                    "force_ev_per_angstrom": round(force, 8),
+                    "stress_gpa": round(stress, 6),
+                }
             )
             if step <= 1e-3:
                 converged = True
@@ -1212,11 +1293,14 @@ def relax_lattice(
         "energy_change_ev": round(float(final_energy - history[0]["energy_ev"]), 6),
         "converged": bool(converged),
         "steps": len(history),
+        "final_force_ev_per_angstrom": round(float(final_force), 8),
+        "final_stress_gpa": round(float(final_stress), 6),
         "history": history,
         "a_experimental": round(float(experimental), 6) if experimental else 0.0,
         "accuracy_note": deviation,
         "engine": "internal:tight-binding",
     }
+
 
 
 # --------------------------------------------------------------------------- #

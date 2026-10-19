@@ -117,8 +117,41 @@ class Peak(BaseModel):
         return self.assignment or self.label or ""
 
 
+def _first_item(values: Any) -> Any:
+    """First element of ``values``, or ``None`` when it is empty or scalar.
+
+    Used to tell a 2-D trace matrix from a flat one without consuming an
+    iterator that the caller still needs.
+    """
+    if values is None:
+        return None
+    if isinstance(values, np.ndarray):
+        return values.reshape(-1)[0] if values.size else None
+    if isinstance(values, (list, tuple)):
+        return values[0] if values else None
+    return None
+
+
 class Spectrum(ScientificObject):
-    """Generic 1-D spectrum (and simple 2-D spectra via ``z``)."""
+    """Generic 1-D spectrum (and simple 2-D spectra via ``z``).
+
+    A band structure is not a 1-D spectrum: it is ``n_bands`` traces that all
+    share one x axis (the k path).  Feeding the 2-D ``[k][band]`` matrix to
+    :meth:`from_arrays` used to end in :func:`to_array`, which ``ravel()``s
+    everything into a single flat run of ``n_k * n_bands`` numbers.  The object
+    then carried 71 x values against 284 y values, and every consumer
+    downstream made a locally reasonable decision about that mismatch:
+
+      * the frontend truncated to ``min(len(x), len(y))`` -- so a 4-band
+        structure drew as 71 points of a 284-value run, i.e. band 1 followed by
+        the first 55 values of band 2, with nothing joining them;
+      * matplotlib raised on the length mismatch and the ``except`` returned
+        ``None``, so the export quietly wrote a placeholder ``.txt`` instead of
+        a PNG.
+
+    Neither complained.  ``curves`` holds the per-band traces properly, and
+    :meth:`is_multicurve` lets a renderer ask for them instead of guessing.
+    """
 
     type: str = "Spectrum"
     mode: str = Field(default="Generic", description="MS / NMR / IR / Raman / ...")
@@ -126,6 +159,11 @@ class Spectrum(ScientificObject):
     x: List[float] = Field(default_factory=list)
     y: List[float] = Field(default_factory=list)
     z: List[List[float]] = Field(default_factory=list, description="Optional 2-D data")
+    #: One entry per trace, each the same length as ``x``.  Used by band
+    #: structures; empty for an ordinary single-trace spectrum.
+    curves: List[List[float]] = Field(default_factory=list)
+    #: Optional legend entries matching ``curves``.
+    curve_labels: List[str] = Field(default_factory=list)
     x_unit: str = ""
     y_unit: str = ""
     peaks: List[Peak] = Field(default_factory=list)
@@ -145,6 +183,31 @@ class Spectrum(ScientificObject):
         y_unit: str = "",
         **kwargs: Any,
     ) -> "Spectrum":
+        """Build a spectrum from ``x`` and ``y``.
+
+        ``y`` may be a 1-D sequence, or a sequence of equal-length sequences
+        when several traces share one x axis (a band structure).  The 2-D form
+        lands in :attr:`curves`; it is **not** flattened into :attr:`y`, because
+        a flat run of ``n_k * n_bands`` values paired against ``n_k`` x values
+        is not a spectrum and every reader of it would invent its own way to
+        cope.
+        """
+        rows = cls._as_trace_rows(y)
+        if len(rows) > 1 or (rows and isinstance(_first_item(y), (list, tuple, np.ndarray))):
+            labels = list(kwargs.pop("curve_labels", []) or [])
+            # ``y`` stays empty on purpose: with ``curves`` populated, a
+            # consumer that reads only ``y`` would otherwise plot one of the
+            # bands as if it were the whole spectrum.
+            return cls(
+                mode=mode,
+                x=[float(v) for v in to_array(x)],
+                y=[],
+                curves=[[float(v) for v in row] for row in rows],
+                curve_labels=[str(item) for item in labels][: len(rows)],
+                x_unit=x_unit,
+                y_unit=y_unit,
+                **kwargs,
+            )
         xs = to_array(x)
         ys = to_array(y)
         return cls(
@@ -156,6 +219,35 @@ class Spectrum(ScientificObject):
             **kwargs,
         )
 
+    @staticmethod
+    def _as_trace_rows(y: Any) -> List[List[float]]:
+        """Normalise ``y`` into a list of equal-length 1-D traces."""
+        if y is None:
+            return []
+        if isinstance(y, np.ndarray):
+            if y.ndim == 2:
+                return [[float(v) for v in row] for row in y]
+            if y.ndim == 1:
+                return [[float(v) for v in y]]
+            return []
+        if isinstance(y, (list, tuple)):
+            if not y:
+                return []
+            if all(isinstance(item, (list, tuple, np.ndarray)) for item in y):
+                return [[float(v) for v in row] for row in y]
+            return [[float(v) for v in y]]
+        return [float(y)]
+
+    def is_multicurve(self) -> bool:
+        """True when the spectrum carries per-band traces in :attr:`curves`."""
+        return len(self.curves) > 1
+
+    def traces(self) -> List[List[float]]:
+        """The traces to plot: :attr:`curves` when present, else ``[y]``."""
+        if self.curves:
+            return [list(row) for row in self.curves]
+        return [list(self.y)] if self.y else []
+
     # -- numeric helpers --------------------------------------------------- #
     def x_array(self) -> np.ndarray:
         return to_array(self.x)
@@ -163,11 +255,23 @@ class Spectrum(ScientificObject):
     def y_array(self) -> np.ndarray:
         return to_array(self.y)
 
+    def curves_array(self) -> np.ndarray:
+        """The per-trace values as an ``(n_traces, n_x)`` array."""
+        rows = self.traces()
+        if not rows:
+            return np.zeros((0, 0), dtype=float)
+        width = min(len(row) for row in rows)
+        return np.asarray([row[:width] for row in rows], dtype=float)
+
     @property
     def size(self) -> int:
         return len(self.x)
 
     def tic(self) -> float:
+        # A band structure has no total ion current: summing its energies would
+        # report a meaningless number rather than a wrong-looking right one.
+        if self.curves:
+            return 0.0
         return float(np.sum(self.y_array())) if self.y else 0.0
 
     def max_peak(self) -> Optional[Peak]:
@@ -176,8 +280,24 @@ class Spectrum(ScientificObject):
         return max(self.peaks, key=lambda p: p.intensity or p.y)
 
     def clip(self, x_min: float, x_max: float) -> "Spectrum":
-        xs, ys = self.x_array(), self.y_array()
+        xs = self.x_array()
         mask = (xs >= x_min) & (xs <= x_max)
+        if self.curves:
+            clipped = [
+                [float(v) for v, keep in zip(row, mask.tolist()) if keep]
+                for row in self.curves
+            ]
+            return Spectrum(
+                mode=self.mode,
+                x=[float(v) for v, keep in zip(self.x, mask.tolist()) if keep],
+                curves=clipped,
+                curve_labels=list(self.curve_labels),
+                x_unit=self.x_unit,
+                y_unit=self.y_unit,
+                technique=self.technique,
+                name=self.name,
+            )
+        ys = self.y_array()
         return Spectrum.from_arrays(
             xs[mask],
             ys[mask],
@@ -190,7 +310,13 @@ class Spectrum(ScientificObject):
 
     # -- presentation ------------------------------------------------------ #
     def summary(self) -> str:
-        base = f"{self.mode} spectrum ({self.size} points, {len(self.peaks)} peaks)"
+        if self.is_multicurve():
+            base = (
+                f"{self.mode} spectrum ({self.size} points, "
+                f"{len(self.curves)} traces, {len(self.peaks)} peaks)"
+            )
+        else:
+            base = f"{self.mode} spectrum ({self.size} points, {len(self.peaks)} peaks)"
         if self.precursor_mz:
             base += f", precursor m/z {self.precursor_mz:.4f}"
         return base
@@ -204,6 +330,8 @@ class Spectrum(ScientificObject):
             "y_unit": self.y_unit,
             "x": list(self.x),
             "y": list(self.y),
+            "curves": [list(row) for row in self.curves],
+            "curve_labels": list(self.curve_labels),
             "peaks": [
                 {
                     "x": p.x,

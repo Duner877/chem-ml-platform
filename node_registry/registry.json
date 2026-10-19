@@ -1752,6 +1752,83 @@
       "reproducibility_level": "deterministic"
     },
     {
+      "node_name": "Figure Export",
+      "type": "FigureExportNode",
+      "version": "0.7.3",
+      "inputs": [
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "待出图的光谱（能带 / 态密度 / 收敛）",
+          "optional": true,
+          "multi": true,
+          "description_en": "待出图的光谱（能带 / 态密度 / 收敛）"
+        },
+        {
+          "name": "table",
+          "data_type": "Table",
+          "description": "可绘制的表格（弛豫历史）",
+          "optional": true,
+          "multi": true,
+          "description_en": "可绘制的表格（弛豫历史）"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "data_type": "Text",
+          "description": "导出文件的路径清单",
+          "optional": false,
+          "multi": false,
+          "description_en": "导出文件的路径清单"
+        },
+        {
+          "name": "spectrum",
+          "data_type": "Spectrum",
+          "description": "透传的上游光谱",
+          "optional": false,
+          "multi": false,
+          "description_en": "透传的上游光谱"
+        }
+      ],
+      "author": "",
+      "description": "把上游能带 / 态密度 / 投影态密度 / 弛豫收敛结果渲染为独立 PNG 产物图。",
+      "name_zh": "Figure Export",
+      "category_zh": "报告",
+      "description_en": "把上游能带 / 态密度 / 投影态密度 / 弛豫收敛结果渲染为独立 PNG 产物图。",
+      "category": "Report",
+      "tags": [
+        "figure",
+        "png",
+        "plot",
+        "出图",
+        "产物",
+        "artifact"
+      ],
+      "module": "nodes.report",
+      "capabilities": [
+        "writes_files"
+      ],
+      "implementation_status": "implemented",
+      "availability": "executable",
+      "deterministic": true,
+      "required_software": [],
+      "missing_software": [],
+      "capability_status": "executable",
+      "execution_mode": "internal_approximation",
+      "supported_execution_modes": [
+        "internal_approximation"
+      ],
+      "default_execution_mode": "internal_approximation",
+      "execution_mode_source": "declaration",
+      "execution_mode_note": "declared by the node class; what a specific run used is recorded per run in provenance.actual_execution_mode",
+      "required_dependencies": [],
+      "input_constraints": "",
+      "validation_evidence": [],
+      "limitations": [],
+      "reproducibility_level": "deterministic"
+    },
+    {
       "node_name": "Fluorescence",
       "type": "FluorescenceNode",
       "version": "0.7.3",
@@ -7788,7 +7865,7 @@
     },
     {
       "category": "Report",
-      "count": 3
+      "count": 4
     },
     {
       "category": "Simulation/MD",
@@ -7803,9 +7880,9 @@
       "count": 4
     }
   ],
-  "total_nodes": 100,
+  "total_nodes": 101,
   "availability_summary": {
-    "executable": 86,
+    "executable": 87,
     "experimental": 5,
     "unavailable": 9
   },
@@ -7824,7 +7901,7 @@
     "requires_gpu": 4,
     "requires_network": 15,
     "sensitive_data": 1,
-    "writes_files": 3
+    "writes_files": 4
   },
   "missing_software_summary": {
     "abacus": 1,
@@ -7838,17 +7915,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 86,
+    "executable": 87,
     "experimental": 1,
     "unavailable": 9,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 100
+    "internal_approximation": 101
   },
   "reproducibility_summary": {
-    "deterministic": 98,
+    "deterministic": 99,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 95
+  "nodes_without_validation_evidence": 96
 }

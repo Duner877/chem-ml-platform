@@ -7,16 +7,21 @@ Three nodes turn arbitrary upstream results into a structured
                         a sectioned report object.
 ``SummaryTableNode``    flatten mixed inputs into a single key/value table.
 ``ReportExportNode``    persist a report as Markdown, HTML, DOCX or JSON artefact.
+``FigureExportNode``    render upstream spectra / tables as PNG figures.
 
-All three are dependency free -- they only use the scientific object protocol.
+All are dependency free -- they only use the scientific object protocol.
 The DOCX writer is optional and requires ``python-docx``; when it is absent the
-node raises a clear error instead of writing a fake document.
+node raises a clear error instead of writing a fake document.  Figure export
+additionally needs matplotlib, which the platform already depends on.
 """
 
 from __future__ import annotations
 
 import html
+import io
 import json
+import re
+import threading
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -37,7 +42,13 @@ from workflow_engine.registry import register_node
 
 from nodes._helpers import collect, render_report_markdown, write_artifact
 
-__all__ = ["ReportBuilderNode", "SummaryTableNode", "ReportExportNode"]
+__all__ = [
+    "ReportBuilderNode",
+    "SummaryTableNode",
+    "ReportExportNode",
+    "FigureExportNode",
+]
+
 
 
 # --------------------------------------------------------------------------- #
@@ -534,3 +545,565 @@ def _render_html(report: ScientificReport, embed_css: bool = True) -> str:
         parts.append("</ul>")
     parts.append("</body></html>")
     return "\n".join(parts)
+
+
+# --------------------------------------------------------------------------- #
+# 4. Figure export
+# --------------------------------------------------------------------------- #
+#: Long-form labels for the reference product figures.  A file named
+#: ``figure.png`` cannot be told apart from ``figure_2.png`` a week later, and a
+#: delivered set of figures whose names say only "figure" is not a deliverable.
+FIGURE_KINDS: Dict[str, Dict[str, str]] = {
+    "band_structure": {
+        "title": "能带结构 / Band structure",
+        "stem": "band_structure",
+        "x_label": "k 路径 (2π/a)",
+        "y_label": "E − E_F (eV)",
+    },
+    "dos": {
+        "title": "态密度 / Density of states",
+        "stem": "dos",
+        "x_label": "E − E_F (eV)",
+        "y_label": "态密度 (states/eV)",
+    },
+    "pdos": {
+        "title": "投影态密度 / Projected density of states",
+        "stem": "pdos",
+        "x_label": "E − E_F (eV)",
+        "y_label": "分轨道态密度 (states/eV)",
+    },
+    "relax_convergence": {
+        "title": "弛豫收敛 / Relaxation convergence",
+        "stem": "relax_convergence",
+        "x_label": "弛豫步数 / relaxation step",
+        "y_label": "数值 / value",
+    },
+    "auto": {"title": "", "stem": "figure", "x_label": "", "y_label": ""},
+}
+
+#: Trace colours.  Chosen to stay distinguishable in greyscale too, because a
+#: figure that only reads by hue stops being readable when printed.
+_TRACE_COLOURS = (
+    "#1f6feb", "#d7263d", "#2a9d8f", "#e07b00", "#6a4c93", "#3f7d20",
+)
+_ZERO_LINE = "#8a8f98"
+
+
+#: CJK-capable families, best first.  matplotlib's default is DejaVu Sans, which
+#: has no Chinese glyphs: every CJK label renders as an empty box while the
+#: figure is otherwise perfect, and the warning lands in a log nobody reads.
+#: The platform's UI is Chinese, so a figure that cannot spell its own axis
+#: labels is not a usable deliverable.
+_CJK_FONTS = (
+    "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", "SimHei",
+    "PingFang SC", "Heiti SC", "WenQuanYi Zen Hei", "Noto Sans CJK SC",
+    "Source Han Sans CN", "SimSun",
+)
+
+
+def _apply_cjk_font() -> str | None:
+    """Point matplotlib at an installed CJK font.  Returns the family used."""
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.font_manager as font_manager
+
+        installed = {font.name for font in font_manager.fontManager.ttflist}
+        for family in _CJK_FONTS:
+            if family in installed:
+                # Prepending to the family list matters: matplotlib walks it in
+                # order, and DejaVu would otherwise keep winning the fallback
+                # for every character it happens to have.
+                matplotlib.rcParams["font.sans-serif"] = [family] + list(
+                    matplotlib.rcParams.get("font.sans-serif", [])
+                )
+                matplotlib.rcParams["font.family"] = "sans-serif"
+                # CJK glyphs in the same run as Latin math are commonly joined
+                # by a thin space that reads as a missing glyph in the figure.
+                matplotlib.rcParams["axes.unicode_minus"] = False
+                return family
+    except Exception:  # pragma: no cover - depends on the environment
+        return None
+    return None
+
+
+def _require_matplotlib() -> Any:
+    """Import matplotlib on the Agg backend, with an actionable error.
+
+    A figure node that silently skips its output when matplotlib is missing
+    would leave a workflow that *reports success* and delivers five of the six
+    files it promised.
+    """
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        _apply_cjk_font()
+        return plt
+    except Exception as exc:  # pragma: no cover - depends on the environment
+        raise RuntimeError(
+            f"绘图需要 matplotlib，但导入失败：{exc}。"
+            "请安装 matplotlib 后重试（pip install matplotlib）。"
+        ) from exc
+
+
+def _figure_stem(name: str, default: str = "figure") -> str:
+    """Sanitise a file stem **without** discarding Chinese characters.
+
+    ``workflow_engine.utils.safe_filename`` is ASCII-only by design -- it exists
+    to keep arbitrary text safe on any filesystem, and it maps ``能带图`` to an
+    empty string.  That is right for user text and wrong for a file the user is
+    meant to recognise by name: the delivered figures are named ``Al_能带图``,
+    ``Al_态密度_DOS``, and so on.  Windows, macOS and Linux all accept those
+    names; what actually has to be removed is the path separator, the control
+    characters and the Windows-reserved ``<>:"/\\|?*``.
+    """
+    cleaned = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", str(name or ""))
+    cleaned = cleaned.strip().strip(".")
+    cleaned = re.sub(r"\s+", "_", cleaned)
+    return cleaned or default
+
+
+#: matplotlib is not thread safe.  Its mathtext parser -- reached by every log
+#: axis tick label, so by any relaxation figure -- keeps module-level scratch
+#: state, and two nodes rendering concurrently corrupt it into
+#: ``ParseException: Expected end of text`` raised from the middle of a tick
+#: string.  The engine runs same-generation nodes in parallel, so three
+#: relaxation figures rendering at once is the *normal* case, not an edge case,
+#: and it failed two of three with no useful diagnostic.  Serialising the render
+#: is the fix; the figures are milliseconds each.
+_MPL_LOCK = threading.RLock()
+
+
+
+def _finite_series(values: List[float]) -> List[float]:
+    return [float("nan") if v is None else float(v) for v in values]
+
+
+def _draw_band_structure(axes: Any, spectrum: Spectrum) -> None:
+    """Bands on the k path, with the high-symmetry ticks the run resolved.
+
+    The tick labels travel in ``metadata`` because they are properties of the
+    path, not of the y values.  Without them the figure is a set of lines
+    against a meaningless continuous axis -- the reader cannot tell where Γ is,
+    and a band structure without a marked Γ is not a band structure.
+    """
+    xs = [float(v) for v in spectrum.x]
+    width = min([len(xs)] + [len(row) for row in spectrum.curves]) if spectrum.curves else 0
+    for index, row in enumerate(spectrum.curves):
+        colour = _TRACE_COLOURS[index % len(_TRACE_COLOURS)]
+        axes.plot(xs[:width], [float(v) for v in row[:width]],
+                  color=colour, linewidth=0.9)
+    axes.axhline(0.0, color=_ZERO_LINE, linewidth=0.8, linestyle="--")
+    meta = spectrum.metadata or {}
+    labels = [str(item) for item in (meta.get("tick_labels") or [])]
+    positions = [float(v) for v in (meta.get("tick_positions") or [])]
+    # Pair labels with positions defensively: a tick list longer than the label
+    # list would otherwise shift every label onto the wrong high-symmetry point.
+    for label, position in zip(labels, positions):
+        axes.axvline(position, color=_ZERO_LINE, linewidth=0.5, alpha=0.6)
+        axes.text(position, 1.0, f" {label}", transform=axes.get_xaxis_transform(),
+                  fontsize=7, va="bottom", ha="left", color="#4b5563")
+    fermi = meta.get("fermi_ev")
+    if fermi is not None:
+        axes.set_title(
+            f"{spectrum.name or 'band structure'}   (E_F = {float(fermi):.3f} eV)"
+        )
+
+
+def _draw_dos(axes: Any, spectrum: Spectrum) -> None:
+    """Total DOS, plus the orbital channels when the run resolved them.
+
+    Orbital-resolved data arrives in ``metadata["pdos"]["curves"]``; the plain
+    total is kept in ``y``.  Drawing the total as a filled envelope behind the
+    channels makes the hybridisation at E_F visible without a second figure.
+    """
+    meta = spectrum.metadata or {}
+    pdos = meta.get("pdos") or {}
+    xs = pdos.get("x") or spectrum.x
+    orbital_labels = [str(item) for item in (pdos.get("orbitals") or [])]
+    curves = pdos.get("curves") or []
+    if curves and orbital_labels:
+        totals = [float(sum(column)) for column in zip(*curves)] if curves else []
+        if totals:
+            axes.plot(xs, totals, color="#1f6feb", linewidth=1.4,
+                      label="total", zorder=3)
+        for index, row in enumerate(curves):
+            colour = _TRACE_COLOURS[(index + 1) % len(_TRACE_COLOURS)]
+            label = (
+                orbital_labels[index] if index < len(orbital_labels) else f"c{index}"
+            )
+            axes.plot(xs, [float(v) for v in row], color=colour, linewidth=0.9,
+                      label=label, zorder=2)
+        axes.legend(fontsize=7, frameon=False, ncols=min(5, len(orbital_labels) + 1))
+    else:
+        if not spectrum.y:
+            raise ValueError("态密度谱没有可绘制的数据（y 为空）")
+        axes.plot(spectrum.x, spectrum.y, color="#1f6feb", linewidth=1.2)
+        axes.fill_between(spectrum.x, spectrum.y, color="#1f6feb", alpha=0.18)
+    axes.axvline(0.0, color=_ZERO_LINE, linewidth=0.8, linestyle="--")
+
+
+def _set_log_bounds(axes: Any, values: List[float]) -> None:
+    """Pad a log axis around ``values`` by half a decade each side.
+
+    matplotlib's autoscale cannot recover from a leading NaN, and the default
+    decade grid puts the axis far from the data.  Bounding explicitly is what
+    makes the trace visible; the alternative is a figure with an empty panel
+    and no diagnostic.
+    """
+    positive = [float(v) for v in values if float(v) > 0.0]
+    if not positive:
+        return
+    low = min(positive) / 10.0 ** 0.5
+    high = max(positive) * 10.0 ** 0.5
+    axes.set_ylim(low, high)
+
+
+def _draw_convergence(axes: Any, spectrum: Spectrum, table: Any = None, trace: int = 0) -> None:
+    """Energy / force / stress against the relaxation step.
+
+    Each series gets its own y axis: energy lives at ~-16.7 eV while the force
+    spans five orders of magnitude, so one shared axis renders the force and
+    stress traces as flat lines on the baseline and the figure claims
+    convergence it cannot show.
+
+    The force and stress axes are logarithmic.  A relaxation's residual force
+    falls geometrically -- 0.72, 0.15, 0.0098, 0.0005 eV/Å -- and on a linear
+    axis the last four steps are indistinguishable from zero, which is exactly
+    the opposite of what the figure exists to show.  A log axis also cannot
+    display a zero or a negative ordinate, which is why the start-of-run gap
+    (an unmeasured value, not a zero) is honoured by simply beginning the line
+    where the data begins.
+
+    No zero reference line is drawn here.  The energy trace sits at -17.6 eV,
+    so a line at zero stretches the axis to a 17 eV range and flattens the
+    entire energy curve into a horizontal rule -- a figure that renders the
+    quantity it is about as a straight line.
+    """
+    labels = [str(item) for item in (spectrum.curve_labels or [])]
+    series = spectrum.traces()
+    units = ("eV", "eV/Å", "GPa")
+    # ``trace > 0`` isolates one series into its own figure.  The delivered set
+    # wants energy, force and stress as three separate products, and a
+    # three-axis overlay is the wrong answer for all three: they differ in unit
+    # *and* by three to four orders of magnitude, so the smallest one is a flat
+    # line on its own axis no matter how the axes are arranged.
+    if trace > 0 and trace <= len(series):
+        series = [series[trace - 1]]
+        labels = [labels[trace - 1]] if trace - 1 < len(labels) else [f"trace {trace - 1}"]
+        units = (units[trace - 1],) if trace - 1 < len(units) else units
+    axes2 = axes.twinx() if len(series) > 1 else None
+    axes3 = axes.twinx() if len(series) > 2 else None
+    handles = []
+    legend_labels = []
+    for index, row in enumerate(series):
+        # The *source* index decides the scale, not the position in the
+        # isolated subset: force and stress need a log axis whichever slot they
+        # occupy, and energy does not.  Deciding on ``index`` would give an
+        # isolated force plot a linear axis and an isolated energy plot a log one.
+        source_index = (trace - 1) if (trace > 0 and len(series) == 1) else index
+        target = axes if index == 0 else (axes2 if index == 1 else axes3)
+        colour = _TRACE_COLOURS[source_index % len(_TRACE_COLOURS)]
+        label = labels[index] if index < len(labels) else f"trace {index}"
+        line, = target.plot(
+            spectrum.x, _finite_series(row), color=colour, linewidth=1.1,
+            marker="o", markersize=2.6, label=label,
+        )
+        handles.append(line)
+        legend_labels.append(label)
+        unit = units[index] if index < len(units) else ""
+        target.set_ylabel(f"{label}\n({unit})", color=colour, fontsize=8)
+        target.tick_params(axis="y", labelcolor=colour, labelsize=7)
+        target.grid(True, linewidth=0.4, alpha=0.35)
+        if source_index > 0:
+            # Magnitude, not the signed value: a log axis has no room for a
+            # negative ordinate, and the residual force is genuinely negative
+            # (the cell is under tension at every step of a relaxation that
+            # started compressed).  Plotting the signed values on this scale
+            # drops the whole trace -- matplotlib silently omits non-positive
+            # points, so the figure would show two of three curves with no
+            # error and no warning.  The sign is reported in the axis label
+            # rather than lost.
+            magnitudes = [
+                float("nan") if value != value else abs(float(value)) for value in row
+            ]
+            usable = [value for value in magnitudes if value == value and value > 0.0]
+            if usable:
+                line.set_ydata(magnitudes)
+                line.set_label(f"|{label}|")
+                legend_labels[index] = f"|{label}|"
+                target.set_ylabel(f"|{label}|\n({unit})", color=colour, fontsize=8)
+                # The leading NaN (the start-of-run gap) leaves matplotlib with
+                # nothing to scale against, so it falls back to decade ticks
+                # around 1 and clips every real value -- the relaxation's final
+                # force is ~5e-4 eV/A, three decades below the axis it is
+                # plotted on, so the trace vanishes with no error.  The bounds
+                # are set from the data instead.
+                _set_log_bounds(target, usable)
+                # Scale last: ``set_yscale`` validates against the data already
+                # on the axes, so switching it before the bounds are in place
+                # emits "Data has no positive values, and therefore cannot be
+                # log-scaled" -- a warning about a plot that is about to be
+                # drawn correctly.
+                target.set_yscale("log")
+
+    if axes3 is not None:
+        # Two twinned axes share a side; the third would draw its labels on top
+        # of the second's, so it is offset out of the way.
+        axes3.spines["right"].set_position(("outward", 34))
+    axes.legend(handles, legend_labels, fontsize=7, frameon=False, loc="best")
+    for target in (axes, axes2, axes3):
+        if target is not None:
+            target.set_xlabel("relaxation step")
+
+
+@register_node
+class FigureExportNode(ScientificNode):
+    """Render an upstream spectrum or table into a PNG product figure.
+
+    Written because a DFT run whose numbers live only inside an HTML report is
+    not finished: the deliverable is the *figures*.  The node picks the figure
+    kind from the upstream object (band structure, DOS, PDOS, relaxation
+    convergence) or from ``kind``, renders it with matplotlib and writes a PNG
+    into the run's artefact folder.
+    """
+
+    name = "Figure Export"
+    category = "Report"
+    description = (
+        "把上游能带 / 态密度 / 投影态密度 / 弛豫收敛结果渲染为独立 PNG 产物图。"
+    )
+    tags = ["figure", "png", "plot", "出图", "产物", "artifact"]
+    capabilities = ["writes_files"]
+    icon = "image"
+
+    input_ports = [
+        Port("spectrum", "Spectrum", "待出图的光谱（能带 / 态密度 / 收敛）", optional=True, multi=True),
+        Port("table", "Table", "可绘制的表格（弛豫历史）", optional=True, multi=True),
+    ]
+    output_ports = [
+        Port("text", "Text", "导出文件的路径清单"),
+        Port("spectrum", "Spectrum", "透传的上游光谱"),
+    ]
+    parameters = [
+        ParameterSpec(
+            "kind", "enum", "auto", "图形类型（auto = 按上游对象推断）",
+            options=[
+                ("auto", "自动 / Auto"),
+                ("band_structure", "能带结构 / Band structure"),
+                ("dos", "态密度 / DOS"),
+                ("pdos", "投影态密度 / PDOS"),
+                ("relax_convergence", "弛豫收敛 / Relaxation convergence"),
+            ],
+        ),
+        ParameterSpec("filename", "string", "", "文件名（留空按类型自动命名）"),
+        ParameterSpec("title", "string", "", "图题（留空用默认标题）"),
+        ParameterSpec(
+            "trace", "integer", 0,
+            "要画的第几条曲线（0 = 全部；弛豫收敛图常用 1 = 力、2 = 应力）",
+            min=0, max=16, advanced=True,
+        ),
+        ParameterSpec("dpi", "integer", 140, "分辨率 dpi", min=72, max=400, advanced=True),
+        ParameterSpec("figsize", "string", "7.0x4.6", "画布尺寸（英寸，宽x高）", advanced=True),
+    ]
+
+    def execute(self, inputs: Dict[str, Any], ctx: Any = None) -> Dict[str, Any]:
+        spectra = [item for item in collect(inputs.get("spectrum")) if isinstance(item, Spectrum)]
+        tables = [item for item in collect(inputs.get("table")) if isinstance(item, Table)]
+        if not spectra and not tables:
+            raise ValueError("FigureExportNode 需要上游的 spectrum 或 table 输入")
+
+        requested = str(self.get_param("kind", "auto") or "auto")
+        plt = _require_matplotlib()
+
+        written: List[str] = []
+        kinds: List[str] = []
+        # One figure per upstream object; a spectrum wins over a table because
+        # it already carries the axis labels and units.
+        sources: List[Any] = list(spectra) if spectra else list(tables)
+        for index, source in enumerate(sources):
+            kind = self._kind_for(requested, source, index)
+            kinds.append(kind)
+            filename = self._filename_for(kind, index, len(sources))
+            payload = self._render(plt, source, kind, index)
+            written.append(write_artifact(ctx, filename, payload))
+
+        summary = Text(
+            text="\n".join(written),
+            name=f"{len(written)} figure(s): {', '.join(kinds)}",
+        )
+        summary.metadata.update({
+            "format": "png",
+            "figures": written,
+            "kinds": kinds,
+            "count": len(written),
+        })
+        self.log(f"wrote {len(written)} figure(s): {', '.join(written)}")
+        return {
+            "text": summary,
+            "spectrum": spectra[0] if spectra else None,
+        }
+
+    # -- helpers ------------------------------------------------------------- #
+    def _kind_for(self, requested: str, source: Any, index: int) -> str:
+        if requested and requested != "auto":
+            return requested
+        if isinstance(source, Table):
+            return "relax_convergence"
+        mode = str(getattr(source, "mode", "") or "")
+        if mode == "Bands":
+            return "band_structure"
+        if mode == "PDOS":
+            return "pdos"
+        if mode == "DOS":
+            return "dos"
+        if mode == "Convergence":
+            return "relax_convergence"
+        # Fall back on the orbit/peak shape so an unfamiliar upstream object
+        # still gets the most plausible figure rather than a hard failure.
+        return "dos" if getattr(source, "peaks", None) else "relax_convergence"
+
+    def _filename_for(self, kind: str, index: int, total: int) -> str:
+        stem = str(self.get_param("filename", "") or "").strip()
+        if not stem:
+            spec = FIGURE_KINDS.get(kind, FIGURE_KINDS["auto"])
+            stem = str(spec.get("stem") or "figure")
+        stem = _figure_stem(stem)
+        if total > 1:
+            return f"{stem}_{index + 1}.png"
+        return f"{stem}.png"
+
+    def _render(self, plt: Any, source: Any, kind: str, index: int) -> bytes:
+        # Held for the whole draw: creating the figure, plotting, and closing it
+        # all touch matplotlib's shared parser state.
+        with _MPL_LOCK:
+            return self._render_locked(plt, source, kind, index)
+
+    def _render_locked(self, plt: Any, source: Any, kind: str, index: int) -> bytes:
+        spec = FIGURE_KINDS.get(kind, FIGURE_KINDS["auto"])
+        width, height = self._figsize()
+        dpi = int(self.get_param("dpi", 140) or 140)
+        figure, axes = plt.subplots(figsize=(width, height), dpi=dpi)
+        try:
+            if kind == "band_structure":
+                self._require_spectrum(source, kind)
+                _draw_band_structure(axes, source)
+            elif kind in {"dos", "pdos"}:
+                self._require_spectrum(source, kind)
+                _draw_dos(axes, source)
+            elif kind == "relax_convergence":
+                self._draw_convergence(axes, source)
+            else:  # pragma: no cover - guarded by _kind_for
+                raise ValueError(f"未知的图形类型：{kind}")
+            axes.set_title(self._title(spec, source))
+            axes.set_xlabel(spec.get("x_label") or self._fallback_label(source, "x"))
+            if kind != "relax_convergence":
+                axes.set_ylabel(spec.get("y_label") or self._fallback_label(source, "y"))
+                axes.axhline(0.0, color=_ZERO_LINE, linewidth=0.6, alpha=0.5)
+                axes.grid(True, linewidth=0.4, alpha=0.3)
+            figure.tight_layout()
+            buffer = io.BytesIO()
+            figure.savefig(buffer, format="png")
+            return buffer.getvalue()
+        finally:
+            plt.close(figure)
+
+    def _draw_convergence(self, axes: Any, source: Any) -> None:
+        """Dispatch convergence drawing to a spectrum or a relaxation table."""
+        if isinstance(source, Table):
+            xs = [float(row[0]) for row in source.rows if row]
+            energy = self._table_column(source, ("energy", "e (ev)"))
+            force = self._table_column(source, ("force",))
+            stress = self._table_column(source, ("stress",))
+            if energy is None and force is None and stress is None:
+                raise ValueError(
+                    "弛豫表格没有 energy / force / stress 列，实际列为："
+                    f"{[str(c) for c in source.columns]}"
+                )
+            series: List[List[float]] = []
+            labels: List[str] = []
+            for column, name in ((energy, "energy"), (force, "force"),
+                                 (stress, "stress")):
+                if column is not None:
+                    series.append(column)
+                    labels.append(name)
+            spectrum = Spectrum(
+                x=xs, curves=[[float("nan") if v is None else float(v) for v in row] for row in series],
+                curve_labels=labels, mode="Convergence", y_unit="mixed units",
+            )
+            _draw_convergence(axes, spectrum, trace=self._trace_index())
+            return
+        _draw_convergence(axes, source, trace=self._trace_index())
+
+    def _trace_index(self) -> int:
+        """Which single trace to isolate (0 = plot them all)."""
+        return max(0, int(self.get_param("trace", 0) or 0))
+
+    @staticmethod
+    def _table_column(table: Table, keys: tuple) -> List[Any] | None:
+        """First column whose header contains any of ``keys``, as values."""
+        columns = [str(c).lower() for c in table.columns]
+        for index, header in enumerate(columns):
+            if any(key in header for key in keys):
+                return [row[index] if index < len(row) else None for row in table.rows]
+        return None
+
+    @staticmethod
+    def _require_spectrum(source: Any, kind: str) -> None:
+        if not isinstance(source, Spectrum):
+            raise ValueError(f"{kind} 图形需要 Spectrum 输入，收到 {type(source).__name__}")
+        if not source.x:
+            raise ValueError(f"{kind} 图形需要非空的 x 轴，收到空光谱")
+        if not source.curves and not source.y:
+            raise ValueError(
+                f"{kind} 图形需要可绘制的数据：该光谱既没有 curves 也没有 y"
+            )
+
+    def _title(self, spec: Dict[str, str], source: Any) -> str:
+        custom = str(self.get_param("title", "") or "").strip()
+        if custom:
+            return custom
+        name = str(getattr(source, "name", "") or "").strip()
+        default = str(spec.get("title") or "").strip()
+        # An isolated trace names its own figure.  Three convergence figures
+        # all captioned "弛豫收敛" are indistinguishable once they sit in the
+        # same folder -- which of the three is the force one is answerable only
+        # by opening each file.
+        if self._trace_index() > 0:
+            labels = [str(item) for item in (getattr(source, "curve_labels", None) or [])]
+            picked = self._trace_index() - 1
+            zh = {"energy": "能量", "force": "力", "stress": "应力"}
+            en = {"energy": "energy", "force": "residual force", "stress": "stress"}
+            if picked < len(labels):
+                key = labels[picked].strip("| ")
+                default = (
+                    f"弛豫{zh.get(key, key)}收敛 / Relaxation {en.get(key, key)} convergence"
+                )
+                # The spectrum's own name already ends in "relaxation
+                # convergence"; concatenated it would read "…relaxation
+                # convergence — 弛豫力收敛 / Relaxation residual force
+                # convergence", so the cell and the lattice are kept instead.
+                return f"{name.split(' relaxation')[0] or name} — {default}" if name else default
+        if name and default:
+            return f"{name} — {default}"
+        return name or default or "figure"
+
+    @staticmethod
+    def _fallback_label(source: Any, axis: str) -> str:
+        value = str(getattr(source, f"{axis}_unit", "") or "")
+        return value or ("x" if axis == "x" else "intensity")
+
+    def _figsize(self) -> tuple:
+        raw = str(self.get_param("figsize", "7.0x4.6") or "").replace("×", "x").strip()
+        try:
+            width, _, height = raw.partition("x")
+            w, h = float(width), float(height)
+            if w > 0.5 and h > 0.5:
+                return w, h
+        except (TypeError, ValueError):
+            pass
+        return 7.0, 4.6

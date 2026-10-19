@@ -1,9 +1,9 @@
 {
-  "total_nodes": 100,
+  "total_nodes": 101,
   "categories": 30,
   "modules_scanned": 56,
   "availability_summary": {
-    "executable": 86,
+    "executable": 87,
     "experimental": 5,
     "unavailable": 9
   },
@@ -22,7 +22,7 @@
     "requires_gpu": 4,
     "requires_network": 15,
     "sensitive_data": 1,
-    "writes_files": 3
+    "writes_files": 4
   },
   "missing_software_summary": {
     "abacus": 1,
@@ -36,17 +36,17 @@
     "vasp_std": 1
   },
   "capability_status_summary": {
-    "executable": 86,
+    "executable": 87,
     "experimental": 1,
     "unavailable": 9,
     "verified": 4
   },
   "execution_mode_summary": {
-    "internal_approximation": 100
+    "internal_approximation": 101
   },
   "reproducibility_summary": {
-    "deterministic": 98,
+    "deterministic": 99,
     "nondeterministic": 2
   },
-  "nodes_without_validation_evidence": 95
+  "nodes_without_validation_evidence": 96
 }

@@ -2,7 +2,7 @@
 
 **节点化科学工作流平台** — ComfyUI 式的图形编排 × KNIME 式的数据处理 × LabVIEW 式的仪器抽象 × AI Scientist 式的自主推理。
 
-> **v0.7.3（本次升级）**：三项面向真实任务的能力补齐。**① API Key 管理与图形入口**——`ai_runtime/credentials.py` 存储 9 家服务商的密钥（优先系统密钥环，退回 `config/credentials.json`），GUI 顶栏与左侧图标栏均有常驻入口，顶栏徽标在未配置时变琥珀色；界面与接口**只返回掩码，永不回显明文**，并提供真实连通性测试。**② 二维声学全波形反演（FWI）**——`simulations/fwi.py` 配套梯度（`∂²u/∂t²` 形式）、频率递进、回溯线搜索线搜索与 held-out 炮监控，4 个新节点 + 示例工作流 `09_seismic_fwi.json` 可一键产出赛题要求的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`。**③ Nature Communications 论文的可视化计算化学模型**——硬碳预脱溶剂机理（Nat. Commun. 15, 3497），4 节点 3 边连成证据链：尺寸筛分（4 Å 孔口）→ 静置老化 → 双 SEI 能量学 → 机制汇总与自洽检查，首效曲线锚定论文 12 h 的 90.14 % 与 10 天的 99.09 % 两个实测点。**100 个科学节点，30 个分类。**
+> **v0.7.3（本次升级）**：三项面向真实任务的能力补齐。**① API Key 管理与图形入口**——`ai_runtime/credentials.py` 存储 9 家服务商的密钥（优先系统密钥环，退回 `config/credentials.json`），GUI 顶栏与左侧图标栏均有常驻入口，顶栏徽标在未配置时变琥珀色；界面与接口**只返回掩码，永不回显明文**，并提供真实连通性测试。**② 二维声学全波形反演（FWI）**——`simulations/fwi.py` 配套梯度（`∂²u/∂t²` 形式）、频率递进、回溯线搜索线搜索与 held-out 炮监控，4 个新节点 + 示例工作流 `09_seismic_fwi.json` 可一键产出赛题要求的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`。**③ Nature Communications 论文的可视化计算化学模型**——硬碳预脱溶剂机理（Nat. Commun. 15, 3497），4 节点 3 边连成证据链：尺寸筛分（4 Å 孔口）→ 静置老化 → 双 SEI 能量学 → 机制汇总与自洽检查，首效曲线锚定论文 12 h 的 90.14 % 与 10 天的 99.09 % 两个实测点。**101 个科学节点，30 个分类。**
 
 > **v0.7.1**：面向**可安装、可运行、可验证、可追溯、可维护**的整改与工程补齐版本，不以新增节点数量为目标。核心变更——**流式分块上传**（`storage/`，边收边校验，字节/超时/并发三重限额，`.part` 原子提交）、**本地 API 会话令牌与权限边界**（`backend/security.py`，只读 / 写入 / 执行 / 外部程序四类权限 + 审计日志 + CORS 白名单）、**Agent 真实执行状态机**（`agent_runtime/tasks.py`，Plan → 审批 → 执行 → 验证 → 完成，幂等指纹防重复提交，支持取消 / 拒绝 / 重试）、**节点能力标签与状态分级**（`capabilities` + implemented/executable/validated/experimental/unavailable，机器可读目录见 `docs/node-catalog.md`）、**受控外部程序执行服务**（`simulations/controlled.py`，固定可执行文件白名单 + 显式 argv + 独立工作目录 + 超时/并发限制，禁止任意 shell 字符串）、**LC-MS/MS 已知答案科学基准**（`scripts/benchmark_lcms.py`）、**依赖许可清单与 SBOM**、**扩展质量门禁**（`scripts/quality_gate.py`）。
 
@@ -14,7 +14,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![React Flow](https://img.shields.io/badge/React%20Flow-12.x-ff4d8d.svg)](https://reactflow.dev/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
-[![nodes](https://img.shields.io/badge/nodes-100-blueviolet.svg)](#节点目录)
+[![nodes](https://img.shields.io/badge/nodes-101-blueviolet.svg)](#节点目录)
 
 ---
 
@@ -68,7 +68,7 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt
 pip install -e ./node_sdk/python                    # 节点 SDK（写插件必需）
 
-# 2. 启动后端（FastAPI，含 100 个科学节点）
+# 2. 启动后端（FastAPI，含 101 个科学节点）
 uvicorn backend.app:app --reload --port 8000
 
 # 3. 启动前端（React Flow 编辑器）
@@ -91,7 +91,7 @@ docker compose up --build
 python scripts/run_demo_workflows.py --list
 python scripts/run_demo_workflows.py
 
-# 全节点冒烟测试（100 个节点逐一实例化并执行）
+# 全节点冒烟测试（101 个节点逐一实例化并执行）
 python scripts/smoke_nodes.py
 ```
 
@@ -116,7 +116,7 @@ Chem-ML-Platform-v0.6.0/
 ├── data_layer/          统一科学数据层 + ★ v0.6 可检索目录 catalog.py（带基座嵌入）
 ├── report_agent/        报告代理：Markdown / HTML / PDF 一键生成
 ├── node_registry/       节点注册中心服务，导出 registry.json 供前端 Node Marketplace
-├── nodes/               100 个科学节点（见下方目录）
+├── nodes/               101 个科学节点（见下方目录）
 ├── models/              计算层：SMILES 解析、描述符、指纹、EHT 量子化学、分子动力学、谱学模拟
 ├── simulations/         Extended Hückel / 紧束缚 / Lennard-Jones MD / 外部程序封装
 ├── databases/           本地分子库（~400 化合物）与材料库（18 种材料）
@@ -155,7 +155,7 @@ React Flow 画布 ──POST /api/workflows/run──▶ WorkflowEngine
 
 ## 节点目录
 
-**100 个科学节点，30 个分类。**（完整机器可读目录见 [`node_registry/registry.json`](node_registry/registry.json)）
+**101 个科学节点，30 个分类。**（完整机器可读目录见 [`node_registry/registry.json`](node_registry/registry.json)）
 
 ### 顶层问题 `Questions`
 
@@ -381,7 +381,7 @@ Agent 由 `ScientificAgentNode` / `AgentPlanNode` 驱动；规划器 `plan(..., 
 from chemml_sdk import ChemMLClient
 
 client = ChemMLClient("http://127.0.0.1:8000")
-print(client.health())                                  # {'status': 'ok', 'nodes': 100, ...}
+print(client.health())                                  # {'status': 'ok', 'nodes': 101, ...}
 run = client.run_workflow("01_unknown_compound_identification.json")
 print(client.summary(run))                              # "...: completed (10 nodes, 1020 ms, 0 failed)"
 print(run["records"]["identify"]["logs"])               # 每个节点的真实日志
@@ -476,7 +476,7 @@ docker compose --profile db up --build
 # Python 测试（62 项：引擎 / 节点 / 工作流 / REST API / v0.6 基座模型与运行时）
 pytest
 
-# 全节点冒烟测试（逐一实例化并执行 100 个节点）
+# 全节点冒烟测试（逐一实例化并执行 101 个节点）
 python scripts/smoke_nodes.py
 python scripts/smoke_nodes.py --json > smoke.json     # 机器可读报告
 
@@ -515,7 +515,7 @@ cd node_sdk/nodejs && npm test
 ## 路线图
 
 ```
-v0.7.3            可视化计算化学 · 二维声学 FWI · API Key 管理  ← 当前版本：100 节点 · 11 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工具守卫 · 工作台 Dock
+v0.7.3            可视化计算化学 · 二维声学 FWI · API Key 管理  ← 当前版本：101 节点 · 11 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工具守卫 · 工作台 Dock
 v0.7           AI Scientist Agent（自主提出假设 → 设计实验 → 分析结果）
 v1.0           Scientific Intelligence Operating System
 ```

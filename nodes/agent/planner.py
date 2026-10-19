@@ -409,7 +409,7 @@ RECIPES: Dict[str, Dict[str, Any]] = {
     # the unrelaxed ``a`` is the single most common way to report a band
     # structure that does not correspond to the crystal under discussion.
     "solid_state_dft": {
-        "description": "固态 DFT：原胞弛豫 -> 能带 -> 分轨道态密度 -> 报告",
+        "description": "固态 DFT：原胞弛豫 -> 能带 / 态密度 / 投影态密度 -> 6 张产物图 -> 报告",
         "steps": [
             {
                 "id": "material",
@@ -441,6 +441,16 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                 "why": "在弛豫后的晶胞上沿高对称点路径 Γ-X-W-K-Γ-L-W-X 求能带",
             },
             {
+                "id": "dos",
+                "type": "ABACUSNode",
+                "inputs": {"material": "relax.material"},
+                "params": {
+                    "calculation": "dos",
+                    "lattice": "fcc",
+                },
+                "why": "总态密度：E_F 处是否非零是判断金属性的直接依据",
+            },
+            {
                 "id": "pdos",
                 "type": "ABACUSNode",
                 "inputs": {"material": "relax.material"},
@@ -449,6 +459,60 @@ RECIPES: Dict[str, Dict[str, Any]] = {
                     "lattice": "fcc",
                 },
                 "why": "分轨道态密度：Al 的 s-p 杂化在 E_F 处非零，即金属性的来源",
+            },
+            {
+                "id": "fig_bands",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "bands.spectrum"},
+                "params": {"kind": "band_structure", "filename": "Al_能带图"},
+                "why": "产物图 1/6：能带结构（含高对称点刻度与 E_F 参考线）",
+            },
+            {
+                "id": "fig_dos",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "dos.spectrum"},
+                "params": {"kind": "dos", "filename": "Al_态密度_DOS"},
+                "why": "产物图 2/6：总态密度",
+            },
+            {
+                "id": "fig_pdos",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "pdos.spectrum"},
+                "params": {"kind": "pdos", "filename": "Al_投影态密度_PDOS"},
+                "why": "产物图 3/6：s / px / py / pz 四通道投影态密度",
+            },
+            {
+                "id": "fig_relax_energy",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "relax.spectrum"},
+                "params": {
+                    "kind": "relax_convergence",
+                    "filename": "Al_弛豫能量收敛",
+                    "trace": 1,
+                },
+                "why": "产物图 4/6：弛豫能量收敛（线性轴）",
+            },
+            {
+                "id": "fig_relax_force",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "relax.spectrum"},
+                "params": {
+                    "kind": "relax_convergence",
+                    "filename": "Al_弛豫力收敛",
+                    "trace": 2,
+                },
+                "why": "产物图 5/6：残余力收敛（对数轴）——弛豫是否真的收敛要看它，不看能量",
+            },
+            {
+                "id": "fig_relax_stress",
+                "type": "FigureExportNode",
+                "inputs": {"spectrum": "relax.spectrum"},
+                "params": {
+                    "kind": "relax_convergence",
+                    "filename": "Al_弛豫应力收敛",
+                    "trace": 3,
+                },
+                "why": "产物图 6/6：残余应力收敛（对数轴）",
             },
             {
                 "id": "summary",

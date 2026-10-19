@@ -132,6 +132,23 @@ def _count_peaks(intensity: Sequence[float], floor: float = 1e-6) -> int:
     return count
 
 
+def _maybe_float(value: Any) -> Optional[float]:
+    """``None`` stays ``None``; anything else becomes a float.
+
+    The relaxation trace's first row has no force or stress -- the gradient has
+    not been evaluated there yet.  Coercing that absence to ``0.0`` would put a
+    real-looking zero in a table cell and on a convergence plot, reading as "the
+    residual force at the starting geometry was exactly zero", which is a claim
+    the optimiser has not made.
+    """
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _dos_at(x_values: List[float], y_values: List[float], energy: float) -> float:
     """Density of states at ``energy``, by linear interpolation.
 
@@ -543,17 +560,31 @@ class TightBindingBackend(SimulationBackend):
         # bands / scf / relax: a band structure plotted against the k-path, with
         # the high-symmetry labels carried in metadata.  The previous version
         # plotted against the band index, which is not a band structure.
-        energies = [
-            [value - e_fermi for value in row] for row in structure.energies
-        ]
-        return Spectrum.from_arrays(
+        #
+        # ``structure.energies`` is **k-major**: one row per k point, one column
+        # per orbital.  A band structure is band-major -- one trace per band
+        # running along the whole path -- so the matrix is transposed here.
+        # Passing it through untransposed produced 57 traces of 4 points each,
+        # i.e. four vertical stubs at each k value rather than four dispersing
+        # bands; nothing raised, the picture was simply a different wrong shape.
+        e_fermi = fermi_energy(structure)
+        matrix = np.asarray(structure.energies, dtype=float) - e_fermi
+        energies = (
+            [[float(value) for value in row] for row in matrix.T]
+            if matrix.size
+            else []
+        )
+        spectrum = Spectrum.from_arrays(
             structure.k_axis,
-            [list(row) for row in energies],
+            energies,
             mode="Bands",
             x_unit="k path (2pi/a)",
             y_unit="E - E_F (eV)",
             name=f"{element} {lattice_key} band structure",
         )
+        spectrum.metadata["tick_labels"] = list(structure.tick_labels)
+        spectrum.metadata["tick_positions"] = list(structure.tick_positions)
+        return spectrum
 
     def _relax(
         self,
@@ -585,12 +616,21 @@ class TightBindingBackend(SimulationBackend):
             "band_gap_ev": float(gap["gap"]),
             "fermi_ev": float(gap["fermi"]),
             "steps": float(result["steps"]),
+            "final_force_ev_per_angstrom": float(result.get("final_force_ev_per_angstrom") or 0.0),
+            "final_stress_gpa": float(result.get("final_stress_gpa") or 0.0),
+            "converged": 1.0 if result.get("converged") else 0.0,
         }
         table = Table(
             name="Lattice relaxation",
-            columns=["step", "a (Å)", "energy (eV)"],
+            columns=["step", "a (Å)", "energy (eV)", "force (eV/Å)", "stress (GPa)"],
             rows=[
-                [int(item["step"]), float(item["a"]), float(item["energy_ev"])]
+                [
+                    int(item["step"]),
+                    float(item["a"]),
+                    float(item["energy_ev"]),
+                    _maybe_float(item.get("force_ev_per_angstrom")),
+                    _maybe_float(item.get("stress_gpa")),
+                ]
                 for item in result["history"]
             ],
         )
@@ -601,6 +641,7 @@ class TightBindingBackend(SimulationBackend):
             f"E {result['energy_initial_ev']:.2f} -> {result['energy_final_ev']:.2f} eV"
             + (f". {note}" if note else "")
         )
+        convergence = self._relaxation_spectrum(result, element, lattice_key)
         input_path = workdir / self.input_filename
         input_path.parent.mkdir(parents=True, exist_ok=True)
         input_path.write_text(
@@ -624,7 +665,7 @@ class TightBindingBackend(SimulationBackend):
                 # for, and discarded, and every number in the final report was
                 # self-consistent about the wrong cell.
                 "material": self._relaxed_material(material, relaxed_a),
-                "spectrum": None,
+                "spectrum": convergence,
                 "table": table,
                 "text": Text(
                     name="Lattice relaxation",
@@ -633,6 +674,11 @@ class TightBindingBackend(SimulationBackend):
                         "engine": "internal:tight-binding",
                         "a_relaxed_angstrom": relaxed_a,
                         "accuracy_note": note,
+                        "converged": bool(result.get("converged")),
+                        "final_force_ev_per_angstrom": float(
+                            result.get("final_force_ev_per_angstrom") or 0.0
+                        ),
+                        "final_stress_gpa": float(result.get("final_stress_gpa") or 0.0),
                         "a_experimental": float(result.get("a_experimental") or 0.0),
                     },
                 ),
@@ -642,6 +688,62 @@ class TightBindingBackend(SimulationBackend):
             message="lattice relaxation on the internal tight-binding surface",
             raw={"relaxation": result},
         )
+
+    @staticmethod
+    def _relaxation_spectrum(
+        result: Dict[str, Any], element: str, lattice_key: str
+    ) -> Spectrum:
+        """The relaxation trace as a three-trace spectrum over the step index.
+
+        Energy, residual force and residual stress in one object, so the
+        convergence figure and the numbers in the report come from a single
+        source.  Emitting energy alone would leave the most important question
+        a relaxation has to answer -- *did the force actually go to zero?* --
+        answerable only by inspecting a raw table.
+
+        The ``None`` entries in the trace stay ``None``: a missing measurement
+        becomes a gap in the line, not a zero plotted at the first step.
+        """
+        history = list(result.get("history") or [])
+        steps = [float(item.get("step", index)) for index, item in enumerate(history)]
+        energy = [float(item.get("energy_ev") or 0.0) for item in history]
+        force = [
+            None if item.get("force_ev_per_angstrom") is None
+            else float(item.get("force_ev_per_angstrom"))
+            for item in history
+        ]
+        stress = [
+            None if item.get("stress_gpa") is None
+            else float(item.get("stress_gpa"))
+            for item in history
+        ]
+        # A gap is carried as NaN inside the numeric trace; matplotlib breaks
+        # the line there, which is the honest rendering of "not measured yet".
+        def _finite(series: List[Optional[float]]) -> List[float]:
+            return [float("nan") if value is None else float(value) for value in series]
+
+        spectrum = Spectrum.from_arrays(
+            steps,
+            [energy, _finite(force), _finite(stress)],
+            mode="Convergence",
+            x_unit="relaxation step",
+            y_unit="mixed units (see trace labels)",
+            name=f"{element} {lattice_key} relaxation convergence",
+            # Bare quantities, not "energy (eV)": the renderer appends the unit
+            # to each axis label, so baking it in here would print "energy (eV)
+            # (eV)" on the y axis and "…— energy (eV)" in the figure title.
+            curve_labels=["energy", "force", "stress"],
+        )
+        spectrum.metadata.update({
+            "engine": "internal:tight-binding",
+            "element": element,
+            "lattice": lattice_key,
+            "a_relaxed_angstrom": float(result.get("a_relaxed") or 0.0),
+            "converged": bool(result.get("converged")),
+            "final_force_ev_per_angstrom": float(result.get("final_force_ev_per_angstrom") or 0.0),
+            "final_stress_gpa": float(result.get("final_stress_gpa") or 0.0),
+        })
+        return spectrum
 
     def _xrd(
         self, material: Material, workdir: Path, params: Dict[str, Any],
