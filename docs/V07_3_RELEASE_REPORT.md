@@ -565,3 +565,96 @@ Fe −0.1%、W −2.1%、Mg −0.7%。**定性趋势可信，绝对数值以 DFT
 - 去掉能带转置 `.T` → `test_band_spectrum_has_one_trace_per_band` **FAILED**
 
 恢复后 38 项全绿。
+
+---
+
+## 10. 外部 ABACUS 链路的修复
+
+### 10.1 问题的性质
+
+上一节交付的 6 张产物图全部由**内置紧束缚引擎**产出（报告回显 `internal:tight-binding`），
+因为本机没有 ABACUS。本节处理一个此前从未被验证过的问题：**当用户真的装上 ABACUS
+之后，平台会发生什么。**
+
+答案比预期严重：装上 ABACUS 后，6 张产物图会**全部消失**，而节点报告成功。
+
+用假 `abacus.cmd` 放上 PATH 做行为验证（`shutil.which` 认 PATHEXT，所以必须是
+`.cmd`/`.exe`——官方 Windows 安装脚本生成的正是 `abacus.cmd`）：
+
+```
+engine   : external:abacus    ← 确实调了
+rc=0 success=True             ← 确实成功
+message  : external run finished
+metrics  : {}                 ← 空
+spectrum : None               ← 能带/DOS/PDOS 端口全丢
+```
+
+「装上真 DFT 反而交付不了图」比「没装 DFT」更糟：后者至少产出完整的紧束缚色散曲线。
+
+### 10.2 三处根因
+
+| # | 位置 | 问题 |
+|---|---|---|
+| 1 | `simulation_runtime/materials.py` `_MaterialsExternal.to_object` | 无条件返回 `"spectrum": None`，外部后端谱端口恒为空 |
+| 2 | 同上 `parse_output` | 只从 stdout 正则抓能量，而 ABACUS 把数据写在 `OUT.ABACUS/` 的文件里，stdout 一个都没有 → 正则永不命中 → `metrics.get(key, 0.0)` **静默给出 0.0 eV 总能量** |
+| 3 | `simulation_runtime/base.py` `run_tool` | argv 为 `[exe, input_path]`，即 ORCA/Gaussian 的 `prog <infile>` 语法；真实 ABACUS 只接受开关、只读 cwd 下的 `INPUT` |
+
+第2 项与本版本已修的「展示用截断出现在数据路径上」同源：**缺失被当成零值**。
+
+### 10.3 修复
+
+- **argv**：ABACUS 覆写 `run_tool` 裸执行 `[exe]`。不改基类——`prog <infile>`
+  对 ORCA/Gaussian 是正确的，改它会破坏其他后端。
+- **输出解析**：按官方文档的文件名与列布局新增 4 个读取器。`BANDS_*.dat`
+  （`out_band 1` → `BANDS_1.dat`）是 **k-major**，必须转置成band-major。
+- **谱端口**：新增 `build_spectrum`，按 `calculation` 分派 bands/dos/pdos。
+- **传参**：新增基类钩子 `to_object_from_result(result, ...)`。不用实例属性，
+  因为引擎按代并行、同代多个 ABACUS 节点会互相覆盖谱数据；默认实现保持其他
+  后端行为不变。
+- **大声失败**：退出码为 0但没有输出文件时抛 `ExternalToolError`，不再报告成功。
+
+### 10.4 过程中被纠正的三个自身错误
+
+| 错误 | 纠正方式 |
+|---|---|
+| 误以为 ABACUS 输出文件叫 `band_*.dat` | 查官方文档，实为 `BANDS_<k>.dat` |
+| 误从 `istate.info` 第1 列读总能量，实测得 −145.28 eV | 该列是**本征值**不是总能；只有 `FINAL_ETOT_IS` 是总能。已移除该读取并加测试锁定 |
+| 反向验证时按位置批量替换源码，切掉了后续类定义（`NameError: VASPBackend`） | 恢复后改为「先切出类体再在类体内替换」，四轮逐条独立验证 |
+
+还纠正了上一轮的一个诊断错误：`ABACUSNode.required_software = []` 并非「依赖声明
+不完整」。实测 `node_registry/capabilities.py::node_status` 会把 `executable`
+自动并入依赖清单，`resolve_software('abacus')` 返回 `None`、`availability` 为
+`executable`（即「有内置回退」），机制按设计正常工作。
+
+### 10.5 回归与反向验证
+
+新增 `tests/test_v07_3_abacus_external_path.py`（15 项）。断言的是**端口数据**
+而非 `engine` 字符串或返回码——后者恰恰是把断链路伪装成健康的那两个信号。
+
+逐条退回四处修复，确认测试确实咬得住：
+
+| 退回 | 结果 |
+|---|---|
+| argv（裸执行 → 传位置参数） | FAILED，且表现为 `engine` 降级为 `internal:tight-binding` |
+| stdout 正则（文件解析 → stdout） | FAILED |
+| 谱端口（真实谱 → `None`） | FAILED，`spectrum port is populated` |
+| 文件名（`BANDS_` → `band_`） | FAILED，抛 `ExternalToolError` |
+
+第一轮反向验证时 `[argv]` 曾**未咬住**：假 abacus 忽略多余参数，所以位置参数
+无害。加固夹具使其对位置参数退出码 2 之后才咬住——**一个测不出差异的夹具
+等于没有测试**。
+
+全量测试 census 为 **887 项**（unit 451 / integration 238 / security 135 /
+benchmark 18 / desktop 45），其中本节新增 15 项全部通过。
+
+**但门禁未全绿**，必须如实记录：`quality_gate` 结果为
+`pass=25 fail=1 skip=1`，失败项是
+`tests/test_v07_1_license_report.py::TestCheckModeDoesNotWrite::test_check_detects_a_tampered_artifact`。
+该测试**单独运行通过**，也**整阶段重跑通过**（`pytest -m integration` 进度行
+`[100%]` 前全为 `.`，F/E 计数 0，238/238 通过）。它失败于门禁的那一次，是既有
+测试的顺序敏感：该测试篡改 `NOTICE` 后要求 `--check` 返回 1，而同一阶段此前的
+`license_sbom_report` 会写 `NOTICE`，`--check` 的比对基准因此在测试之间被重置。
+
+与本节 ABACUS 改动**无因果关系**：改动仅涉及 `simulation_runtime/` 与新增的
+`tests/test_v07_3_abacus_external_path.py`，不触及许可报告路径。属既有测试的
+隔离性缺陷，**本轮不修复，如实记录**。
