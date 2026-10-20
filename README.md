@@ -50,12 +50,12 @@ Chem ML Platform 把**科学研究**拆成可复用的节点，用有向无环�
 
 **设计上比较在意的几点**
 
-| 做法           | 说明                                                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| 做法             | 说明                                                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **科学对象协议** | 节点之间传递的是 `Spectrum` / `Molecule` / `Material` / `Table` / `Image` / `Text` / `ScientificReport` 等强类型对象，而不是裸文件 |
-| **确定性优先**  | 每个计算都有固定随机种子，同样的输入永远得到同样的输出                                                                                   |
-| **优雅降级**   | 外部工具（ORCA、GROMACS、PubChem、LLM API）不可用时自动回退到内置引擎，并在元数据中标注 `engine`                                             |
-| **实现完整**   | 仓库中不含占位实现，每个文件都是可运行代码                                                                          |
+| **确定性优先**   | 每个计算都有固定随机种子，同样的输入永远得到同样的输出                                                                             |
+| **优雅降级**     | 外部工具（ORCA、GROMACS、PubChem、LLM API）不可用时自动回退到内置引擎，并在元数据中标注 `engine`                                   |
+| **实现完整**     | 仓库中不含占位实现，每个文件都是可运行代码                                                                                         |
 
 ---
 
@@ -90,14 +90,14 @@ ABACUSNode cell_relax ──► a 4.050 → 3.987 Å（实验 4.05，误差 −1
 
 ### 六张产物图（本机实跑产出）
 
-| 产物图                                        | 关键结果                                                     |
-| --------------------------------------------- | ------------------------------------------------------------ |
-| ![能带](docs/cases/al-fcc/Al_能带图.png)        | 4 条带；`gap = 0.000 eV`，费米面处有带穿过 → 金属             |
-| ![态密度](docs/cases/al-fcc/Al_态密度_DOS.png)  | 费米面处态密度非零 → 金属                                     |
-| ![PDOS](docs/cases/al-fcc/Al_投影态密度_PDOS.png)| 费米面附近几乎全部来自 p 轨道，s 贡献极小 → 符合 3s²3p¹ 构型 |
-| ![能量](docs/cases/al-fcc/Al_弛豫能量收敛.png)  | 单调下降，第 2 步起平台                                       |
-| ![力](docs/cases/al-fcc/Al_弛豫力收敛.png)      | 残余力 \|F\| 降到 ~6×10⁻⁴ eV/Å                               |
-| ![应力](docs/cases/al-fcc/Al_弛豫应力收敛.png)  | \|stress\| 降到 ~7×10⁻³ GPa                                 |
+| 产物图                                            | 关键结果                                                     |         |                   |
+| ------------------------------------------------- | ------------------------------------------------------------ | ------- | ----------------- |
+| ![能带](docs/cases/al-fcc/Al_能带图.png)          | 4 条带；`gap = 0.000 eV`，费米面处有带穿过 → 金属            |         |                   |
+| ![态密度](docs/cases/al-fcc/Al_态密度_DOS.png)    | 费米面处态密度非零 → 金属                                    |         |                   |
+| ![PDOS](docs/cases/al-fcc/Al_投影态密度_PDOS.png) | 费米面附近几乎全部来自 p 轨道，s 贡献极小 → 符合 3s²3p¹ 构型 |         |                   |
+| ![能量](docs/cases/al-fcc/Al_弛豫能量收敛.png)    | 单调下降，第 2 步起平台                                      |         |                   |
+| ![力](docs/cases/al-fcc/Al_弛豫力收敛.png)        | 残余力 \                                                     | F\      | 降到 ~6×10⁻⁴ eV/Å |
+| ![应力](docs/cases/al-fcc/Al_弛豫应力收敛.png)    | \                                                            | stress\ | 降到 ~7×10⁻³ GPa  |
 
 只有 4 条带，是因为 Al 原胞 1 个原子 × 4 个轨道（1s + 3p），`d` 轨道数为 0。
 这是模型本身的上限——要更多带得引入 d 轨道或者改用超胞。
@@ -223,39 +223,39 @@ React Flow 画布 ──POST /api/workflows/run──▶ WorkflowEngine
 
 ### 顶层问题 `Questions`
 
-| 节点                                  | 说明                                                                     |
-| ----------------------------------- | ---------------------------------------------------------------------- |
+| 节点                                | 说明                                                                                                        |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Unknown Compound Identification** | 未知物鉴定：融合 MS 分子离子/碎片 + NMR 化学位移 + IR/Raman 谱带 + UV-Vis，输出候选结构、置信度与中英文解释 |
-| **Material Discovery**              | 材料发现：融合 XRD/SEM/XPS/DFT 证据，按目标性质（比容量、电压、带隙…）对候选组分排序                    |
+| **Material Discovery**              | 材料发现：融合 XRD/SEM/XPS/DFT 证据，按目标性质（比容量、电压、带隙…）对候选组分排序                        |
 
 ### 虚拟仪器 `Instruments`（26 个）
 
-| 分类                | 节点                                                      |
-| ----------------- | ------------------------------------------------------- |
-| Mass Spectrometry | LC-MS · GC-MS · MALDI · ICP-MS                          |
-| NMR               | ¹H/¹³C NMR（化学位移表 + J 耦合多重峰 → FID → FFT）                 |
+| 分类              | 节点                                                              |
+| ----------------- | ----------------------------------------------------------------- |
+| Mass Spectrometry | LC-MS · GC-MS · MALDI · ICP-MS                                    |
+| NMR               | ¹H/¹³C NMR（化学位移表 + J 耦合多重峰 → FID → FFT）               |
 | Vibrational       | IR · Raman（官能团谱带库匹配）                                    |
 | Electronic        | UV-Vis（Woodward-Fieser）· Fluorescence（镜像对称 + Stokes 位移） |
-| Surface           | XPS · XAS                                               |
-| Diffraction       | XRD（粉末衍射 + 指标化）· Single Crystal XRD（晶胞精修）               |
-| Microscopy        | SEM · TEM · AFM（Ra/Rq 粗糙度）                              |
-| Thermal           | DSC · TGA · DMA                                         |
-| Electrochemistry  | CV · EIS（Nyquist/Bode）                                  |
-| Particle          | DLS（动态光散射）· BET                                         |
-| Imaging           | Raman Mapping · FTIR Imaging · Hyperspectral            |
+| Surface           | XPS · XAS                                                         |
+| Diffraction       | XRD（粉末衍射 + 指标化）· Single Crystal XRD（晶胞精修）          |
+| Microscopy        | SEM · TEM · AFM（Ra/Rq 粗糙度）                                   |
+| Thermal           | DSC · TGA · DMA                                                   |
+| Electrochemistry  | CV · EIS（Nyquist/Bode）                                          |
+| Particle          | DLS（动态光散射）· BET                                            |
+| Imaging           | Raman Mapping · FTIR Imaging · Hyperspectral                      |
 
 ### AI `AI`（9 个）
 
-| 分类                | 节点                                                                                                                                             |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| LLM               | **LLM Reasoner**：OpenAI / Anthropic / Google / DeepSeek / Qwen / Ollama / 离线推理                                                                 |
+| 分类              | 节点                                                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM               | **LLM Reasoner**：OpenAI / Anthropic / Google / DeepSeek / Qwen / Ollama / 离线推理                                                                                                         |
 | Foundation Models | **ChemBERTa**（子词哈希）· **GROVER**（MPNN）· **Graphormer**（度/最短路径结构编码）· **Uni-Mol**（距离矩阵注意力）——v0.6 起统一由 [`foundation/`](#统一科学基座模型-foundation) 注册表驱动 |
-| Vision            | **Vision Model**：ViT / CLIP / SAM / DINO 四种后端                                                                                                  |
-| ML                | Train Model（PyTorch MPNN / NumPy 岭回归）· Property Prediction · Similarity Search                                                                 |
+| Vision            | **Vision Model**：ViT / CLIP / SAM / DINO 四种后端                                                                                                                                          |
+| ML                | Train Model（PyTorch MPNN / NumPy 岭回归）· Property Prediction · Similarity Search                                                                                                         |
 
 ### 数据库 `Databases`（14 个）
 
-| 分类        | 节点                                          |
+| 分类      | 节点                                        |
 | --------- | ------------------------------------------- |
 | Spectral  | MassBank · MoNA · GNPS · HMDB · BMRB · NIST |
 | Chemical  | PubChem · ChEMBL · ZINC · PDB               |
@@ -263,18 +263,18 @@ React Flow 画布 ──POST /api/workflows/run──▶ WorkflowEngine
 
 ### 模拟 `Simulation`（7 个）
 
-| 分类                 | 节点                                                   |
-| ------------------ | ---------------------------------------------------- |
-| Quantum            | ORCA · Gaussian · Psi4 · CP2K（生成真实输入文件 + 内置 EHT 回退）  |
-| Molecular Dynamics | GROMACS · LAMMPS · OpenMM（内置 Lennard-Jones 引擎 + RDF） |
+| 分类               | 节点                                                              |
+| ------------------ | ----------------------------------------------------------------- |
+| Quantum            | ORCA · Gaussian · Psi4 · CP2K（生成真实输入文件 + 内置 EHT 回退） |
+| Molecular Dynamics | GROMACS · LAMMPS · OpenMM（内置 Lennard-Jones 引擎 + RDF）        |
 
 ### 数据处理 `Analysis` / `IO` / `Report`
 
-| 分类       | 节点                                                                                                                                                                   |
+| 分类     | 节点                                                                                                                                                                 |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Analysis | Baseline Correction · Smoothing · Peak Picking · Normalize · Resample · Spectrum Math · Molecular Descriptors · Similarity · Substructure Search · Functional Groups |
-| IO       | Spectrum File（mzML/mzXML/MGF/MSP/JCAMP/XY/Bruker）· Table File（CSV/TSV）· Molecule Input · Material Input · Text Input · Export                                        |
-| Report   | Report Builder · Summary Table · Report Export（MD/HTML/JSON）                                                                                                         |
+| IO       | Spectrum File（mzML/mzXML/MGF/MSP/JCAMP/XY/Bruker）· Table File（CSV/TSV）· Molecule Input · Material Input · Text Input · Export                                    |
+| Report   | Report Builder · Summary Table · Report Export（MD/HTML/JSON）                                                                                                       |
 
 ---
 
@@ -354,12 +354,12 @@ print(describe("chemberta"))                        # 单个模型的元数据
 ```
 
 
-| 家族 family | 模型                                        | 维度                    | 能力                                     |
-| --------- | ----------------------------------------- | --------------------- | -------------------------------------- |
-| molecular | ChemBERTa · GROVER · Graphormer · Uni-Mol | 384 / 512 / 768 / 512 | `embed`                                |
-| molecular | Morgan · Descriptor-Vector                | 2048 / 18             | `embed`                                |
-| property  | Physchem                                  | —                     | `predict`（logp / esol / heavy_atoms …） |
-| spectral  | Spectrum-Bin · Spectrum-Summary           | 128 / 8               | `embed`                                |
+| 家族 family | 模型                                      | 维度                  | 能力                                     |
+| ----------- | ----------------------------------------- | --------------------- | ---------------------------------------- |
+| molecular   | ChemBERTa · GROVER · Graphormer · Uni-Mol | 384 / 512 / 768 / 512 | `embed`                                  |
+| molecular   | Morgan · Descriptor-Vector                | 2048 / 18             | `embed`                                  |
+| property    | Physchem                                  | —                     | `predict`（logp / esol / heavy_atoms …） |
+| spectral    | Spectrum-Bin · Spectrum-Summary           | 128 / 8               | `embed`                                  |
 
 > 没有权重时，基座模型用**确定性种子向量**（`seed_vector`），保证同输入同输出；`requires_weights` 字段标明哪些模型在提供权重后可切换到真实推理。返回的不会是随机结果。
 
@@ -372,14 +372,14 @@ print(describe("chemberta"))                        # 单个模型的元数据
 python -c "from ai_runtime import set_mode; set_mode('local')"    # 或 export CHEMML_AI_MODE=local
 ```
 
-| 模式            | 含义                                                  |
-| ------------- | --------------------------------------------------- |
-| `auto`        | 有密钥走云端，否则依次回退                                       |
+| 模式          | 含义                                                      |
+| ------------- | --------------------------------------------------------- |
+| `auto`        | 有密钥走云端，否则依次回退                                |
 | `cloud`       | 强制云端（OpenAI / Anthropic / Google / DeepSeek / Qwen） |
-| `local`       | 强制本地（Ollama 等本地推理）                                  |
+| `local`       | 强制本地（Ollama 等本地推理）                             |
 | `open_source` | 强制开源权重                                              |
-| `chemistry`   | 强制化学专用后端                                            |
-| `offline`     | 强制内置离线推理器                                           |
+| `chemistry`   | 强制化学专用后端                                          |
+| `offline`     | 强制内置离线推理器                                        |
 
 配置持久化在 `config/ai.json`（模板见 [`config/ai.example.json`](config/ai.example.json)，实际文件不入库），`family_order()` 始终把 `offline` 追加在末位，所以**任何模式下功能都不中断**；REST 接口 `GET/PUT /api/ai/config` 中的密钥以 `***` 掩码返回，写回时忽略掩码与空值。
 
@@ -428,36 +428,36 @@ Agent 由 `ScientificAgentNode` / `AgentPlanNode` 驱动；规划器 `plan(..., 
 
 后端提供 REST + WebSocket，交互式文档在 <http://localhost:8000/api/docs>。
 
-| 方法          | 路径                                                                                 | 说明                                |
-| ----------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| `GET`       | `/api/health`                                                                      | 存活探针与节点总数                         |
-| `GET`       | `/api/meta`                                                                        | 前端启动载荷（分类 + 全部节点规格）               |
+| 方法        | 路径                                                                               | 说明                                      |
+| ----------- | ---------------------------------------------------------------------------------- | ----------------------------------------- |
+| `GET`       | `/api/health`                                                                      | 存活探针与节点总数                        |
+| `GET`       | `/api/meta`                                                                        | 前端启动载荷（分类 + 全部节点规格）       |
 | `GET`       | `/api/nodes`                                                                       | 节点列表（`?category=` / `?query=` 过滤） |
-| `GET`       | `/api/nodes/categories`                                                            | 按分类分组的节点目录                        |
+| `GET`       | `/api/nodes/categories`                                                            | 按分类分组的节点目录                      |
 | `GET`       | `/api/nodes/{type}`                                                                | 单个节点完整规格                          |
 | `GET`       | `/api/workflows`                                                                   | 已存储工作流列表                          |
-| `GET`       | `/api/workflows/{file}`                                                            | 加载工作流 JSON                        |
+| `GET`       | `/api/workflows/{file}`                                                            | 加载工作流 JSON                           |
 | `POST`      | `/api/workflows`                                                                   | 校验并保存工作流                          |
-| `POST`      | `/api/workflows/validate`                                                          | 仅校验                               |
-| `POST`      | `/api/workflows/run`                                                               | 执行内联工作流                           |
+| `POST`      | `/api/workflows/validate`                                                          | 仅校验                                    |
+| `POST`      | `/api/workflows/run`                                                               | 执行内联工作流                            |
 | `POST`      | `/api/workflows/{file}/run`                                                        | 执行已存储工作流                          |
-| `GET`       | `/api/workflows/runs/{id}/events`                                                  | 运行事件历史                            |
-| `GET`       | `/api/runs`                                                                        | 运行历史与产物                           |
-| `GET`       | `/api/runs/artifacts/{path}`                                                       | 下载产物文件                            |
-| `GET`       | `/api/ai/modes` · `/api/ai/providers`                                              | AI 运行模式与供应商列表              |
-| `GET`·`PUT` | `/api/ai/config`                                                                   | 读取 / 更新 AI 配置（密钥掩码）★ v0.6         |
-| `POST`      | `/api/ai/complete` · `/api/ai/test`                                                | 直接调用 LLM / 连通性自检           |
-| `POST`      | `/api/agent/ask`                                                                   | 提问式 Agent（返回答案 + 依据 + 章节）★ v0.6   |
-| `POST`      | `/api/agent/plan`                                                                  | 仅生成计划                      |
-| `GET`       | `/api/agent/history`                                                               | Agent 运行历史                 |
-| `GET`       | `/api/data/catalog` · `/api/data/catalog/{id}` · `/api/data/stats`                 | 科学数据目录                     |
-| `POST`      | `/api/data/ingest` · `GET /api/data/datasets`                                      | 录入对象 / 列出数据集               |
-| `GET`       | `/api/simulations/families` · `/api/simulations/backends`                          | 仿真族与后端                     |
-| `POST`      | `/api/simulations/run`                                                             | 提交仿真作业                     |
-| `GET`       | `/api/simulations/jobs` · `/api/simulations/jobs/{id}`                             | 作业列表 / 详情                  |
-| `GET`       | `/api/foundation/models`                                                           | 基座模型目录                     |
-| `POST`      | `/api/foundation/embed` · `/api/foundation/similarity` · `/api/foundation/predict` | 嵌入 / 相似度 / 预测              |
-| `WS`        | `/api/ws/run/{run_id}`                                                             | 实时事件流                             |
+| `GET`       | `/api/workflows/runs/{id}/events`                                                  | 运行事件历史                              |
+| `GET`       | `/api/runs`                                                                        | 运行历史与产物                            |
+| `GET`       | `/api/runs/artifacts/{path}`                                                       | 下载产物文件                              |
+| `GET`       | `/api/ai/modes` · `/api/ai/providers`                                              | AI 运行模式与供应商列表                   |
+| `GET`·`PUT` | `/api/ai/config`                                                                   | 读取 / 更新 AI 配置（密钥掩码）           |
+| `POST`      | `/api/ai/complete` · `/api/ai/test`                                                | 直接调用 LLM / 连通性自检                 |
+| `POST`      | `/api/agent/ask`                                                                   | 提问式 Agent（返回答案 + 依据 + 章节）    |
+| `POST`      | `/api/agent/plan`                                                                  | 仅生成计划                                |
+| `GET`       | `/api/agent/history`                                                               | Agent 运行历史                            |
+| `GET`       | `/api/data/catalog` · `/api/data/catalog/{id}` · `/api/data/stats`                 | 科学数据目录                              |
+| `POST`      | `/api/data/ingest` · `GET /api/data/datasets`                                      | 录入对象 / 列出数据集                     |
+| `GET`       | `/api/simulations/families` · `/api/simulations/backends`                          | 仿真族与后端                              |
+| `POST`      | `/api/simulations/run`                                                             | 提交仿真作业                              |
+| `GET`       | `/api/simulations/jobs` · `/api/simulations/jobs/{id}`                             | 作业列表 / 详情                           |
+| `GET`       | `/api/foundation/models`                                                           | 基座模型目录                              |
+| `POST`      | `/api/foundation/embed` · `/api/foundation/similarity` · `/api/foundation/predict` | 嵌入 / 相似度 / 预测                      |
+| `WS`        | `/api/ws/run/{run_id}`                                                             | 实时事件流                                |
 
 **Python SDK**
 
@@ -544,11 +544,11 @@ docker compose --profile db up --build
 
 环境变量：
 
-| 变量                                                                                                   | 说明                           |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 变量                                                                                                 | 说明                                      |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------- |
 | `CHEMML_PLUGINS`                                                                                     | 第三方节点插件目录（默认 `/app/plugins`） |
-| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` / `DEEPSEEK_API_KEY` / `DASHSCOPE_API_KEY` | 启用对应的在线 LLM 供应商              |
-| `MP_API_KEY`                                                                                         | 启用 Materials Project 在线检索    |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` / `DEEPSEEK_API_KEY` / `DASHSCOPE_API_KEY` | 启用对应的在线 LLM 供应商                 |
+| `MP_API_KEY`                                                                                         | 启用 Materials Project 在线检索           |
 
 未提供密钥时，LLM 节点使用内置离线推理器，数据库节点回退到本地库——**功能不中断，只是数据来源不同**。
 
@@ -582,18 +582,18 @@ cd node_sdk/nodejs && npm test
 
 ## 深度文档
 
-| 文档                                                                                                                | 内容                                       |
-| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| [docs/cases/al-fcc/README.md](docs/cases/al-fcc/README.md)                                                              | **晶胞案例**：铝 fcc 弛豫 + 能带 + 态密度，6 张实跑产物图，哪些数字站得住、哪些站不住逐条标了出来 |
-| [docs/architecture.md](docs/architecture.md)                                                                      | 四层架构、引擎执行模型、事件总线与缓存、科学对象协议、设计决策记录        |
-| [docs/node-development.md](docs/node-development.md)                                                              | 从零编写科学节点：端口、参数、`execute()` 契约、调试、测试、自检清单 |
-| [docs/workflow-format.md](docs/workflow-format.md)                                                                | 工作流 JSON 完整规范：节点、边（含简写形式）、端口兼容、运行时输入注入   |
-| [docs/api-reference.md](docs/api-reference.md)                                                                    | REST 与 WebSocket 逐端点参考、请求/响应示例、错误码速查     |
-| [docs/deployment.md](docs/deployment.md)                                                                          | 本地 / Docker / 嵌入部署、环境变量、插件目录、生产检查清单、故障排查 |
-| [docs/v0.6-task-spec.md](docs/v0.6-task-spec.md)                                                                  | v0.6 任务书：统一科学基座模型版的范围、五大优先级、模块清单与验收标准    |
-| [examples/plugins/](examples/plugins/)                                                                            | 可直接运行的自定义节点示例                            |
-| [node\_sdk/python/README.md](node_sdk/python/README.md) · [node\_sdk/nodejs/README.md](node_sdk/nodejs/README.md) | 双 SDK 使用手册                               |
-| [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md)                                                 | 贡献指南与变更记录                                |
+| 文档                                                                                                              | 内容                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [docs/cases/al-fcc/README.md](docs/cases/al-fcc/README.md)                                                        | **晶胞案例**：铝 fcc 弛豫 + 能带 + 态密度，6 张实跑产物图，哪些数字站得住、哪些站不住逐条标了出来 |
+| [docs/architecture.md](docs/architecture.md)                                                                      | 四层架构、引擎执行模型、事件总线与缓存、科学对象协议、设计决策记录                                |
+| [docs/node-development.md](docs/node-development.md)                                                              | 从零编写科学节点：端口、参数、`execute()` 契约、调试、测试、自检清单                              |
+| [docs/workflow-format.md](docs/workflow-format.md)                                                                | 工作流 JSON 完整规范：节点、边（含简写形式）、端口兼容、运行时输入注入                            |
+| [docs/api-reference.md](docs/api-reference.md)                                                                    | REST 与 WebSocket 逐端点参考、请求/响应示例、错误码速查                                           |
+| [docs/deployment.md](docs/deployment.md)                                                                          | 本地 / Docker / 嵌入部署、环境变量、插件目录、生产检查清单、故障排查                              |
+| [docs/v0.6-task-spec.md](docs/v0.6-task-spec.md)                                                                  | v0.6 任务书：统一科学基座模型版的范围、五大优先级、模块清单与验收标准                             |
+| [examples/plugins/](examples/plugins/)                                                                            | 可直接运行的自定义节点示例                                                                        |
+| [node\_sdk/python/README.md](node_sdk/python/README.md) · [node\_sdk/nodejs/README.md](node_sdk/nodejs/README.md) | 双 SDK 使用手册                                                                                   |
+| [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md)                                                 | 贡献指南与变更记录                                                                                |
 
 ---
 
@@ -613,12 +613,12 @@ v1.0           Scientific Intelligence Operating System
 
 ### 第三方与上游引用
 
-| 内容 | 说明 |
-| --- | --- |
-| 随包依赖 | 12 个 Python + 153 个 npm 包，逐条列在 [NOTICE](NOTICE) 与 [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)，许可信息取自真实安装元数据；SBOM 见 [sbom.json](sbom.json) |
-| 外部科研软件 | ABACUS / CP2K / GROMACS / LAMMPS / ORCA / PSI4 / Quantum ESPRESSO 等**不随包分发**，平台仅在用户已安装时调用，缺失时回退内置近似 |
+| 内容         | 说明                                                                                                                                                                                                                                    |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 随包依赖     | 12 个 Python + 153 个 npm 包，逐条列在 [NOTICE](NOTICE) 与 [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)，许可信息取自真实安装元数据；SBOM 见 [sbom.json](sbom.json)                                                     |
+| 外部科研软件 | ABACUS / CP2K / GROMACS / LAMMPS / ORCA / PSI4 / Quantum ESPRESSO 等**不随包分发**，平台仅在用户已安装时调用，缺失时回退内置近似                                                                                                        |
 | 上游项目引用 | `agent_runtime/tool_guard.py` 借鉴了 [TencentCloud/Octop](https://github.com/TencentCloud/Octop)（MIT）的工具守卫**思路**（单点收口、风险分级、规则外置），没有复制上游的源文件；具体「借了什么 / 没借什么」见 NOTICE 与许可清单第 8 节 |
-| 样例数据 | `datasets/` 下的数据由本项目生成或以 CC0 提供，每个数据集在 `*.metadata.json` 中自带 `license` 与 `source` 字段 |
+| 样例数据     | `datasets/` 下的数据由本项目生成或以 CC0 提供，每个数据集在 `*.metadata.json` 中自带 `license` 与 `source` 字段                                                                                                                         |
 
 许可清单由 `scripts/license_report.py` 从真实元数据生成，`--check` 模式可验证未漂移：
 
