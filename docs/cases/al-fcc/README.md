@@ -1,7 +1,7 @@
 # 案例：铝面心立方晶胞的弛豫、能带与态密度
 
 > 工作流文件：[`workflows/11_solid_state_dft.json`](../../workflows/11_solid_state_dft.json)
-> 14 个节点 · 16 条边 · 本机实跑 `completed` / 0 错误
+> 14 个节点 · 17 条边 · 本机实跑 `completed` / 0 错误
 > 文中数字均取自本仓库代码的实际输出。
 
 ---
