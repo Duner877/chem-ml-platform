@@ -234,3 +234,86 @@ def test_the_preload_bridge_exposes_the_install_hand_off():
     assert "install-update" in preload
     assert "installUpdate" in preload
     assert 'ipcMain.handle("install-update"' in main
+
+
+# --------------------------------------------------------------------------- #
+# The build stamp's "dirty" flag (v0.7.4)
+# --------------------------------------------------------------------------- #
+class TestDirtyFlagCountsSourceOnly:
+    """``dirty`` must mean "the source differs from the commit".
+
+    It used to mean "``git status --porcelain`` printed anything".  The
+    release process deliberately leaves the release manifest, the checksum
+    list and the build stamp *uncommitted* -- a manifest that records its own
+    commit cannot live inside that commit -- so every build stamped
+    ``dirty: true``.  That flag says "the code you are running may not be the
+    code in this commit"; a provenance claim of that weight has to be true.
+
+    The bug is worse than it looks, because the parser only mis-read the
+    *second* porcelain column: ``" M SHA256SUMS"`` becomes ``"M
+    SHA256SUMS"`` after stripping, and the path is then cut one character
+    early (``"HA256SUMS"``).  So the exclusion silently failed for exactly
+    the files it was written to exclude -- the ones whose names begin with
+    the letters that got eaten.
+    """
+
+    @staticmethod
+    def _classify(porcelain: str) -> list:
+        """The real parser, against a synthetic porcelain listing.
+
+        The production function is called directly rather than re-implemented
+        here: a copy in the test would keep passing after the production
+        code was fixed, which is the opposite of what a regression test is
+        for.
+        """
+        from chemml_version import _counted_source_changes
+
+        return _counted_source_changes(porcelain)
+
+    def test_derived_artefacts_are_not_counted(self):
+        counted = self._classify(
+            " M SHA256SUMS\n"
+            " M docs/RELEASE_MANIFEST.md\n"
+            " M docs/RELEASE_MANIFEST.json\n"
+            " M BUILD_INFO.json\n"
+        )
+        assert counted == [], f"derived artefacts must not count as edits: {counted}"
+
+    def test_a_modified_artefact_is_still_excluded(self):
+        """The unstaged form (``" M "``) is the one that used to break.
+
+        Staged (``"M  "``) and unstaged (``" M "``) differ only in which
+        column holds the space, and the unstaged form is what a
+        freshly-generated manifest produces.
+        """
+        for line in (" M SHA256SUMS", "M  SHA256SUMS", "?? SHA256SUMS"):
+            counted = self._classify(line + "\n")
+            assert counted == [], f"{line!r} must not count as an edit"
+
+    def test_a_real_source_change_is_counted(self):
+        counted = self._classify(" M backend/app.py\n")
+        assert counted == ["backend/app.py"]
+
+    def test_a_new_source_file_is_counted(self):
+        counted = self._classify("?? custom_nodes/new_device/node.py\n")
+        assert counted == ["custom_nodes/new_device/node.py"]
+
+    def test_the_manifest_exclusion_list_covers_every_derived_artefact(self):
+        """The list and the artefacts must not drift apart.
+
+        A manifest that stops being excluded is not a cosmetic problem: the
+        flag flips to ``dirty`` and the build stamp starts claiming the
+        binary may not match its commit.
+        """
+        import chemml_version as cv
+
+        for name in (
+            "docs/RELEASE_MANIFEST.md",
+            "docs/RELEASE_MANIFEST.json",
+            "SHA256SUMS",
+            "BUILD_INFO.json",
+        ):
+            assert name in cv._DERIVED_ARTEFACTS, (
+                f"{name} is a derived artefact and must be excluded from the "
+                "dirty check"
+            )

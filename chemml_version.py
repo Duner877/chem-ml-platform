@@ -216,6 +216,37 @@ _DERIVED_ARTEFACTS = (
 )
 
 
+def _counted_source_changes(porcelain: str) -> list:
+    """The source-level edits in a ``git status --porcelain`` listing.
+
+    Split out from :func:`_tree_is_dirty` so it can be tested against
+    synthetic listings -- the real function can only be exercised by editing
+    the tree, which is exactly what a test must not do.
+
+    Porcelain v1 format: ``XY path``, where the two status columns are at
+    the *start* of the line and the second one is a space for an unstaged
+    modification.  Stripping the whole line would delete that space and
+    shift the path by one character, which is how ``"SHA256SUMS"`` came to
+    be read as ``"HA256SUMS"`` -- and the files this function exists to
+    exclude are exactly the ones whose names begin with the letters that
+    got eaten.
+    """
+    counted = []
+    for line in (porcelain or "").splitlines():
+        if not line.strip():
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip()
+        path = path.strip('"').replace("\\", "/")
+        if path in _DERIVED_ARTEFACTS:
+            continue
+        if path.startswith("output/") or path.startswith("desktop/dist/"):
+            continue
+        counted.append(path)
+    return counted
+
+
 def _tree_is_dirty() -> bool:
     """True when the *source* differs from the commit.
 
@@ -238,21 +269,7 @@ def _tree_is_dirty() -> bool:
         return False
     if out.returncode != 0:
         return False
-    for line in (out.stdout or "").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        # Porcelain v1: "XY path" (or "XY -> path" for a rename).
-        path = line[3:].strip() if len(line) > 3 else ""
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1].strip()
-        path = path.strip('"').replace("\\", "/")
-        if path in _DERIVED_ARTEFACTS:
-            continue
-        if path.startswith("output/") or path.startswith("desktop/dist/"):
-            continue
-        return True
-    return False
+    return bool(_counted_source_changes(out.stdout or ""))
 
 
 def build_metadata() -> Dict[str, Any]:
