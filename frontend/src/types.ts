@@ -469,3 +469,49 @@ export interface FragmentationResult {
   ai_engine: string;
   confidence: number;
 }
+
+// --------------------------------------------------------------------------- //
+// Software update (v0.7.4)
+// --------------------------------------------------------------------------- //
+
+/** ``GET /api/update/check`` response. */
+export interface UpdateCheck {
+  /** Version of the running build. */
+  current_version: string;
+  /** Latest published version, or ``null`` when it could not be determined. */
+  latest_version: string | null;
+  /** Whether ``latest_version`` is strictly newer than ``current_version``. */
+  update_available: boolean;
+  /** The check could not be completed (network, rate limit, ...).
+   *
+   *  This is deliberately separate from ``update_available``: being offline
+   *  must not be reported as "you are up to date". */
+  check_failed: boolean;
+  /** One sentence for the user. */
+  message: string;
+  /** The release page on GitHub. */
+  release_url: string | null;
+  /** Direct link to the Windows installer, when the release has one. */
+  download_url: string | null;
+  /** ISO timestamp of the release. */
+  published_at: string | null;
+  /** Release notes, truncated server-side. */
+  notes: string;
+}
+
+/** ``GET /api/update/current`` response. */
+export interface UpdateCurrent {
+  version: string;
+  repository: string;
+}
+
+/** ``POST /api/update/download`` response. */
+export interface UpdateDownload {
+  /** Absolute path of the downloaded installer. */
+  path: string;
+  size_bytes: number;
+  /** SHA-256 of the downloaded file, computed locally. */
+  sha256: string;
+  /** Whether the checksum matched the published one. */
+  verified: boolean;
+}

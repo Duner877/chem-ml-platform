@@ -97,6 +97,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     dockApiKey: "密钥",
     dockData: "数据",
     dockSimulation: "模拟",
+    dockUpdate: "更新",
     // --- v0.7.3: API-key entry point -------------------------------------- //
     keyPanel: "API 密钥",
     keyPanelHint: "在此填入模型服务商的密钥，AI 与助手立即可用。密钥不会回显。",
@@ -281,8 +282,27 @@ const DICT: Record<Lang, Record<string, string>> = {
     installed: "已安装",
     notInstalled: "未安装",
     aboutBody:
-      "Chem ML Platform v0.7.2「Trusted Delivery Release」——节点化科学工作流平台：统一科学基座模型、云 / 本地 AI 切换、科学数据目录、模拟作业队列与自主科学助手。",
+      "Chem ML Platform v0.7.4 —— 节点化科学工作流平台：统一科学基座模型、云 / 本地 AI 切换、科学数据目录、模拟作业队列与自主科学助手。节点按设备分组（质谱、光谱、XPS、显微、衍射……），新增节点只需放入对应分组目录。",
     aboutOk: "确定",
+    // --- v0.7.4: software update ----------------------------------------- //
+    updateTitle: "软件更新",
+    updateCurrent: "当前版本",
+    updateLatest: "最新版本",
+    updatePublished: "发布时间",
+    updateCheck: "检查更新",
+    updateChecking: "检查中…",
+    updateCheckFailed: "检查更新失败",
+    updateReleasePage: "打开发布页",
+    updateDownload: "下载安装包",
+    updateDownloading: "下载中…",
+    updateDownloaded: "下载完成",
+    updateDownloadFailed: "下载失败",
+    updateInstall: "启动安装",
+    updateInstalling: "正在启动安装程序…",
+    updateInstallStarted: "安装程序已启动，请按提示完成更新。",
+    updateInstallFailed: "启动安装程序失败",
+    updateNoInstaller: "该版本没有提供 Windows 安装包，请从发布页手动下载。",
+    updateNoInstallerRunner: "当前环境无法自动启动安装程序，请手动运行已下载的安装包。",
   },
   en: {
     title: "Chem ML Platform",
@@ -378,6 +398,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     dockApiKey: "API Keys",
     dockData: "Data",
     dockSimulation: "Simulation",
+    dockUpdate: "Update",
     // --- v0.7.3: API-key entry point -------------------------------------- //
     keyPanel: "API keys",
     keyPanelHint:
@@ -564,8 +585,29 @@ const DICT: Record<Lang, Record<string, string>> = {
     installed: "installed",
     notInstalled: "not installed",
     aboutBody:
-      "Chem ML Platform v0.7.2 \"Trusted Delivery Release\" — a node-based scientific workflow platform: unified scientific foundation models, cloud / local AI switching, a scientific data catalog, a simulation job queue and an autonomous scientific agent.",
+      "Chem ML Platform v0.7.4 — a node-based scientific workflow platform: unified scientific foundation models, cloud / local AI switching, a scientific data catalog, a simulation job queue and an autonomous scientific agent. Nodes are grouped by device class (mass spectrometry, spectroscopy, XPS, microscopy, diffraction, ...); adding one means dropping a file into the matching directory.",
     aboutOk: "OK",
+    // --- v0.7.4: software update ----------------------------------------- //
+    updateTitle: "Software update",
+    updateCurrent: "Current version",
+    updateLatest: "Latest version",
+    updatePublished: "Published",
+    updateCheck: "Check for updates",
+    updateChecking: "Checking…",
+    updateCheckFailed: "Update check failed",
+    updateReleasePage: "Open release page",
+    updateDownload: "Download installer",
+    updateDownloading: "Downloading…",
+    updateDownloaded: "Download complete",
+    updateDownloadFailed: "Download failed",
+    updateInstall: "Start installation",
+    updateInstalling: "Starting the installer…",
+    updateInstallStarted: "The installer has started — follow its prompts to finish.",
+    updateInstallFailed: "Could not start the installer",
+    updateNoInstaller:
+      "This release has no Windows installer; download it from the release page.",
+    updateNoInstallerRunner:
+      "This environment cannot launch an installer automatically; run the downloaded file yourself.",
   },
 };
 

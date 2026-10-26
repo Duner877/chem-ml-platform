@@ -18,6 +18,7 @@ import pathlib
 
 import pytest
 
+from chemml_version import VERSION
 from workflow_engine.engine import WorkflowEngine
 from workflow_engine.workflow import Workflow
 
@@ -92,7 +93,9 @@ def test_the_workflow_declares_its_own_limits(raw):
     meta = raw.get("metadata", {})
     assert meta.get("limitations_zh"), "a generated article needs a stated review step"
     assert "engine" in meta, "the executing engine must be named"
-    assert "0.7.3" == raw.get("version")
+    # Current platform version, not a literal -- see the note in
+    # ``test_v07_3_hard_carbon.py``.
+    assert VERSION == raw.get("version")
 
 
 # --------------------------------------------------------------------------- #

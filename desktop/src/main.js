@@ -1,5 +1,5 @@
 /**
- * Chem ML Platform v0.7.2 -- Electron main process (spec task P0-02).
+ * Chem ML Platform v0.7.4 -- Electron main process (spec task P0-02).
  *
  * v0.7.1 could start on a developer machine but the task book found it could
  * not demonstrably start on a clean one: it validated four packages, waited the
@@ -23,7 +23,9 @@
  *  - guarantees the child process tree is terminated on quit paths
  *    (`before-quit`, `will-quit`, `process.exit`) so no orphan holds the port;
  *  - keeps user data, logs, temp and config strictly under `app.getPath("userData")`
- *    and never writes into the install directory.
+ *    and never writes into the install directory;
+ *  - v0.7.4 adds the software-update hand-off: the renderer downloads and
+ *    checksums the installer, and the shell runs it once the app has quit.
  *
  * Packaging: see `docs/V07_2_DESKTOP_RUNTIME.md` for the runtime strategy,
  * supported platforms, data-retention policy and the clean-VM test record.
@@ -766,5 +768,59 @@ ipcMain.handle("pick-file", async (_event, options = {}) => {
   }
   const chosen = result.filePaths[0];
   logLine(`pick-file: ${chosen}`);
-  return { canceled: false, path: chosen, name: path.basename(chosen) };
+  return { canceled: false, path: chosen, name: path.basename(chosen) });
+});
+
+/**
+ * Software update (v0.7.4).
+ *
+ * The renderer downloads the installer through the backend (which also
+ * checksums it) and then asks the shell to run it.  The shell is the only
+ * process that can replace the installed files, and it can only do so
+ * *after* it has quit -- an installer that overwrites a running executable
+ * fails with a sharing violation.
+ *
+ * The order therefore is: spawn the installer detached, then quit this
+ * application.  NSIS installers accept ``/S`` for a silent run and
+ * ``--force-run`` so the update happens even when the new version is
+ * otherwise skipped; both flags are standard for electron-builder's NSIS
+ * target and are harmless on installers that ignore them.
+ *
+ * The user is told what is about to happen *before* the app quits -- the
+ * renderer's own confirmation dialog is the right place for that, because
+ * the installer window may appear behind it.
+ */
+ipcMain.handle("install-update", async (_event, filePath) => {
+  if (typeof filePath !== "string" || !filePath) {
+    return { ok: false, message: "no installer path" };
+  }
+  if (!fs.existsSync(filePath)) {
+    return { ok: false, message: `installer not found: ${filePath}` };
+  }
+  if (!/\.exe$/i.test(filePath)) {
+    return { ok: false, message: "not an .exe installer" };
+  }
+
+  try {
+    // ``detached`` + ``unref`` so the child survives this process exiting.
+    const child = spawn(filePath, ["/S", "--force-run"], {
+      detached: true,
+      stdio: "ignore",
+    });
+    child.unref();
+    logLine(`install-update: launched ${filePath}`);
+
+    // Give the renderer a moment to show its "installer started" message
+    // before the window disappears.
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+      app.quit();
+    }, 1200);
+
+    return { ok: true, message: "installer launched" };
+  } catch (err) {
+    const message = err && err.message ? err.message : String(err);
+    logLine(`install-update failed: ${message}`);
+    return { ok: false, message };
+  }
 });

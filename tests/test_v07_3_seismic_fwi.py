@@ -28,6 +28,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from chemml_version import VERSION
 from nodes.loader import get_registry
 from simulations.fwi import (
     V_MAX,
@@ -401,7 +402,10 @@ def test_fwi_workflow_file_is_valid_json_with_the_expected_shape():
     root = Path(__file__).resolve().parents[1]
     path = root / "workflows" / "09_seismic_fwi.json"
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["version"] == "0.7.3"
+    # The shipped workflow must declare the current platform version; see
+    # the note in ``test_v07_3_hard_carbon.py`` for why this is not a
+    # literal.
+    assert data["version"] == VERSION
     types = {n["type"] for n in data["nodes"]}
     assert "FWIInversionNode" in types
     assert "SeismicSubmissionNode" in types

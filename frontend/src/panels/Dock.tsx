@@ -12,6 +12,7 @@ import AgentPanel from "./AgentPanel";
 import ApiKeyPanel from "./ApiKeyPanel";
 import DataPanel from "./DataPanel";
 import SimulationPanel from "./SimulationPanel";
+import UpdatePanel from "./UpdatePanel";
 import {
   IconSparkle,
   IconStar,
@@ -21,6 +22,7 @@ import {
   IconCube,
   IconImage,
   IconPanelRight,
+  IconRefresh,
 } from "../components/Icons";
 
 const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
@@ -31,6 +33,7 @@ const TABS: Array<{ id: DockTab; label: string; icon: typeof IconCube }> = [
   { id: "apikey", label: "dockApiKey", icon: IconKey },
   { id: "data", label: "dockData", icon: IconGrid },
   { id: "simulation", label: "dockSimulation", icon: IconTerminal },
+  { id: "update", label: "dockUpdate", icon: IconRefresh },
 ];
 
 export default function Dock() {
@@ -93,6 +96,7 @@ export default function Dock() {
         {dockTab === "apikey" && <ApiKeyPanel />}
         {dockTab === "data" && <DataPanel />}
         {dockTab === "simulation" && <SimulationPanel />}
+        {dockTab === "update" && <UpdatePanel />}
       </div>
     </aside>
   );

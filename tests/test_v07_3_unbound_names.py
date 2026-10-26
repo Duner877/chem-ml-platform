@@ -20,6 +20,11 @@ bug rather than one instance.
 Deliberately conservative: it only looks at names starting with an uppercase
 letter, which is where classes live.  Lowercase misses are left to the linter,
 because parameter shadowing makes them far too noisy to flag here.
+
+v0.7.4: the node implementations moved from ``nodes/`` into the device-grouped
+``custom_nodes/`` packages.  The scan follows them there -- pointing it at the
+old directory would have made it scan a single facade file and pass forever,
+which is the failure mode a guard is supposed to prevent.
 """
 
 from __future__ import annotations
@@ -32,7 +37,10 @@ import typing
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-NODES = ROOT / "nodes"
+NODES = ROOT / "custom_nodes"
+#: The legacy import facade.  It contains no node implementations, but it is
+#: still Python source that must not reference a class it never imported.
+LEGACY = ROOT / "nodes"
 
 
 def _bound_names(tree: ast.AST) -> set[str]:
@@ -66,7 +74,16 @@ def _unbound_class_names(path: pathlib.Path) -> set[str]:
 
 
 def _module_files() -> list[pathlib.Path]:
-    return sorted(p for p in NODES.rglob("*.py") if "__pycache__" not in p.parts)
+    """Every node source file, in both the new and the legacy tree.
+
+    The scan must cover the legacy facade as well: it is Python source that
+    names classes, and a missing import there fails exactly the same way.
+    """
+    files = [p for p in NODES.rglob("*.py") if "__pycache__" not in p.parts]
+    files += [
+        p for p in LEGACY.rglob("*.py") if "__pycache__" not in p.parts
+    ]
+    return sorted(files)
 
 
 def test_the_scanner_would_have_caught_the_real_defect():
@@ -115,12 +132,14 @@ def test_it_ignores_a_properly_imported_name():
 
 def test_export_module_imports_what_it_uses():
     """The concrete regression: ``ExportNode`` renders ``ScientificReport``."""
-    text = (NODES / "io.py").read_text(encoding="utf-8")
+    # v0.7.4: ``nodes/io.py`` became ``custom_nodes/data_io/io.py``.
+    io_module = NODES / "data_io" / "io.py"
+    text = io_module.read_text(encoding="utf-8")
     assert "isinstance(item, ScientificReport)" in text, (
         "if the markdown branch was renamed this test must be revisited, not "
         "quietly deleted"
     )
-    assert not _unbound_class_names(NODES / "io.py")
+    assert not _unbound_class_names(io_module)
 
 
 @pytest.mark.parametrize("path", _module_files(), ids=lambda p: p.name)

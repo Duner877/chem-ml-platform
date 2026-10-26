@@ -101,7 +101,7 @@ def create_app() -> FastAPI:
 
     from backend.routers import (
         ai, agent, credentials, data, files, foundation, nodes, runs, simulations,
-        storage, workflows, ws,
+        storage, update, workflows, ws,
     )
 
     app.include_router(nodes.router, prefix="/api")
@@ -119,6 +119,10 @@ def create_app() -> FastAPI:
     # config endpoints edit behaviour, these manage secrets, and the GUI needs
     # them to be reachable without touching the AI configuration form.
     app.include_router(credentials.router, prefix="/api")
+    # Update check: the desktop GUI calls this to tell the user whether a
+    # newer release exists.  It is a separate router because it is about the
+    # *application* rather than about the scientific data it processes.
+    app.include_router(update.router, prefix="/api")
 
     @app.get("/api/health", tags=["meta"])
     async def health() -> dict:

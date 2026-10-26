@@ -1,4 +1,4 @@
-# 部署：Docker（v0.7.3）
+# 部署：Docker（v0.7.4）
 
 `docker/` 目录集中存放生产部署清单。镜像构建配方仍是仓库根目录的
 `Dockerfile`（单一来源），本目录提供 compose 编排、反向代理与忽略规则。
@@ -27,7 +27,7 @@ docker compose -f docker/docker-compose.yml up --build
 
 ```bash
 curl http://localhost:8000/api/health
-# {"status":"ok","version":"0.7.3","nodes":89}
+# {"status":"ok","version":"0.7.4","nodes":89}
 ```
 
 ## 配置档（profiles）
@@ -45,15 +45,15 @@ docker compose -f docker/docker-compose.yml --profile db --profile proxy up --bu
 ## 不带 compose 的等价命令
 
 ```bash
-docker build -t chem-ml-platform:0.7.3 .
+docker build -t chem-ml-platform:0.7.4 .
 docker run --rm -p 8000:8000 \
   -e CHEMML_WORKERS=2 \
   -v "$PWD/plugins:/app/plugins" \
   -v chemml-output:/app/output \
-  chem-ml-platform:0.7.3
+  chem-ml-platform:0.7.4
 ```
 
-## 镜像内容（v0.7.3）
+## 镜像内容（v0.7.4）
 
 | 层 | 内容 |
 | --- | --- |

@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import os
 import pkgutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -43,17 +44,50 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def iter_node_modules(package: str = "nodes") -> List[str]:
-    """Return the dotted names of every module inside ``nodes/``."""
+    """Return the dotted names of every module inside ``nodes/``.
+
+    Since v0.7.4 the node implementations live in ``custom_nodes``; the
+    ``nodes`` package is a compatibility facade over it.  Scanning the
+    facade would report zero modules (it holds no implementation), so the
+    scan targets ``custom_nodes`` and the legacy name stays a fallback for a
+    checkout that has not been migrated yet.
+    """
     modules: List[str] = []
+    target = package
+    if not _package_has_modules(package):
+        target = "custom_nodes"
     try:
-        imported = importlib.import_module(package)
+        imported = importlib.import_module(target)
     except ImportError:  # pragma: no cover - defensive
         return modules
     if not hasattr(imported, "__path__"):
-        return [package]
-    for info in pkgutil.walk_packages(imported.__path__, prefix=f"{package}."):
+        return [target]
+    for info in pkgutil.walk_packages(imported.__path__, prefix=f"{target}."):
         modules.append(info.name)
     return sorted(modules)
+
+
+def _package_has_modules(package: str) -> bool:
+    """True when ``package`` contains at least one importable submodule.
+
+    The facade package ``nodes`` contains only ``__init__.py``, so walking it
+    yields nothing.  The check is a filesystem probe rather than an import
+    because importing the facade to find out would be circular.
+    """
+    try:
+        mod = importlib.import_module(package)
+    except ImportError:
+        return False
+    path = getattr(mod, "__path__", None)
+    if not path:
+        return False
+    for root in path:
+        for dirpath, dirnames, filenames in os.walk(root):
+            dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+            for name in filenames:
+                if name.endswith(".py") and name != "__init__.py":
+                    return True
+    return False
 
 
 def author_of(node_cls: type) -> str:

@@ -1,6 +1,6 @@
 {
   "name": "chemml-node-sdk",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Node.js SDK for the Chem ML Platform REST API and workflow runner",
   "type": "module",
   "main": "src/index.js",

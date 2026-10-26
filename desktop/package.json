@@ -1,8 +1,8 @@
 {
   "name": "chemml-desktop",
   "productName": "Chem ML Platform",
-  "version": "0.7.3",
-  "description": "Chem ML Platform v0.7.3 -- Desktop Scientific AI OS (Electron shell)",
+  "version": "0.7.4",
+  "description": "Chem ML Platform v0.7.4 -- Desktop Scientific AI OS (Electron shell)",
   "main": "src/main.js",
   "author": "Chem ML Platform contributors",
   "license": "Apache-2.0",
@@ -41,6 +41,14 @@
       {
         "from": "../backend",
         "to": "app/backend",
+        "filter": [
+          "**/*.py",
+          "!**/__pycache__/**"
+        ]
+      },
+      {
+        "from": "../custom_nodes",
+        "to": "app/custom_nodes",
         "filter": [
           "**/*.py",
           "!**/__pycache__/**"

@@ -1,7 +1,7 @@
 {
   "name": "二维声学全波形反演（赛题）",
   "description": "从一维深度趋势出发，用伴随梯度全波形反演恢复横向速度结构，并写出赛题要求的三个文件：velocity_model.npy / wavelet.npy / run_summary.json。评分为深度均值去除后的横向相关系数，起点模型该值恒为 0。",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "metadata": {
     "task": "Recover the subsurface structure from a seismic line, starting from a one-dimensional trend",
     "engine": "internal:acoustic-fd",

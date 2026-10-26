@@ -46,4 +46,8 @@ contextBridge.exposeInMainWorld("chemmlDesktop", {
   // main process mirrors `nativeTheme` here as an authoritative second signal.
   systemTheme: () => ipcRenderer.invoke("system-theme"),
   onSystemThemeChange: (cb) => ipcRenderer.on("system-theme-changed", (_e, data) => cb(data)),
+  // v0.7.4: software update.  The renderer downloads the installer through
+  // the backend (which also checksums it); the shell is the only process
+  // that can replace the installed files, and only after it has quit.
+  installUpdate: (filePath) => ipcRenderer.invoke("install-update", filePath),
 });

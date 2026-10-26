@@ -25,6 +25,7 @@ from pathlib import Path
 
 import pytest
 
+from chemml_version import VERSION
 from models.desolvation import (
     ICE_AT_10D,
     ICE_AT_12H,
@@ -373,7 +374,11 @@ def test_workflow_runs_end_to_end_with_every_stage_ok():
 def test_workflow_cites_the_paper():
     payload = json.loads(WORKFLOW.read_text(encoding="utf-8"))
     assert "47522" in payload["metadata"]["citation"]
-    assert payload["version"] == "0.7.3"
+    # The workflow must declare the *current* platform version.  Comparing
+    # against a literal would need editing on every release and would stop
+    # being an assertion the moment someone forgot; the point of the check
+    # is that the shipped workflow and the shipped platform agree.
+    assert payload["version"] == VERSION
 
 
 # --------------------------------------------------------------------------- #

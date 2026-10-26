@@ -229,6 +229,27 @@ export function IconDownload({ size = 16, className }: IconProps) {
   );
 }
 
+/** Circular arrow -- "check again", used by the software update entry. */
+export function IconRefresh({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M20 12a8 8 0 1 1-2.6-5.9" />
+      <path d="M20 4.5V10h-5.5" />
+    </svg>
+  );
+}
+
+/** Downward arrow into a tray -- "install the update". */
+export function IconInstall({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size, className)}>
+      <path d="M12 3.5v9" />
+      <path d="M8.5 9l3.5 3.5L15.5 9" />
+      <path d="M4.5 15.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" />
+    </svg>
+  );
+}
+
 export function IconList({ size = 16, className }: IconProps) {
   return (
     <svg {...base(size, className)}>

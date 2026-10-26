@@ -25,6 +25,9 @@ import type {
   SimilarityResult,
   SimulationBackend,
   SimulationJob,
+  UpdateCheck,
+  UpdateCurrent,
+  UpdateDownload,
   WorkflowSummary,
 } from "./types";
 
@@ -254,6 +257,17 @@ export const api = {
     request<SimilarityResult>("/foundation/similarity", {
       method: "POST",
       body: JSON.stringify({ a, b, model }),
+    }),
+
+  // ---- v0.7.4: software update ------------------------------------------- //
+  updateCurrent: () => request<UpdateCurrent>("/update/current"),
+
+  updateCheck: () => request<UpdateCheck>("/update/check"),
+
+  updateDownload: (url: string, filename?: string) =>
+    request<UpdateDownload>("/update/download", {
+      method: "POST",
+      body: JSON.stringify({ url, filename }),
     }),
 };
 

@@ -42,7 +42,7 @@ PY_IMPORT_TARGETS: List[Tuple[str, str]] = [
     ("node_registry/__init__.py", "__version__|_*version_*"),
     ("workflow_engine/__init__.py", "__version__"),
     ("workflow_engine/node_base.py", "_PLATFORM_VERSION"),
-    ("nodes/agent/__init__.py", "__version__"),
+    ("custom_nodes/agent/__init__.py", "__version__"),
     ("memory/__init__.py", "__version__"),
     ("node_sdk/python/chemml_sdk/__init__.py", "__version__"),
 ]
@@ -104,7 +104,7 @@ ALL_TEXT_TARGETS: List[Tuple[str, str, str, bool]] = [
     # Only the *first* changelog entry is a claim about the current build;
     # older ones are history and must keep their own numbers, so this target
     # is checked separately (see CHANGELOG_TOP below) rather than swept.
-    ("release report", "docs/V07_3_RELEASE_REPORT.md", r"^\s*-\s*\*\*版本\*\*.*?([0-9]+\.[0-9]+\.[0-9]+)", False),
+    ("release report", "docs/V07_4_RELEASE_REPORT.md", r"^\s*-\s*\*\*版本\*\*.*?([0-9]+\.[0-9]+\.[0-9]+)", False),
 ]
 
 #: (label, relative path, regex) checked against the **first** match only.

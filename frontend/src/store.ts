@@ -40,7 +40,8 @@ export type DockTab =
   | "agent"
   | "apikey"
   | "data"
-  | "simulation";
+  | "simulation"
+  | "update";
 
 export interface EditorState {
   lang: Lang;

@@ -133,7 +133,12 @@ class TestPackagingRuleIsAnAllowList:
             "examples/plugins/melting_point_note.py",
             # ...and the ordinary source tree is untouched.
             "backend/app.py",
-            "nodes/io.py",
+            # v0.7.4: the node implementations moved into ``custom_nodes/``.
+            # Both trees ship: ``custom_nodes/`` holds the implementations and
+            # ``nodes/`` holds the legacy import facade the old code paths
+            # still resolve through.
+            "custom_nodes/data_io/io.py",
+            "nodes/__init__.py",
             "scripts/package.py",
             ".env.example",
             "frontend/dist/assets/index.js",

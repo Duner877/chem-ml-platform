@@ -37,7 +37,7 @@ __all__ = [
 ]
 
 #: The product version.  Bump here and nowhere else.
-__version__ = "0.7.3"
+__version__ = "0.7.4"
 
 #: Backwards-compatible alias (older modules read ``VERSION``).
 VERSION = __version__

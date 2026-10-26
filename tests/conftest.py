@@ -68,6 +68,10 @@ SUITE_BY_STEM: Dict[str, str] = {
     # Model-catalogue parsing / selection plus static checks of the TypeScript
     # theme contract: no network, but it reads real frontend and desktop sources.
     "test_v07_3_model_list_and_theme": "integration",
+    # Software update: the backend endpoints, the version comparison and the
+    # GUI entry point (which is asserted by reading the frontend sources) --
+    # so it spans two modules and is classified as integration.
+    "test_v07_4_update": "integration",
     # -- unit: single-module behaviour ---------------------------------------
     "test_nodes": "unit",
     "test_v07_2_version_consistency": "unit",

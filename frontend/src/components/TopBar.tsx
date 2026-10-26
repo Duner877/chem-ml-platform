@@ -22,6 +22,7 @@ import {
   IconKey,
   IconCheck,
 } from "./Icons";
+import UpdateBadge from "./UpdateBadge";
 
 /** Minimal shape of the Electron preload bridge (absent in browser mode). */
 interface DesktopBridge {
@@ -320,6 +321,15 @@ export default function TopBar() {
           </span>
         )}
       </button>
+
+      {/* software update (v0.7.4) -------------------------------------------
+       * The check runs once at start-up, in the background, and the button
+       * only *changes colour* when there is something to say.  A version
+       * check that blocks the interface, or that pops a dialog, teaches
+       * people to dismiss it -- and then nobody sees the release notes.
+       * Clicking opens the update panel in the dock, where the check can be
+       * repeated and the download started. */}
+      <UpdateBadge />
 
       {/* theme switcher --------------------------------------------------- */}
       <div className="relative">

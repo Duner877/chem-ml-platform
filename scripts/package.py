@@ -215,8 +215,21 @@ def should_skip(rel: Path) -> bool:
         return True
 
     # Runtime output: everything except the placeholder that keeps the dir.
-    if rel_posix.startswith("output/"):
-        return rel_posix != "output/.gitkeep"
+    #
+    # The match is on the ``output/`` *segment* anywhere in the path, not
+    # only at the top level.  v0.7.4: the node library moved into
+    # ``custom_nodes/<device>/``, and a node that ran outside a workflow
+    # wrote its artefacts relative to the *module* directory, so the files
+    # landed in ``custom_nodes/output/artifacts/``.  A top-level-only rule
+    # did not see them, the archive was built, and the post-build leak scan
+    # then refused to publish it -- three separate files blocking every
+    # release.  A rule that only knows where output *used* to appear is a
+    # rule that breaks the next time the layout moves.
+    parts = rel.parts
+    if "output" in parts[:-1]:
+        idx = parts.index("output")
+        tail = parts[idx + 1:]
+        return not (len(tail) == 1 and tail[0] == ".gitkeep")
 
     # Upload workspace: runtime state, exactly like output/.  v0.7.2 fix
     # (ISSUE-19): a 3-byte test fixture (workspace/raw_data/x.csv) had been

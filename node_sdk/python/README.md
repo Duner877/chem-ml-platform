@@ -1,6 +1,6 @@
 # chemml-sdk
 
-Python SDK for **Chem ML Platform v0.7.3**.
+Python SDK for **Chem ML Platform v0.7.4**.
 
 Two things in one small package:
 

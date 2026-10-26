@@ -2,6 +2,55 @@
 
 本文件记录 Chem ML Platform 的显著变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.7.4] — 2026-10
+
+**节点库重组与软件更新入口版本。** 节点实现从 `nodes/` 迁到 `custom_nodes/`，按设备类别（质谱、光谱、XPS、显微、衍射……）分为 21 个自包含分组，每组一个目录，与 ComfyUI 的自定义节点习惯一致；新增一个节点只需要把文件放进对应目录，不需要改注册表或加载器。节点总数 99 → **101**（本次新增软件更新相关能力，节点类本身净增 2 个：质谱分组恢复的 `ProfileCentroidNode` 与 `VendorSpectrumNode`）。同时新增**软件更新入口**：界面可自动检测是否有新版本、下载安装包并启动更新。
+
+同时修复了节点迁移过程中暴露的**六类实质缺陷**，其中前两类会导致功能静默失效，均已补回归测试。
+
+### 新增 Added
+
+**节点库按设备分组（ComfyUI 模式）**
+- `custom_nodes/` 下 21 个设备分组 + `_shared` 共享层：`mass_spectrometry` / `spectroscopy` / `surface_characterization` / `thermal_analysis` / `microscopy` / `diffraction` / `electrochemistry` / `seismic` / `battery_materials` / `quantum_chemistry` / `materials_simulation` / `molecular_dynamics` / `databases` / `foundation_models` / `ai_ml` / `data_io` / `analysis` / `reporting` / `agent` / `questions` / `gpu`。
+- 发现机制为 `pkgutil.walk_packages` 递归遍历 + `@register_node` 装饰器自注册：导入即注册。`custom_nodes/__init__.py` 提供 `discover()` / `device_groups()` / `node_specs()` / `node_categories()`。
+- `nodes/` 保留为**旧路径兼容门面**：约一百处 `from nodes.instruments.ms import LCMSNode` 形式的引用不必逐个手改（手改正是最容易「编译通过、运行时才炸」的一类批量编辑）。旧路径与新路径指向**同一个模块对象**——这一点是被回归测试锁住的，见「修复 Fixed」第一条。
+- `scripts/migrate_to_custom_nodes.py`（迁移脚本，保留迁移过程的可追溯性）与 `scripts/generate_custom_node_packages.py`（从源码 AST 读出带 `@register_node` 的类，生成各分组的 `__init__.py`，导出列表与实现永远一致）。
+
+**软件更新入口**
+- 后端 `backend/routers/update.py`：`GET /api/update/current`（不联网）、`GET /api/update/check`（问 GitHub 最新发布版）、`POST /api/update/download`（下载安装包到本地缓存并计算 SHA-256）。
+- 版本比较是**数值**而非字典序：`0.7.10` 比 `0.7.9` 新，字符串比较会反过来。字典序比较的版本检查比没有检查更糟——用户会据此跳过修复了数据缺陷的版本。
+- 网络失败**不是错误**：端点返回 `{"update_available": false, "check_failed": true}`，界面据此说「检查失败」而不是「已是最新」。离线被说成「已是最新」是一种谎报。
+- 前端 `frontend/src/panels/UpdatePanel.tsx`（检查 / 下载 / 启动安装三步分开，下载完成并校验后才交给安装程序）与 `frontend/src/components/UpdateBadge.tsx`（顶栏徽标：启动时后台检查一次，只有真��有新版时才变色；点开进入更新面板）。面板挂在右侧工作台的新标签页「更新」。
+- 桌面端 `desktop/src/main.js` 新增 `install-update` IPC：安装包必须**在应用退出后**运行，否则会撞上「正在使用的可执行文件无法覆盖」；因此先以 detached 方式启动安装程序，再退出本进程。`desktop/src/preload.js` 暴露 `installUpdate`。
+- `tests/test_v07_4_update.py`（新增）22 项：数值版本比较（含 `0.7.10 > 0.7.9` 这一对字符串比较必错的例子）、离线不等于最新、404 表示「尚未发布」而非故障、blockmap 不得当作安装包、以及**界面入口的静态断言**（后端存在但用户找不到，等于没有）。
+
+### 修复 Fixed
+
+**兼容层让每个节点模块被执行了两次**
+`nodes/__init__.py` 的路径转发把目标模块自己的 `__spec__` 交给了 import 机制，而该 spec 的 `name` 是新路径。import 机制据此**重新执行了一遍源文件**，于是同一个文件在 `sys.modules` 里有两个不同的模块对象。后果是：源码里 `from nodes.x import y` 拿到副本 A，而测试与部分运行时路径拿到副本 B——`monkeypatch` 打在 A 上、运行时的调度器却调用 B，于是 agent 状态机测试报出「本该 `WAITING_FOR_APPROVAL` 却直接 `RUNNING`」这种完全指错方向的症状。节点类同样被复制成两个不同的类对象，`isinstance` 跨路径判定为假。现由专用的 `_AliasLoader` 把**已导入的模块对象**直接交给 import 机制，两条路径指向同一对象，源文件只执行一次。
+
+**运行时产物落到了 `custom_nodes/output/`**
+`_shared/_helpers.py` 的仓库根用 `Path(__file__).resolve().parents[1]` 推导。文件从 `nodes/` 迁到 `custom_nodes/_shared/` 后多了一层，这个表达式**静默地**从仓库根变成了 `custom_nodes/`。写文件依然成功、产物依然生成，唯一的症状是发布打包器的泄漏扫描拒绝出包——三个文件卡住了每一次发布。现改为从 `custom_nodes` 包导入 `ROOT`，与目录深度解耦。同类问题在 `data_io/io.py`（三处）与 `mass_spectrometry/mass_spec_core.py`（一处）一并修正；后者原本指向 `nodes/` 这个**源码目录**，对任何真实数据路径都是死路。
+
+**打包器只排除顶层的 `output/`**
+`scripts/package.py` 的运行时产物规则写成 `rel_posix.startswith("output/")`。产物目录一旦不在顶层（本次即 `custom_nodes/output/`），规则就看不见它，于是文件进了归档，直到**打包后的扫描**才发现并拒绝发布。规则改为匹配路径中任意层级的 `output/` 段。
+
+**桌面打包缺少 `custom_nodes/`**
+`desktop/package.json` 的 `extraResources` 只列了 `../nodes`。打包后的载荷里没有 `custom_nodes/`，而兼容层依赖它——于是 `backend/routers/agent.py` 在**打包产物**里报 `cannot import name 'plan_question' from 'nodes.agent'`，源码树里却一切正常。
+
+**代码生成器会覆盖手写导出**
+`scripts/generate_custom_node_packages.py` 原本无条件覆写各分组的 `__init__.py`。它靠 AST 找带 `@register_node` 的类，因此**看不到**没有装饰器的导出：规划器函数（`Plan` / `Planner` / `RECIPES`）、工具注册表以及 `__version__` 声明在一次重新生成后全部消失。生成器改为合并而非覆盖，并且排除 `from __future__ import annotations`（它是编译指令不是符号）；连续运行两次输出完全一致。
+
+**版本号断言写死字面量**
+三个测试断言工作流声明的版本等于 `"0.7.3"`。每发一次版都要改测试，而一旦有人忘了改，断言就不再是断言。改为引用 `chemml_version.VERSION`——要断的仍然是「工作流声明的版本与平台版本一致」，但不再依赖记得改。
+
+### 变更 Changed
+
+- `nodes/` → `custom_nodes/`：全部节点实现迁移（30 个分类、101 个节点、71 个模块，分类数与节点语义不变）。旧路径继续可用。
+- `scripts/version.py` 的版本扫描目标 `nodes/agent/__init__.py` → `custom_nodes/agent/__init__.py`。
+- `tests/test_v07_3_unbound_names.py` 的扫描目录跟随迁移（否则它会只扫一个门面文件然后永远通过）。
+- 界面「关于」对话框中的版本描述更新为 0.7.4。
+
 ## [0.7.3] — 2026-10
 
 **三项赛题对齐版本。** 硬碳预脱溶剂机理可视化、二维声学全波形反演、以及配套的 Agent 与 API Key 入口改造。节点总数 94 → **99**。发布前对 0.7.3 新增代码做了两轮独立审查，另有一轮针对交付产物的外部审计（4 项 P0 + 7 项 P1）。此后补充 NVIDIA NIM 第三方 Key 入口与内容创作工作流（`workflows/10`），并修复由此暴露的三处既有缺陷。所有修复列在「修复 Fixed」中。

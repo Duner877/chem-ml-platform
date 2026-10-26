@@ -1,4 +1,4 @@
-# Chem ML Platform v0.7.3
+# Chem ML Platform v0.7.4
 
 **节点化科学工作流平台** — ComfyUI 式的图形编排 × KNIME 式的数据处理 × LabVIEW 式的仪器抽象 × AI Scientist 式的自主推理。
 
