@@ -43,16 +43,25 @@ __all__ = [
 ]
 
 
-def load_nodes() -> List[str]:
+def load_nodes(plugins_directory: str | Path | None = None) -> List[str]:
     """Import every node package and return the registered type names.
 
     The legacy ``nodes`` package installs the compatibility aliases before
     the discovery walk, so ``from nodes.instruments.ms import LCMSNode``
     keeps resolving to the same class object.
+
+    ``plugins_directory`` is the optional folder of third party ``*.py``
+    plugins.  v0.7.4 briefly dropped this parameter here: the wrapper was
+    written as ``load_nodes()`` with no arguments, but the module *shadows*
+    the identically named function of the ``nodes`` package -- and the CLI
+    calls ``load_nodes(plugins)``.  The result was a ``TypeError`` on every
+    ``--plugins`` run, and a command that has been in the docs and in
+    ``CONTRIBUTING.md`` since 0.7.3.  The signature now matches the one it
+    shadows.
     """
     from nodes import load_nodes as _legacy_load_nodes
 
-    return _legacy_load_nodes()
+    return _legacy_load_nodes(plugins_directory)
 
 
 # --------------------------------------------------------------------------- #

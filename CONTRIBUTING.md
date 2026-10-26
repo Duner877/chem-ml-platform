@@ -8,7 +8,7 @@
 
 ## 提交 Issue
 
-- **Bug**：附上最小复现步骤、Python/Node 版本、完整报错栈，以及 `python -m nodes.loader --stats` 的输出。
+- **Bug**：附上最小复现步骤、Python/Node 版本、完整报错栈，以及 `python -m custom_nodes.loader --stats` 的输出（旧命令 `python -m nodes.loader --stats` 仍可用）。
 - **功能请求**：说明科学场景（"我要用拉曼成像定位药物多晶型"），而不是只描述实现（"加一个 hyperspectral 节点"）。
 - **节点请求**：给出输入/输出数据类型和关键参数，其余交给社区。
 
@@ -56,7 +56,7 @@ test(engine): 覆盖 DAG 菱形并行执行
 5. 运行：
 
 ```bash
-python -m nodes.loader --query "<你的节点名>"    # 确认注册
+python -m custom_nodes.loader --query "<你的节点名>"    # 确认注册（等价的旧命令：python -m nodes.loader --query "..."）
 pytest tests/test_nodes.py -q                    # 不破坏现有节点
 python scripts/smoke_nodes.py --filter "<类名>"  # 新节点冒烟通过
 ```

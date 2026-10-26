@@ -52,8 +52,10 @@ class MeltingPointNoteNode(ScientificNode):
 放进 `examples/plugins/`，设 `CHEMML_PLUGINS=examples/plugins`，然后：
 
 ```bash
-python -m nodes.loader --query "Melting"     # 确认注册成功
+python -m custom_nodes.loader --query "Melting"     # 确认注册成功
 ```
+
+> **节点放在哪儿（v0.7.4 起）**：平台自带节点实现在 `custom_nodes/<设备分组>/` 下（如 `custom_nodes/mass_spectrometry/`、`custom_nodes/spectroscopy/`），发现靠 `pkgutil.walk_packages` 递归遍历 + `@register_node` 自注册，导入即注册。往已有分组里加文件不需要改注册表，也不需要改加载器；各分组的 `__init__.py` 导出列表由 `python scripts/generate_custom_node_packages.py` 从源码 AST 生成，加完节点跑一次它就不会漏导出。`nodes/` 保留为旧路径兼容门面，两条路径指向同一个模块对象。
 
 ## 2. 类属性契约
 
@@ -129,7 +131,7 @@ self.get_param("name", default)     # 带默认值
 ctx.artifact_path("plot.png")       # output/<run_id>/artifacts/plot.png
 ```
 
-`nodes/_helpers.py` 里有一批转换助手，直接复用：
+`custom_nodes/_shared/_helpers.py` 里有一批转换助手，直接复用：
 
 | 助手 | 作用 |
 | --- | --- |
@@ -167,7 +169,7 @@ def execute(self, inputs, ctx=None):
 python scripts/smoke_nodes.py --filter MeltingPointNoteNode --traceback
 
 # 查看注册规格（等价于 /api/nodes/{type}）
-python -m nodes.loader --query "Melting" --json
+python -m custom_nodes.loader --query "Melting" --json   # 旧命令 python -m nodes.loader ... 同样可用
 
 # 进程内直接跑
 python - <<'PY'

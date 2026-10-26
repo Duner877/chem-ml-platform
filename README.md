@@ -2,7 +2,9 @@
 
 **节点化科学工作流平台** — ComfyUI 式的图形编排 × KNIME 式的数据处理 × LabVIEW 式的仪器抽象 × AI Scientist 式的自主推理。
 
-> **v0.7.3（当前版本）**：这一版补了三块能直接用到真实任务上的能力。**API Key 有了图形入口** —— `ai_runtime/credentials.py` 存 9 家服务商的密钥，优先走系统密钥环，没有就退回 `config/credentials.json`；GUI 顶栏和左侧图标栏都是常驻入口，顶栏徽标在没配密钥时显示琥珀色。界面和接口只回掩码，不会把明文吐出来，另外提供了真实的连通性测试。**二维声学全波形反演（FWI）** —— `simulations/fwi.py` 配了梯度（`∂²u/∂t²` 形式）、频率递进、回溯线搜索和 held-out 监控，4 个新节点加上示例工作流 `09_seismic_fwi.json`，跑完能拿到赛题要的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`。**硬碳预脱溶剂的可视化计算化学模型** —— 取自 Nature Communications 15, 3497，4 个节点 3 条边连成证据链：尺寸筛分（4 Å 孔口）→ 静置老化 → 双 SEI 能量学 → 机制汇总与自洽检查，首效曲线锚在论文的 12 h / 90.14 % 和 10 天 / 99.09 % 两个实测点上。目前一共 101 个科学节点、30 个分类。
+> **v0.7.4（当前版本）**：这一版做的是「结构」和「入口」两件事。**节点库按设备分组（ComfyUI 模式）** —— 节点实现从 `nodes/` 迁到 `custom_nodes/`，按质谱、光谱、XPS、显微、衍射等设备类别分成 21 个自包含分组，每个分组一个目录；发现靠 `pkgutil.walk_packages` 递归遍历 + `@register_node` 装饰器自注册，导入即注册。以后加一个节点只要把文件放进对应目录，不用改注册表也不用改加载器。`nodes/` 保留成旧路径兼容门面，旧代码里的 `from nodes.instruments.ms import LCMSNode` 不用逐个手改 —— 而且两条路径指向的是**同一个模块对象**，源文件只执行一次（这条被回归测试锁住）。节点总数 **101 → 101**，分类 30 个不变，**零丢失零新增**。**软件更新入口** —— 界面顶栏常驻徽标，启动时后台问一次 GitHub 最新发布版，有新版才变色；点开是「检查 / 下载 / 启动安装」三步分开的更新面板，下载完校验 SHA-256 之后才交给安装程序，安装程序在应用退出后才运行，避免覆盖正在使用的可执行文件。版本比较走**数值**而不是字符串，`0.7.10` 比 `0.7.9` 新。检查失败（断网、404）会明说「检查失败」，不会谎报成「已是最新」。
+>
+> **v0.7.3**：这一版补了三块能直接用到真实任务上的能力。**API Key 有了图形入口** —— `ai_runtime/credentials.py` 存 9 家服务商的密钥，优先走系统密钥环，没有就退回 `config/credentials.json`；GUI 顶栏和左侧图标栏都是常驻入口，顶栏徽标在没配密钥时显示琥珀色。界面和接口只回掩码，不会把明文吐出来，另外提供了真实的连通性测试。**二维声学全波形反演（FWI）** —— `simulations/fwi.py` 配了梯度（`∂²u/∂t²` 形式）、频率递进、回溯线搜索和 held-out 监控，4 个新节点加上示例工作流 `09_seismic_fwi.json`，跑完能拿到赛题要的 `velocity_model.npy` / `wavelet.npy` / `run_summary.json`。**硬碳预脱溶剂的可视化计算化学模型** —— 取自 Nature Communications 15, 3497，4 个节点 3 条边连成证据链：尺寸筛分（4 Å 孔口）→ 静置老化 → 双 SEI 能量学 → 机制汇总与自洽检查，首效曲线锚在论文的 12 h / 90.14 % 和 10 天 / 99.09 % 两个实测点上。目前一共 101 个科学节点、30 个分类。
 
 > **v0.7.1**：这一版是整改和工程补齐，五个词是可安装、可运行、可验证、可追溯、可维护，节点数量没刻意往上加。主要变更 —— **流式分块上传**（`storage/`，边收边校验，字节/超时/并发三重限额，`.part` 原子提交）、**本地 API 会话令牌与权限边界**（`backend/security.py`，只读 / 写入 / 执行 / 外部程序四类权限 + 审计日志 + CORS 白名单）、**Agent 真实执行状态机**（`agent_runtime/tasks.py`，Plan → 审批 → 执行 → 验证 → 完成，幂等指纹防重复提交，支持取消 / 拒绝 / 重试）、**节点能力标签与状态分级**（`capabilities` + implemented/executable/validated/experimental/unavailable，机器可读目录见 `docs/node-catalog.md`）、**受控外部程序执行服务**（`simulations/controlled.py`，固定可执行文件白名单 + 显式 argv + 独立工作目录 + 超时/并发限制，禁止任意 shell 字符串）、**LC-MS/MS 已知答案科学基准**（`scripts/benchmark_lcms.py`）、**依赖许可清单与 SBOM**、**扩展质量门禁**（`scripts/quality_gate.py`）。
 
@@ -96,8 +98,8 @@ ABACUSNode cell_relax ──► a 4.050 → 3.987 Å（实验 4.05，误差 −1
 | ![态密度](docs/cases/al-fcc/Al_态密度_DOS.png)    | 费米面处态密度非零 → 金属                                    |         |                   |
 | ![PDOS](docs/cases/al-fcc/Al_投影态密度_PDOS.png) | 费米面附近几乎全部来自 p 轨道，s 贡献极小 → 符合 3s²3p¹ 构型 |         |                   |
 | ![能量](docs/cases/al-fcc/Al_弛豫能量收敛.png)    | 单调下降，第 2 步起平台                                      |         |                   |
-| ![力](docs/cases/al-fcc/Al_弛豫力收敛.png)        | 残余力 \                                                     | F\      | 降到 ~6×10⁻⁴ eV/Å |
-| ![应力](docs/cases/al-fcc/Al_弛豫应力收敛.png)    | \                                                            | stress\ | 降到 ~7×10⁻³ GPa  |
+| ![力](docs/cases/al-fcc/Al_弛豫力收敛.png)        | 残余力 F 降到 ~6×10⁻⁴ eV/Å                                  |         |                   |
+| ![应力](docs/cases/al-fcc/Al_弛豫应力收敛.png)    | 残余应力降到 ~7×10⁻³ GPa                                    |         |                   |
 
 只有 4 条带，是因为 Al 原胞 1 个原子 × 4 个轨道（1s + 3p），`d` 轨道数为 0。
 这是模型本身的上限——要更多带得引入 d 轨道或者改用超胞。
@@ -180,7 +182,8 @@ chem-ml-platform/
 ├── data_layer/          统一科学数据层 + 可检索目录 catalog.py（带基座嵌入）
 ├── report_agent/        报告代理：Markdown / HTML / PDF 一键生成
 ├── node_registry/       节点注册中心服务，导出 registry.json 供前端 Node Marketplace
-├── nodes/               101 个科学节点（见下方目录）
+├── custom_nodes/        节点库（ComfyUI 模式）：21 个设备分组，101 个科学节点（见下方目录）
+├── nodes/               旧路径兼容门面（与 custom_nodes 指向同一模块对象，勿直接新增实现）
 ├── models/              计算层：SMILES 解析、描述符、指纹、EHT 量子化学、分子动力学、谱学模拟
 ├── simulations/         Extended Hückel / 紧束缚 / Lennard-Jones MD / 外部程序封装
 ├── databases/           本地分子库（~400 化合物）与材料库（18 种材料）
@@ -188,7 +191,7 @@ chem-ml-platform/
 ├── workflows/           11 个官方 Demo 工作流 JSON
 ├── config/              运行时配置（ai.example.json 模板；ai.json 本地生成、不入库）
 ├── node_sdk/            Python SDK（chemml_sdk）+ Node.js SDK
-├── tests/               pytest：引擎 / 节点 / 工作流 / API / 基座模型，891 项
+├── tests/               pytest：引擎 / 节点 / 工作流 / API / 基座模型，967 项
 ├── scripts/             smoke_nodes.py · run_demo_workflows.py · run_agent.py · package.py
 ├── examples/plugins/    插件示例（可直接运行的自定义节点）
 ├── plugins/             第三方节点目录（CHEMML_PLUGINS 默认指向此处）
@@ -220,6 +223,30 @@ React Flow 画布 ──POST /api/workflows/run──▶ WorkflowEngine
 ## 节点目录
 
 **101 个科学节点，30 个分类。**（完整机器可读目录见 [`node_registry/registry.json`](node_registry/registry.json)）
+
+### 代码位置：按设备分组（ComfyUI 模式）
+
+v0.7.4 起，节点实现放在 `custom_nodes/` 下，**按设备类别一个目录一个分组**，跟 ComfyUI 的自定义节点习惯一样：
+
+| 分组目录 | 覆盖设备 | 分组目录 | 覆盖设备 |
+| --- | --- | --- | --- |
+| `mass_spectrometry/` | 质谱（LC-MS · GC-MS · MALDI · ICP-MS） | `surface_characterization/` | 表面表征（XPS · XAS） |
+| `spectroscopy/` | 光谱（NMR · IR · Raman · UV-Vis） | `microscopy/` | 显微（SEM · TEM · AFM · 映射成像） |
+| `thermal_analysis/` | 热分析（DSC · TGA · DMA） | `diffraction/` | 衍射（XRD · 单晶精修） |
+| `electrochemistry/` | 电化学（CV · EIS） | `battery_materials/` | 电池材料 |
+| `seismic/` | 声学 / 地震（FWI 反演） | `quantum_chemistry/` | 量子化学（EHT） |
+| `materials_simulation/` | 材料仿真（紧束缚 · LJ-MD） | `molecular_dynamics/` | 分子动力学 |
+| `databases/` | 数据库检索（谱库 · 分子库 · 材料库） | `foundation_models/` | 统一基座模型 |
+| `ai_ml/` | AI / 机器学习 | `data_io/` | 数据导入导出 |
+| `analysis/` | 通用分析 | `reporting/` | 报告生成 |
+| `agent/` | 可运行 Agent | `questions/` | 顶层问题（未知物鉴定 · 材料发现） |
+| `gpu/` | GPU / PyTorch | `_shared/` | 共享层（不注册节点） |
+
+**加一个节点只需要两步**：把实现文件放进对应分组目录，加 `@register_node` 装饰器 —— 发现靠 `pkgutil.walk_packages` 递归遍历，**导入即注册**，不用改注册表，也不用改加载器。分组导出列表由 `scripts/generate_custom_node_packages.py` 从源码 AST 生成，导出与实现永远一致。
+
+`nodes/` 保留为**旧路径兼容门面**：旧代码里的 `from nodes.instruments.ms import LCMSNode` 不用逐个手改。两条路径指向的是**同一个模块对象**，源文件只执行一次（这条由 `tests/test_v07_4_legacy_facade.py` 锁住）。
+
+下面按**功能分类**列出全部节点。
 
 ### 顶层问题 `Questions`
 
@@ -385,7 +412,7 @@ python -c "from ai_runtime import set_mode; set_mode('local')"    # 或 export C
 
 ---
 
-## Agent 可运行 `nodes/agent/` + `scripts/run_agent.py`
+## Agent 可运行 `custom_nodes/agent/` + `scripts/run_agent.py`
 
 ```bash
 python scripts/run_agent.py "未知峰 m/z 194 可能是什么？" --mode auto
@@ -457,6 +484,9 @@ Agent 由 `ScientificAgentNode` / `AgentPlanNode` 驱动；规划器 `plan(..., 
 | `GET`       | `/api/simulations/jobs` · `/api/simulations/jobs/{id}`                             | 作业列表 / 详情                           |
 | `GET`       | `/api/foundation/models`                                                           | 基座模型目录                              |
 | `POST`      | `/api/foundation/embed` · `/api/foundation/similarity` · `/api/foundation/predict` | 嵌入 / 相似度 / 预测                      |
+| `GET`       | `/api/update/current`                                                              | 当前版本（不联网）                        |
+| `GET`       | `/api/update/check`                                                                | 检查 GitHub 最新发布版                    |
+| `POST`      | `/api/update/download`                                                             | 下载安装包到本地缓存并计算 SHA-256        |
 | `WS`        | `/api/ws/run/{run_id}`                                                             | 实时事件流                                |
 
 **Python SDK**
@@ -490,6 +520,41 @@ client.on("event", (event) => console.log(event.type, event.node_id ?? ""));
 ---
 
 ## 编写自定义节点
+
+### 方式一：放进 `custom_nodes/` 的设备分组（推荐）
+
+v0.7.4 起，节点实现按设备分组放在 `custom_nodes/<分组>/` 下。选一个设备目录，放进去、加装饰器，重启即自动注册：
+
+```python
+# custom_nodes/mass_spectrometry/my_node.py
+from chemml_sdk import ScientificNode, Port, ParameterSpec, register_node
+from workflow_engine.objects import Text
+
+@register_node
+class MyMSNode(ScientificNode):
+    name = "My MS Node"
+    category = "Mass Spectrometry"
+    description = "我的质谱节点。"
+    version = "1.0.0"
+    tags = ["demo"]
+
+    input_ports = [Port("text", "Text", optional=True, multi=True)]
+    output_ports = [Port("text", "Text")]
+    parameters = [ParameterSpec("who", "string", "world", "问候对象")]
+
+    def execute(self, inputs, ctx=None):
+        return {"text": Text(text=f"hello {self.get_param('who')}!")}
+```
+
+分组目录清单见[节点目录](#代码位置按设备分组comfyui-模式)。发现机制是 `pkgutil.walk_packages` 递归遍历 + `@register_node` 自注册，**不用改注册表，也不用改加载器**。
+
+各分组的 `__init__.py` 导出列表由 `scripts/generate_custom_node_packages.py` 从源码 AST 生成，加了新节点后跑一次它就不会漏导出：
+
+```bash
+python scripts/generate_custom_node_packages.py
+```
+
+### 方式二：`plugins/` 第三方插件目录
 
 把下面这个文件放进 `plugins/`（或设置 `CHEMML_PLUGINS` 指向任意目录，如 `examples/plugins`），重启即自动注册：
 
@@ -557,7 +622,7 @@ docker compose --profile db up --build
 ## 开发与测试
 
 ```bash
-# Python 测试（891 项：引擎 / 节点 / 工作流 / REST API / 基座模型与运行时）
+# Python 测试（967 项：引擎 / 节点 / 工作流 / REST API / 基座模型与运行时）
 pytest
 
 # 全节点冒烟测试（逐一实例化并执行 101 个节点）
@@ -600,7 +665,8 @@ cd node_sdk/nodejs && npm test
 ## 路线图
 
 ```
-v0.7.3            可视化计算化学 · 二维声学 FWI · API Key 管理  ← 当前版本：101 节点 · 11 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工具守卫 · 工作台 Dock
+v0.7.4            节点库按设备分组（ComfyUI 模式）· 软件更新入口  ← 当前版本：101 节点 · 11 Demo · 统一基座模型 · Cloud/Local AI 切换 · 可运行 Agent · 工具守卫 · 工作台 Dock
+v0.7.3            可视化计算化学 · 二维声学 FWI · API Key 管理
 v0.7           AI Scientist Agent（自主提出假设 → 设计实验 → 分析结果）
 v1.0           Scientific Intelligence Operating System
 ```

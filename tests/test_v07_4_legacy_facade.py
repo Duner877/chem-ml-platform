@@ -273,3 +273,90 @@ def test_the_legacy_loader_still_finds_every_node() -> None:
     registry = get_registry()
     types = registry.types()
     assert len(types) >= 100, f"only {len(types)} node types were registered"
+
+
+# --------------------------------------------------------------------------- #
+# 3. The command line entry point must survive the move too
+# --------------------------------------------------------------------------- #
+#
+# ``python -m nodes.loader`` has been in the docs, in ``CONTRIBUTING.md`` and
+# in ``docs/deployment.md`` since 0.7.3.  It is the command a user runs when a
+# third party node does not show up, and the command the platform prints in
+# its own troubleshooting table.  Moving the implementation must not have
+# broken it -- and it did, twice, in ways no import test would have caught:
+#
+#   * ``runpy`` asks the *loader* for the module's code, not for an imported
+#     module.  The facade's alias loader had no ``get_code``, so the command
+#     died with ``AttributeError: '_AliasLoader' object has no attribute
+#     'get_code'`` while ``from nodes.loader import get_registry`` worked.
+#
+#   * The wrapper in ``custom_nodes/loader.py`` *shadows* the identically
+#     named function of the ``nodes`` package, and was written without the
+#     ``plugins`` parameter.  Every ``--plugins`` run therefore raised
+#     ``TypeError: load_nodes() takes 0 positional arguments but 1 was given``.
+#
+# Both are silent for ``import`` and loud for the command, which is exactly
+# the class of defect that only a subprocess can catch.
+
+
+def _run_loader(module: str, *args: str) -> subprocess.CompletedProcess:
+    """Run ``python -m <module> <args>`` in a fresh interpreter."""
+    import sys
+
+    return subprocess.run(
+        [sys.executable, "-m", module, *args],
+        cwd=str(REPO),
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+
+
+@pytest.mark.parametrize("module", ["nodes.loader", "custom_nodes.loader"])
+def test_loader_cli_runs_on_both_paths(module: str) -> None:
+    """Both the legacy and the modern command must produce the listing."""
+    result = _run_loader(module, "--stats")
+
+    assert result.returncode == 0, (
+        f"`python -m {module} --stats` failed with {result.returncode}:\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+    assert "TOTAL" in result.stdout, (
+        f"`python -m {module} --stats` printed no statistics table:\n"
+        f"{result.stdout}"
+    )
+
+
+@pytest.mark.parametrize("module", ["nodes.loader", "custom_nodes.loader"])
+def test_loader_cli_accepts_the_plugins_option(module: str) -> None:
+    """``--plugins`` must not raise -- the wrapper shadows a 1-arg function.
+
+    The option existed in 0.7.3 and points at a folder of third party nodes,
+    which is precisely the situation a user hits when a node "is missing".
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        result = _run_loader(module, "--stats", "--plugins", tmp)
+
+    assert result.returncode == 0, (
+        f"`python -m {module} --plugins <dir>` failed with {result.returncode}:\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+
+
+def test_the_loader_wrapper_keeps_the_shadowed_signature() -> None:
+    """``custom_nodes.loader.load_nodes`` must accept the plugins folder.
+
+    The wrapper shadows ``nodes.load_nodes``.  A signature that is narrower
+    than the function it shadows is a defect that only shows up at the call
+    site, so it is asserted directly rather than inferred from the CLI.
+    """
+    import inspect
+
+    from custom_nodes import loader as modern_loader
+
+    parameters = inspect.signature(modern_loader.load_nodes).parameters
+    assert "plugins_directory" in parameters, (
+        "custom_nodes.loader.load_nodes dropped the plugins_directory "
+        f"parameter; it now has {list(parameters)}"
+    )
+

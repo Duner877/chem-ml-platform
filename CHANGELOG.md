@@ -44,6 +44,14 @@
 **版本号断言写死字面量**
 三个测试断言工作流声明的版本等于 `"0.7.3"`。每发一次版都要改测试，而一旦有人忘了改，断言就不再是断言。改为引用 `chemml_version.VERSION`——要断的仍然是「工作流声明的版本与平台版本一致」，但不再依赖记得改。
 
+**命令行入口 `python -m nodes.loader` 崩了**
+这条命令自 0.7.3 起就写在文档、`CONTRIBUTING.md` 和 `docs/deployment.md` 的排障表里，是用户发现「节点没出现」时第一个要跑的东西。迁移后它**彻底不能用**，而 `from nodes.loader import get_registry` 却完全正常——两处缺陷叠在一起：其一，`runpy` 执行 `-m` 时向 **loader** 取源码而不是取已导入模块，而兼容层的 `_AliasLoader` 没有 `get_code`，于是报 `AttributeError: '_AliasLoader' object has no attribute 'get_code'`；其二，真实 loader 只认自己的名字，直接委托会得到 `loader for custom_nodes.loader cannot handle nodes.loader`，故改为取源码后自行编译。`_AliasLoader` 现补齐 `get_code` / `get_source`，并把真实 `origin` 传给 spec，`__file__` 与回溯信息恢复正常。
+
+**`--plugins` 选项触发 TypeError**
+`custom_nodes/loader.py` 里的 `load_nodes` **遮蔽**了 `nodes` 包中同名的函数，却写成无参版本，而 CLI 调用的是 `load_nodes(plugins)`。结果是每一次带 `--plugins` 的运行都报 `TypeError: load_nodes() takes 0 positional arguments but 1 was given`。遮蔽一个函数却不保留它的签名，是一个只在调用点才暴露的缺陷。签名已与被遮蔽者对齐。
+
+以上两项均补回归测试（`tests/test_v07_4_legacy_facade.py` 新增 5 项），且测试必须**开子进程**跑 CLI——`import` 路径正常而命令行崩溃，正是这类缺陷唯一能被抓住的方式。
+
 ### 变更 Changed
 
 - `nodes/` → `custom_nodes/`：全部节点实现迁移（30 个分类、101 个节点、71 个模块，分类数与节点语义不变）。旧路径继续可用。

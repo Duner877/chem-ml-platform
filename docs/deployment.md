@@ -147,7 +147,7 @@ result = client.run_local(workflow_dict)   # 进程内执行，零 HTTP
 | 现象 | 排查 |
 | --- | --- |
 | `/api/health` 502 | 后端没起；看 uvicorn 日志 |
-| 节点数不是 77 | 插件目录有语法错误的 `.py`，导入被跳过；`python -m nodes.loader --stats` |
+| 节点数不是 77 | 插件目录有语法错误的 `.py`，导入被跳过；`python -m custom_nodes.loader --stats`（旧命令 `python -m nodes.loader --stats` 同样可用） |
 | 前端 5173 打开但接口全红 | 后端未运行；`vite.config.ts` 的 `/api` 代理指向 `:8000` |
 | Docker 构建卡在 pip | 国内网络；给 Docker 配 pip 镜像源 |
 | 工作流 422 | `POST /api/workflows/validate` 看具体 issues |

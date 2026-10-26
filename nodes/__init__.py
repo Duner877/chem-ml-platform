@@ -302,6 +302,55 @@ class _AliasLoader(importlib.abc.Loader):
             # ``pkgutil`` both read ``__spec__`` to decide what to reload.
             module.__spec__ = self._real_spec
 
+    def get_code(self, name: str) -> Any:
+        """Return the code object of the aliased module.
+
+        ``python -m nodes.loader`` goes through :mod:`runpy`, and ``runpy``
+        asks the loader for the module's **code** -- not for an imported
+        module.  A loader without ``get_code`` therefore breaks the command
+        with ``AttributeError: '_AliasLoader' object has no attribute
+        'get_code'``, even though ``from nodes.loader import get_registry``
+        works perfectly.  A facade whose import path works while its
+        documented command line entry point does not is exactly the kind of
+        half-migration that gets shipped.
+
+        The real loader cannot be asked directly: ``SourceLoader`` refuses
+        any full name other than the one it was created for and answers
+        ``loader for custom_nodes.loader cannot handle nodes.loader``.  So
+        the source is fetched under its **own** name and compiled here.
+
+        The result is the same source the modern name would run, which is
+        what "the legacy name is an alias" has to mean for a CLI too.
+        """
+        real_spec = self._real_spec
+        real_loader = getattr(real_spec, "loader", None)
+        if real_loader is None:
+            return None
+
+        real_name = getattr(real_spec, "name", None) or ""
+        source: str | None = None
+        if hasattr(real_loader, "get_source"):
+            try:
+                source = real_loader.get_source(real_name)
+            except (ImportError, OSError):
+                source = None
+        if source is None:
+            return None
+
+        origin = getattr(real_spec, "origin", None) or f"<{real_name}>"
+        return compile(source, origin, "exec")
+
+    def get_source(self, name: str) -> str:
+        """Return the source of the aliased module (used by tracebacks)."""
+        real_loader = getattr(self._real_spec, "loader", None)
+        real_name = getattr(self._real_spec, "name", None) or ""
+        if real_loader is not None and hasattr(real_loader, "get_source"):
+            try:
+                return real_loader.get_source(real_name)
+            except (ImportError, OSError):
+                return ""
+        return ""
+
 
 class _LegacyNodeFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
     """Resolve ``nodes.*`` imports to their new home under ``custom_nodes``.
@@ -347,6 +396,14 @@ class _LegacyNodeFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         spec = importlib.machinery.ModuleSpec(fullname, _AliasLoader(module))
         if hasattr(module, "__path__"):
             spec.submodule_search_locations = list(module.__path__)
+        else:
+            # ``runpy`` reads ``spec.origin`` to set ``__file__`` for the
+            # ``-m`` entry point.  A legacy alias with no origin makes the
+            # command run with ``__file__`` unset, which breaks every
+            # traceback that tries to show the offending line.
+            real_origin = getattr(getattr(module, "__spec__", None), "origin", None)
+            if real_origin:
+                spec.origin = real_origin
         return spec
 
     def create_module(self, spec):
