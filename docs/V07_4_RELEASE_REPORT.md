@@ -182,10 +182,10 @@ v0.7.4 的定位是 **Alpha / Research Preview**。
 | `python scripts/version.py --check` | `OK: every artefact agrees on 0.7.4` | 版本一致性 |
 | `python scripts/license_report.py --check` | `[PASS]`，见 §2.3 | 第三方许可证 |
 | `python scripts/dataset_governance.py --check` | `OK: 10 dataset metadata records are consistent` | 数据集治理 |
-| `python scripts/release_manifest.py` | `19/21 built, commit 3f1fa2d`，见 §2.4 | 发布清单 |
-| `python scripts/package.py` | `459 files · scan : clean`，见 §2.5 | 源码归档 |
+| `python scripts/release_manifest.py` | 清单已生成，见 §2.4 | 发布清单 |
+| `python scripts/package.py` | `460 files · scan : clean`，见 §2.5 | 源码归档 |
 | 前端 `npm run build`（tsc + vite） | `tsc clean` · 3 files | 生产构建 |
-| `desktop` 构建（NSIS） | `Setup 0.7.4.exe`（79,227,417 字节），见 §2.6 | 安装包 |
+| `desktop` 构建（NSIS） | `Setup 0.7.4.exe`（79,228,091 字节），见 §2.6 | 安装包 |
 | 打包载荷后端导入（`D:/python 3.13.6`，**无 torch**） | `66 routes` · 3 个 update 端点 · `plan_question` 可导入 | 见 §2.7 |
 | 打包载荷工作流实跑（无 torch 宿主机） | `status: completed` · `failed: 0` · 101 节点 | 见 §2.7 |
 | `node_registry` 校验 | `101 node types, schemas valid` · 30 分类 | 注册表 |
@@ -231,10 +231,10 @@ SKIP 的那一项是 `host_gpu_status`：本机为 `torch 2.14.1+cpu`，**无 CU
 ### 2.4 发布清单
 
 `python scripts/release_manifest.py` → `wrote docs/RELEASE_MANIFEST.md,
-docs/RELEASE_MANIFEST.json, SHA256SUMS (19/21 built, commit 3f1fa2d)`。
+docs/RELEASE_MANIFEST.json, SHA256SUMS`。
 
-清单摘要：`{"declared": 21, "built": 19, "tested": 18, "published": 0, "not_built": 2}`。
-未构建的 2 项是**发布产物本身**（源码归档与安装包的发布副本），它们在发布时才产生。
+清单摘要与 commit 字段以 `docs/RELEASE_MANIFEST.json` 为准（本报告不写死提交哈希，
+理由见文首）。
 
 按流程约定，清单**不随源码提交**——记录了自身提交的清单无法存在于那个提交里。
 
@@ -243,9 +243,9 @@ docs/RELEASE_MANIFEST.json, SHA256SUMS (19/21 built, commit 3f1fa2d)`。
 `python scripts/package.py --name Chem-ML-Platform-v0.7.4` →
 
 ```
-files   : 459
-payload : 5494.8 KiB
-size    : 1979.5 KiB (compressed)
+files   : 460
+payload : 5524.5 KiB
+size    : 1992.2 KiB (compressed)
 scan    : clean (no secret patterns, no forbidden paths)
 ```
 
@@ -255,10 +255,14 @@ scan    : clean (no secret patterns, no forbidden paths)
 
 ### 2.6 安装包
 
-`desktop` 的 NSIS 构建 → `Chem ML Platform Setup 0.7.4.exe`，**79,227,417 字节**。
+`desktop` 的 NSIS 构建 → `Chem ML Platform Setup 0.7.4.exe`，**79,228,091 字节**。
 
-构建戳记录 `dirty: false`、`commit 3f1fa2d`——即安装包与源码提交一致。这一点在本版
-之前是做不到的（见 §1.3 关于 `dirty` 判据的说明）。
+构建戳记录 `dirty: false`，其 `commit` 字段与 `docs/RELEASE_MANIFEST.json` 的
+`commit` 一致——即安装包与源码提交一致。这一点在本版之前是做不到的（见 §1.3 关于
+`dirty` 判据的说明）。
+
+桌面载荷一致性：`scripts/refresh_desktop_payload.py --verify --all-installed` →
+**2/2 `AGREES`**（仓库内的 `win-unpacked` 与用户实际安装的那份）。
 
 ### 2.7 打包载荷在**无 torch** 宿主机上的验证
 
