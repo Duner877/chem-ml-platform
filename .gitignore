@@ -63,6 +63,14 @@ output/
 artifacts/
 *.log
 
+# ---- Local scratch space ----------------------------------------------------
+# Temporary test fixtures and scratch files.  It must be listed here: the
+# release scanners treat anything *not* covered by .gitignore as a real
+# artefact of the tree, so a stray ``--basetemp=.tmp/...`` run would make
+# the credential scanner report the fixtures it created as leaked secrets.
+# The same files also showed up as untracked noise in ``git status``.
+.tmp/
+
 # ---- Upload workspace (runtime state, same policy as output/) ----
 # v0.7.2 fix (ISSUE-19): workspace/raw_data/x.csv, a test fixture left behind by
 # an earlier smoke run, had been committed and shipped in the source archive.

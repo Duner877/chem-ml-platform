@@ -72,6 +72,7 @@ SUITE_BY_STEM: Dict[str, str] = {
     # GUI entry point (which is asserted by reading the frontend sources) --
     # so it spans two modules and is classified as integration.
     "test_v07_4_update": "integration",
+    "test_v07_4_legacy_facade": "integration",
     # -- unit: single-module behaviour ---------------------------------------
     "test_nodes": "unit",
     "test_v07_2_version_consistency": "unit",

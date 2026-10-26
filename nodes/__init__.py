@@ -127,6 +127,7 @@ _LEGACY_ALIASES: Dict[str, str] = {
 #: ``from nodes.instruments import XRDNode`` would find nothing.
 _UMBRELLA_SOURCES: Dict[str, List[str]] = {
     "nodes.instruments": [
+        "custom_nodes._shared._base",
         "custom_nodes.mass_spectrometry.ms",
         "custom_nodes.mass_spectrometry.fragmentation",
         "custom_nodes.spectroscopy.electronic",
@@ -165,11 +166,95 @@ _UMBRELLA_SOURCES: Dict[str, List[str]] = {
     ],
     "nodes.agent": [
         "custom_nodes.agent.agent",
+        "custom_nodes.agent.planner",
+        "custom_nodes.agent.reasoning",
+        "custom_nodes.agent.tools",
+        "custom_nodes.agent.workflow_generator",
     ],
     "nodes.gpu": [
         "custom_nodes.gpu.gpu_nodes",
     ],
 }
+
+#: Legacy umbrella package -> the modern package that replaced it.  The
+#: umbrella forwards the modern package's own ``__all__`` as well, because
+#: some public names live on the package itself rather than on one of its
+#: modules (``custom_nodes.agent.INTENT_KEYWORDS`` and ``__version__``).
+_MODERN_PACKAGES: Dict[str, str] = {
+    "nodes.instruments": "custom_nodes",
+    "nodes.simulation": "custom_nodes",
+    "nodes.ai": "custom_nodes.ai_ml",
+    "nodes.databases": "custom_nodes.databases",
+    "nodes.question": "custom_nodes.questions",
+    "nodes.agent": "custom_nodes.agent",
+    "nodes.gpu": "custom_nodes.gpu",
+}
+
+
+def _modern_package_for(legacy: str) -> Any | None:
+    """The modern package that backs a legacy umbrella, if there is one.
+
+    Returned lazily and defensively: a missing modern package must not stop
+    the legacy name from resolving, it only means the umbrella carries fewer
+    names than it used to.
+    """
+    modern = _MODERN_PACKAGES.get(legacy)
+    if modern is None:
+        return None
+    try:
+        return importlib.import_module(modern)
+    except ImportError:
+        return None
+
+
+def _build_umbrella(legacy: str) -> Any:
+    """Build the umbrella module for a legacy package name.
+
+    One implementation, two callers: the meta-path finder and the eager
+    pre-population in :func:`_install_aliases`.  They used to be two copies
+    of the same aggregation loop, and they drifted -- the eager copy did not
+    know about the modern package's own ``__all__``, so
+    ``from nodes.agent import __version__`` silently stopped working while
+    the finder-based path still worked.  A facade that answers differently
+    depending on *how* it was reached is worse than one that answers
+    wrongly, because the failure is order-dependent.
+    """
+    import types
+
+    members = _UMBRELLA_SOURCES.get(legacy, [])
+    umbrella = types.ModuleType(legacy)
+    umbrella.__doc__ = (
+        f"Legacy facade for the {legacy.split('.')[-1]} node family. "
+        "Import the device packages under ``custom_nodes`` directly."
+    )
+    umbrella.__path__ = []  # mark it as a package
+    exported: List[str] = []
+
+    # The modern *package* (not just its modules) is part of the public
+    # surface: ``custom_nodes.agent`` defines ``INTENT_KEYWORDS`` and
+    # ``__version__`` itself, and ``from nodes.agent import __version__``
+    # used to work in 0.7.3.  Aggregating only the sub-modules would
+    # silently drop those names.
+    package = _modern_package_for(legacy)
+    if package is not None:
+        for attr in getattr(package, "__all__", []) or []:
+            if hasattr(package, attr):
+                setattr(umbrella, attr, getattr(package, attr))
+                exported.append(attr)
+
+    for member in members:
+        try:
+            mod = importlib.import_module(member)
+        except ImportError:
+            continue
+        for attr in getattr(mod, "__all__", []) or []:
+            if hasattr(mod, attr):
+                setattr(umbrella, attr, getattr(mod, attr))
+                if attr not in exported:
+                    exported.append(attr)
+
+    umbrella.__all__ = exported
+    return umbrella
 
 
 class _AliasLoader(importlib.abc.Loader):
@@ -266,27 +351,7 @@ class _LegacyNodeFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
 
     def create_module(self, spec):
         legacy = spec.name
-        members = _UMBRELLA_SOURCES.get(legacy, [])
-        import types
-
-        umbrella = types.ModuleType(legacy)
-        umbrella.__doc__ = (
-            f"Legacy facade for the {legacy.split('.')[-1]} node family. "
-            "Import the device packages under ``custom_nodes`` directly."
-        )
-        umbrella.__path__ = []  # mark it as a package
-        exported: List[str] = []
-        for member in members:
-            try:
-                mod = importlib.import_module(member)
-            except ImportError:
-                continue
-            for attr in getattr(mod, "__all__", []) or []:
-                if hasattr(mod, attr):
-                    setattr(umbrella, attr, getattr(mod, attr))
-                    exported.append(attr)
-        umbrella.__all__ = exported
-        return umbrella
+        return _build_umbrella(legacy)
 
     def exec_module(self, module) -> None:
         return None
@@ -313,28 +378,10 @@ def _install_aliases() -> None:
     if not any(isinstance(f, _LegacyNodeFinder) for f in sys.meta_path):
         sys.meta_path.insert(0, _LegacyNodeFinder())
 
-    import types
-
-    for legacy, members in _UMBRELLA_SOURCES.items():
+    for legacy in _UMBRELLA_SOURCES:
         if legacy in sys.modules:
             continue
-        umbrella = types.ModuleType(legacy)
-        umbrella.__doc__ = (
-            f"Legacy facade for the {legacy.split('.')[-1]} node family. "
-            "Import the device packages under ``custom_nodes`` directly."
-        )
-        umbrella.__path__ = []  # mark it as a package
-        exported: List[str] = []
-        for member in members:
-            try:
-                mod = importlib.import_module(member)
-            except ImportError:
-                continue
-            for attr in getattr(mod, "__all__", []) or []:
-                if hasattr(mod, attr):
-                    setattr(umbrella, attr, getattr(mod, attr))
-                    exported.append(attr)
-        umbrella.__all__ = exported
+        umbrella = _build_umbrella(legacy)
         sys.modules[legacy] = umbrella
         parent, _, leaf = legacy.rpartition(".")
         if parent and parent in sys.modules:
