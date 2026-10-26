@@ -28,8 +28,8 @@
   "files": [
     {
       "path": "demo/caffeine_ms.xy",
-      "bytes": 6823,
-      "sha256": "40fd6b2c51fec46362efce83abb4cf825834a9eccd19608423532f20c33f139f"
+      "bytes": 6420,
+      "sha256": "dde15f7082f04f408603be4a385000d308751134ffd5100c52e9f3d6cc3025eb"
     }
   ]
 }

@@ -52,6 +52,27 @@
 
 以上两项均补回归测试（`tests/test_v07_4_legacy_facade.py` 新增 5 项），且测试必须**开子进程**跑 CLI——`import` 路径正常而命令行崩溃，正是这类缺陷唯一能被抓住的方式。
 
+**CI 的 `release_manifest` 阶段从 0.7.3 起就没有一次通过过**
+仓库的 CI 徽章连续十一次为红，根因不在代码而在这一阶段的判据设计，共三处，各自独立：
+
+1. *清单记录的是它自己被生成时的 commit，因此永远无法描述包含它的那次提交。* 发布流程是「提交源码 → 生成清单 → 提交清单」，第二次提交必然让 HEAD 越过清单所指的那个 commit。原判据要求两者相等，于是每次版本提升都报「manifest records 0.7.3@…, tree is 0.7.4@…」。现改为比对**版本**与**检出环境能复现的产物**，刻意**不**比对 commit。
+2. *三项产物在全新 clone 里根本不存在。* 源码归档在仓库的上一层目录，安装包与 blockmap 在被 gitignore 的 `desktop/dist/` 里。拿它们做比对，等于拿一台机器的构建残留去比另一台机器的树。现按**名字**排除这三项——按「文件在不在」排除是另一回事：那会让任何恰好缺失的产物被静默跳过，而这正是检查器开始「报成功却什么都没查」的起点。
+3. *工作树里的字节不等于仓库里的字节。* Git 的 `core.autocrlf` 会在检出时把 LF 改写成 CRLF，于是 Windows 工作树里的 `sbom.json` 是 112 800 字节，仓库里存的是 107 466 字节。清单哈希取自工作树，因此它描述的是**生成它的那台机器**；Linux runner 上 clone 出同一个 commit，算出另一个摘要，于是清单永远说自己过期了。现改为哈希**仓库实际存储的 blob**（`git cat-file`），摘要与尺寸描述同一份字节。
+
+另修 CI 第 12 步的两处不一致：生成步骤用 `CHEMML_BUILD_COMMIT`（完整 SHA）写入 commit，而紧随其后的校验步骤没有该变量，只能读到 `git rev-parse --short HEAD`（短 SHA）——同一个 commit 的两个不同字符串，清单写完立刻报自己过期。校验步骤现使用同一组环境变量。
+
+**数据集校验和在别的机器上必然失败**
+Git 的 `core.autocrlf` 会在检出时把 LF 改写成 CRLF，于是同一个 commit 在 Windows 工作树里是 6 823 字节的 `caffeine_ms.xy`，在 Linux 检出里是 6 420 字节。仓库里的元数据记录的却是 **Windows 那一版**的字节数与 SHA-256 —— 也就是在生成它的那台机器上通过，在别的任何机器上失败。实测 8 个数据集文件全部如此，其中 Bruker NMR 的 `acqus` 与 `procs` 也在内。数据质量阶段因此在每个 Linux runner 上报校验和不符，而那些数据从未被修改过。
+
+校验和要回答的是「这是同一份数据吗」，而不是「这是同一份数据吗，在一台像我这样的机器上」—— 后者别人无法复核。修法有三处：新增 `.gitattributes` 把数据集里的文本格式（`.xy` / `.csv` / `.jdx` / `.mzml` / `.imzML` 以及 Bruker `.d/` 下的 `acqus`、`procs`）固定为 LF；`data_layer.quality` 改为哈希**仓库实际存储的 blob**（`git cat-file`），仓库外的文件仍按磁盘字节计算，尺寸与校验和描述同一份字节；仓库里记录的元数据按 LF 字节重新生成。
+
+**CI 徽章连续十一次为红**
+自 0.7.3 起，GitHub Actions 的每一次运行都是红的。这不是某一处缺陷，而是上面几项在不同阶段各自暴露：第 1 个 job 的清单阶段必然报 stale，数据质量阶段在 Linux 上必然报校验和不符，桌面测试在干净检出上必然因「仓库自身构建产物」不在候选列表里而失败。三处现已分别修复并在**干净 clone**（无构建产物、无 `dist/`、LF 换行）上验证通过。
+
+同时修复 `scripts/refresh_desktop_payload.py`：`_candidate_install_dirs()` 的注释承诺「仓库自身的构建产物**永远**在列表里」，实现却用 `offer()` 跳过了不存在的目录——注释与代码矛盾，而测试恰好按注释的契约写，于是在没有构建产物的干净检出上失败。改为 `offer_always()`；并给 `--all-installed` / `--refresh-all` 加上「尚未构建」分支：缺失的目录既不能被 `refresh()` **凭空创建**（那会留下半个应用），也不该被 `verify()` 判为 STALE（那是对一个从未发布过的东西报过期），而是明确报出「not built yet」。
+
+新增 `tests/test_v07_4_release_manifest.py`（9 项）、`tests/test_v07_1_dataset_quality.py` 的 3 项，以及 `tests/test_v07_2_desktop_runtime.py` 的 2 项断言。
+
 ### 变更 Changed
 
 - `nodes/` → `custom_nodes/`：全部节点实现迁移（30 个分类、101 个节点、71 个模块，分类数与节点语义不变）。旧路径继续可用。

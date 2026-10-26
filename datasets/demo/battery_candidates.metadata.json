@@ -24,8 +24,8 @@
   "files": [
     {
       "path": "demo/battery_candidates.csv",
-      "bytes": 454,
-      "sha256": "33ab26fde3ab063f0e1e1f0559d6c8647a0b44bcc3921c85b1d4445f0ca4acad"
+      "bytes": 443,
+      "sha256": "9778ed4a4fb85efd09f0f2a46a17fe9444219d51a9756b19447b48ead3bf6d3d"
     }
   ],
   "format": "CSV"

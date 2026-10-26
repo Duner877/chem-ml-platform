@@ -34,8 +34,8 @@
   "files": [
     {
       "path": "spectroscopy/polystyrene_ir/sample_01.jdx",
-      "bytes": 12537,
-      "sha256": "dd3d1e1ccf7a693182f2dae52a418d16751e993667cdc8e31f57ce649692bb70"
+      "bytes": 12370,
+      "sha256": "e087fbe6236bb128e16d0cbf706ef6b491745f15958807b898fdf32d18014d55"
     }
   ]
 }

@@ -43,8 +43,8 @@
   "files": [
     {
       "path": "xrd/lifepo4_pxrd/sample_01.xy",
-      "bytes": 35520,
-      "sha256": "b42026015238220e2d6345d827f0f0cd58f22b493a9853b28d85c58190b8acff"
+      "bytes": 33317,
+      "sha256": "3308e0ef8b1bc78172d390f4f96d54de4dc1f732f9254e1e0c3173fb199baf18"
     }
   ]
 }

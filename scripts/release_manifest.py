@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -245,12 +246,40 @@ ARTEFACTS: List[Artefact] = [
 ]
 
 
-def _sha256(path: Path, chunk: int = 1 << 20) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(chunk), b""):
-            digest.update(block)
-    return digest.hexdigest()
+#: The artefacts whose *identity* a fresh checkout can actually reproduce.
+#:
+#: Three rows are deliberately absent:
+#:
+#: ``source-archive``
+#:     The zip lives in the working folder, one level above the repository.
+#:     It is not part of the tree and is not committed, so a checkout cannot
+#:     produce or verify it -- and its path on the build machine is absolute,
+#:     which makes even the recorded path meaningless elsewhere.
+#: ``windows-installer`` and ``installer-blockmap``
+#:     Both live in ``desktop/dist/``, which is gitignored.  A fresh clone has
+#:     no installer; the row is only ever populated on the machine that ran
+#:     ``electron-builder``.
+#:
+#: Comparing those three against a checkout compares one machine's build
+#: leftovers with another machine's tree.  That is noise.  The rows below are
+#: files that live *in* the repository, so their digests are the same
+#: everywhere and a difference between them means the tree really drifted.
+_COMPARABLE_ARTEFACTS = frozenset({
+    "sbom",
+    "third-party-licences",
+    "provenance-record",
+    "notice",
+    "synthetic-benchmark-report",
+    "node-capability-catalogue",
+    "python-dependency-lock",
+    "frontend-dependency-lock",
+    "desktop-runtime-probe",
+    "plugin-spec",
+    "release-report",
+    "issue-log",
+    "clean-env-test-record",
+    "real-data-validation-plan",
+})
 
 
 def _resolve(candidates: List[str]) -> Optional[Path]:
@@ -265,6 +294,47 @@ def _resolve(candidates: List[str]) -> Optional[Path]:
         if path.is_file():
             return path
     return None
+
+
+def _tracked_bytes(path: Path) -> Optional[bytes]:
+    """The file's bytes *as this repository stores it*, or ``None``.
+
+    Why this exists
+    ---------------
+    A working tree and the repository it came from do not always hold the
+    same bytes.  Git's ``core.autocrlf`` rewrites LF to CRLF on checkout, so
+    a Windows working tree holds a 112 800-byte ``sbom.json`` where the
+    repository holds a 107 466-byte one.  Hashing the working tree therefore
+    produces a digest that is true of *this machine* and false of every
+    other -- and a manifest is supposed to describe the release, not the
+    checkout it was generated from.  A clone on Linux (or on Windows with
+    ``autocrlf=false``) would compute a different digest for the very same
+    commit and report the manifest as drifted, forever.
+
+    The repository's own bytes are the stable answer: ``git cat-file`` reads
+    the blob as committed, with no smudge filter applied.  Both machines
+    compute the same digest from it.
+
+    Returns ``None`` when the file is not tracked -- the source archive and
+    the installer are build outputs that live outside the index -- in which
+    case the caller falls back to the bytes on disk.
+    """
+    try:
+        rel = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return None
+    try:
+        out = subprocess.run(
+            ["git", "cat-file", "-p", f"HEAD:{rel}"],
+            cwd=str(ROOT),
+            capture_output=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout
 
 
 def _rel(path: Path) -> str:
@@ -319,8 +389,18 @@ def build_manifest() -> Dict[str, object]:
         if found is not None:
             # Volatile reports still get a digest for the human reader, but the
             # digest is explicitly *not* part of the identity of the artefact.
-            entry["sha256"] = _sha256(found)
-            entry["size_bytes"] = found.stat().st_size
+            #
+            # The digest and the size describe the file *as the repository
+            # stores it* when the file is tracked -- that is the byte sequence
+            # every clone will see, independent of the checkout's line-ending
+            # settings, and the two numbers always describe the same bytes.
+            # Build outputs that live outside the index (the source archive,
+            # the installer) are measured on disk, which is the only place
+            # they exist.
+            blob = _tracked_bytes(found)
+            payload = blob if blob is not None else found.read_bytes()
+            entry["sha256"] = hashlib.sha256(payload).hexdigest()
+            entry["size_bytes"] = len(payload)
             entry["modified_at"] = datetime.fromtimestamp(
                 found.stat().st_mtime, tz=timezone.utc
             ).isoformat(timespec="seconds")
@@ -468,18 +548,43 @@ def main() -> int:
             _identity(r): None for r in manifest["artefacts"]  # type: ignore[index]
         }
         old = {_identity(r): None for r in stored.get("artefacts", [])}
-        if stored.get("version") != manifest["version"] or stored.get("commit") != manifest["commit"]:
+        if stored.get("version") != manifest["version"]:
             print(
-                f"FAIL: manifest records {stored.get('version')}@{stored.get('commit')}, "
-                f"tree is {manifest['version']}@{manifest['commit']}"
+                f"FAIL: manifest records version {stored.get('version')}, "
+                f"tree is {manifest['version']}"
             )
             return 1
-        if fresh != old:
-            only_new = [k[0] for k in fresh.keys() - old.keys()]
-            only_old = [k[0] for k in old.keys() - fresh.keys()]
+        # The commit is deliberately *not* compared.  A manifest records the
+        # commit it was generated at, so it can never describe the commit that
+        # contains it -- the file is committed one revision after the tree it
+        # describes.  Requiring equality therefore reports "stale" on every
+        # version bump, which is what made this check fail on every CI run
+        # since 0.7.3 without ever reporting anything true about the tree.
+        #
+        # What *is* comparable is the artefact inventory, and only the part of
+        # it that this checkout can reproduce: the source archive lives outside
+        # the repository and the installer lives in a gitignored build folder,
+        # so neither exists in a fresh clone.  Comparing them would compare
+        # this machine's leftovers against the tree, which is noise, not
+        # signal.  The rows below are the ones a checkout can actually speak
+        # to, and they are the ones a reviewer reads.
+        comparable = _COMPARABLE_ARTEFACTS
+        fresh_cmp = {
+            _identity(r): None
+            for r in manifest["artefacts"]  # type: ignore[index]
+            if r.get("id") in comparable
+        }
+        old_cmp = {
+            _identity(r): None
+            for r in stored.get("artefacts", [])
+            if r.get("id") in comparable
+        }
+        if fresh_cmp != old_cmp:
+            only_new = [k[0] for k in fresh_cmp.keys() - old_cmp.keys()]
+            only_old = [k[0] for k in old_cmp.keys() - fresh_cmp.keys()]
             print(f"FAIL: manifest artefact set drifted (new={only_new} gone={only_old})")
             return 1
-        print(f"OK: manifest matches {manifest['version']}@{manifest['commit']} "
+        print(f"OK: manifest matches {manifest['version']} "
               f"({manifest['summary']['built']}/{manifest['summary']['declared']} built)")
         return 0
 

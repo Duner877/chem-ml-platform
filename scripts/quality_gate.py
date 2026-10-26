@@ -797,6 +797,34 @@ def stage_version(log_dir: Path) -> Tuple[str, str, dict]:
 
 
 def stage_release_manifest(log_dir: Path) -> Tuple[str, str, dict]:
+    """Verify that the manifest in the tree still describes this tree.
+
+    What used to fail here
+    ----------------------
+    The committed manifest records the commit it was generated at, so it can
+    never describe the commit that contains it -- the release process is
+    "commit the source, generate the manifest, commit the manifest", and the
+    second commit always moves HEAD one revision past the commit the
+    manifest names.  The old check compared the two for equality, so on
+    every version bump it reported "manifest records 0.7.3@..., tree is
+    0.7.4@..." and the stage failed on every CI run since 0.7.3 without
+    ever saying anything true about the tree.
+
+    The check now asks a question a checkout can answer: do the artefacts
+    that live *in* the repository still have the digests the manifest
+    recorded?  Those digests are the same on every machine, so a difference
+    means the tree really drifted -- the failure this stage exists to
+    catch.  Artefacts that a checkout cannot reproduce (the source archive
+    lives outside the repository, the installer lives in a gitignored build
+    folder) are excluded by name in ``release_manifest._COMPARABLE_ARTEFACTS``,
+    because comparing one machine's build leftovers with another machine's
+    tree is noise, not signal.
+
+    The release-time verification -- "the artefacts that were actually
+    published match the hashes that were recorded for them" -- stays where
+    it belongs: CI stage 12 builds the manifest from the collected artefacts
+    and checks it there.
+    """
     status, code, detail = _run(
         "release_manifest", [PYTHON, str(ROOT / "scripts" / "release_manifest.py"), "--check"],
         timeout=180, log_dir=log_dir,

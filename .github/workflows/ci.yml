@@ -44,6 +44,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e ./node_sdk/python || true
+      # The manifest records the commit it was generated at and can never
+      # describe the commit that contains it, so the copy committed in the
+      # tree always describes the *previous* release.  The quality gate now
+      # generates the manifest for the tree it inspects and verifies that
+      # result, so this job no longer fails on a stale committed manifest.
+      #
+      # No ``CHEMML_BUILD_COMMIT`` here on purpose: ``actions/checkout`` is a
+      # real checkout whose HEAD is ``github.sha``, so the commit is read from
+      # git itself.  The override would change what
+      # ``chemml_version.commit_source()`` reports from "git" to
+      # "env:CHEMML_BUILD_COMMIT", and four provenance tests assert exactly
+      # that the answer comes from the repository.
       - name: "1 · quality gate (static stages)"
         run: python scripts/quality_gate.py --fast
       - name: Version consistency
@@ -310,8 +322,17 @@ jobs:
         env:
           CHEMML_BUILD_COMMIT: ${{ github.sha }}
           CHEMML_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+      # The check step needs the same commit the generation step recorded.
+      # ``actions/checkout`` is a real checkout, so ``git rev-parse --short
+      # HEAD`` would answer with a *short* hash while the generation step
+      # recorded the full ``github.sha`` -- two different strings for one
+      # commit, and the manifest would report itself stale immediately after
+      # being written.
       - name: Fail if the manifest references a stale version
         run: python scripts/release_manifest.py --check
+        env:
+          CHEMML_BUILD_COMMIT: ${{ github.sha }}
+          CHEMML_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
       - if: always()
         uses: actions/upload-artifact@v4
         with:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -54,7 +55,53 @@ _FORMAT_NAMES = {
 }
 
 
+def _repository_bytes(path: Path) -> Optional[bytes]:
+    """The file's bytes *as the repository stores them*, or ``None``.
+
+    A working tree does not necessarily hold the bytes the repository holds.
+    Git's ``core.autocrlf`` rewrites LF to CRLF on checkout, so the same
+    commit gives a Windows working tree a 6 823-byte ``caffeine_ms.xy`` and a
+    Linux checkout a 6 420-byte one.  A checksum that depends on the reader's
+    operating system does not answer "is this the same data?" -- it answers
+    "is this the same data, on a machine like mine?", and nobody else can
+    check it.
+
+    So the repository's own bytes are the reference: ``git cat-file`` reads
+    the blob as committed, with no smudge filter applied, and every machine
+    gets the same answer.
+
+    ``None`` means "this file is not tracked here" -- a dataset installed
+    outside the repository, or a plain directory of files.  The caller then
+    falls back to the bytes on disk, which is the only definition available.
+    """
+    try:
+        root = Path(__file__).resolve().parents[1]
+        rel = path.resolve().relative_to(root.resolve()).as_posix()
+    except (OSError, ValueError):
+        return None
+    try:
+        out = subprocess.run(
+            ["git", "cat-file", "-p", f"HEAD:{rel}"],
+            cwd=str(root),
+            capture_output=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout
+
+
 def sha256_file(path: Path) -> str:
+    """SHA-256 of the data file, independent of the checkout's line endings.
+
+    See :func:`_repository_bytes` for why the repository's bytes win over the
+    working tree's when the file is tracked.
+    """
+    blob = _repository_bytes(path)
+    if blob is not None:
+        return hashlib.sha256(blob).hexdigest()
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for block in iter(lambda: handle.read(1 << 20), b""):
@@ -211,7 +258,13 @@ def check(root: Path) -> Tuple[bool, List[Dict[str, str]]]:
             actual = sha256_file(target)
             if entry.get("sha256") != actual:
                 flag(rel, f"checksum mismatch for {entry.get('path')}")
-            if entry.get("bytes") != target.stat().st_size:
+            # The size must describe the same bytes as the checksum above.
+            # Reading it from the disk instead would compare a CRLF working
+            # tree against an LF recording and report a size mismatch for
+            # data that was never modified.
+            blob = _repository_bytes(target)
+            size = len(blob) if blob is not None else target.stat().st_size
+            if entry.get("bytes") != size:
                 flag(rel, f"size mismatch for {entry.get('path')}")
             if actual in seen_hashes:
                 flag(rel, f"duplicate content with {seen_hashes[actual]} ({entry.get('path')})")

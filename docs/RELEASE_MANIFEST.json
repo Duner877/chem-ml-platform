@@ -1,15 +1,15 @@
 {
-  "version": "0.7.3",
+  "version": "0.7.4",
   "codename": "Trusted Delivery Release",
-  "commit": "01099b8",
+  "commit": "221f7e9",
   "python": "3.13.14",
-  "generated_at": "2026-10-19T06:43:27+00:00",
+  "generated_at": "2026-10-26T15:10:00+00:00",
   "summary": {
     "declared": 21,
-    "built": 21,
-    "tested": 21,
+    "built": 20,
+    "tested": 19,
     "published": 0,
-    "not_built": 0
+    "not_built": 1
   },
   "artefacts": [
     {
@@ -17,7 +17,7 @@
       "kind": "source_archive",
       "description": "源码归档（可直接 push 到 GitHub 的完整源码树）",
       "produced_by": "python scripts/package.py --name Chem-ML-Platform-v{version} --output ../Chem-ML-Platform-v{version}.zip",
-      "path": "C:/Users/hanku/Desktop/0.5 - 副本/01-源码/Chem-ML-Platform-v0.7.3.zip",
+      "path": "C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip",
       "built": true,
       "tested": true,
       "tested_note": "证据齐备: docs/RELEASE_MANIFEST.md, SHA256SUMS",
@@ -25,17 +25,17 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "d2f513955f73d2f5d3cdf172c25be18c6c86b55522e03ce7b77ed08239784a7c",
-      "size_bytes": 1601445,
-      "modified_at": "2026-10-19T04:53:33+00:00",
-      "build_commit": "01099b8"
+      "sha256": "3c9d294f9baebd5780262bed7d11f62fc0ed088a621154985823453c54bf649a",
+      "size_bytes": 2053471,
+      "modified_at": "2026-10-26T13:55:44+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "windows-installer",
       "kind": "installer",
       "description": "Windows x64 NSIS 安装包（Electron shell + 后端源码 + 运行时探针）",
       "produced_by": "cd desktop && npm install && npm run build",
-      "path": "desktop/dist/Chem ML Platform Setup 0.7.3.exe",
+      "path": "desktop/dist/Chem ML Platform Setup 0.7.4.exe",
       "built": true,
       "tested": true,
       "tested_note": "证据齐备: docs/V07_2_CLEAN_ENV_TEST.md",
@@ -43,17 +43,17 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "ecb371f8ebf7249ec4b0d68225122b0b7e84ad9dfd3b70e68f69bdb65c982a0b",
-      "size_bytes": 79188768,
-      "modified_at": "2026-10-19T04:52:19+00:00",
-      "build_commit": "01099b8"
+      "sha256": "434fdfe72f7bbe736c3da9cbb56018845cdc84484650ae8ace70c2fc4a2d4190",
+      "size_bytes": 79228074,
+      "modified_at": "2026-10-26T11:13:52+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "installer-blockmap",
       "kind": "installer",
       "description": "NSIS 差分更新块映射（由 electron-builder 同步产出）",
       "produced_by": "cd desktop && npm run build",
-      "path": "desktop/dist/Chem ML Platform Setup 0.7.3.exe.blockmap",
+      "path": "desktop/dist/Chem ML Platform Setup 0.7.4.exe.blockmap",
       "built": true,
       "tested": true,
       "tested_note": "无独立测试证据要求",
@@ -61,10 +61,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "fcf9daa1b4e4777a3afbdc321cbf7c2eadf30f4bf3f5a5e3f086428a385de001",
-      "size_bytes": 83829,
-      "modified_at": "2026-10-19T04:52:20+00:00",
-      "build_commit": "01099b8"
+      "sha256": "0ea2c59289c4d29ea5ae0759b46df163fbf90db7bb9ee7fba8823d5b4f75ce2c",
+      "size_bytes": 83696,
+      "modified_at": "2026-10-26T11:13:53+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "sbom",
@@ -79,10 +79,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "873facbcae068c622e18de61fe2c677dd26a26c5515f1969686969185be8e24e",
-      "size_bytes": 112800,
-      "modified_at": "2026-10-19T06:39:21+00:00",
-      "build_commit": "01099b8"
+      "sha256": "fa90a7e100d81572e7b405c021baf670a8945852255f1b0ae813a9a5c4b06536",
+      "size_bytes": 107466,
+      "modified_at": "2026-10-26T15:09:47+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "quality-gate-json",
@@ -97,10 +97,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "af84903177beaf69e37e25b8f3345f825c68bfdaaa457186cbce66eda5c571f1",
-      "size_bytes": 14292,
-      "modified_at": "2026-10-19T06:42:43+00:00",
-      "build_commit": "01099b8"
+      "sha256": "6bda3331419583ca1631173015b4c50b8cb897917fc8cefd912472b8577bb007",
+      "size_bytes": 14163,
+      "modified_at": "2026-10-26T13:32:44+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "quality-gate-md",
@@ -115,28 +115,28 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "c8bdc96742bec8e2cf690b461d298c5e4db5e8b68faf949ff8cd96a5bfc55612",
-      "size_bytes": 11131,
-      "modified_at": "2026-10-19T06:42:43+00:00",
-      "build_commit": "01099b8"
+      "sha256": "21facbb8b03cdd72fe6d48b2a84b5135f2af9bddaa9a0837848ee890cd0716ca",
+      "size_bytes": 10930,
+      "modified_at": "2026-10-26T13:32:44+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "ci-pipeline-json",
       "kind": "report",
       "description": "12 阶段 CI 流水线结果（每阶段独立退出码）",
       "produced_by": "python scripts/ci_pipeline.py",
-      "path": "output/ci_pipeline.json",
-      "built": true,
-      "tested": true,
-      "tested_note": "无独立测试证据要求",
+      "path": null,
+      "built": false,
+      "tested": false,
+      "tested_note": "",
       "published": false,
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "0b514aa13b9344372956106121e28489aed86a2f0dcda01c583f882d553cce53",
-      "size_bytes": 14605,
-      "modified_at": "2026-10-14T18:08:49+00:00",
-      "build_commit": "01099b8"
+      "sha256": "",
+      "size_bytes": 0,
+      "modified_at": "",
+      "build_commit": ""
     },
     {
       "id": "third-party-licences",
@@ -151,10 +151,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "4cf497f2fa4eef56a07f907bbedd129cbc4f856114803baf020c8dfa1e73b35a",
-      "size_bytes": 12761,
-      "modified_at": "2026-10-19T06:39:21+00:00",
-      "build_commit": "01099b8"
+      "sha256": "a126a50c444aea6c437a9409f6df1200f7b96cc098f79bddc964085f2c2b082f",
+      "size_bytes": 13714,
+      "modified_at": "2026-10-26T15:09:47+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "provenance-record",
@@ -169,10 +169,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "6dfaa4c6a103be6cbeb89d0758d804d18ca8414eb3f94270f1532820041e4ccf",
-      "size_bytes": 13881,
-      "modified_at": "2026-10-17T14:01:20+00:00",
-      "build_commit": "01099b8"
+      "sha256": "5a68349bc041c71c120a0c62a82bcf9be2c41c03b228c5cdbd5c9a26607f47d1",
+      "size_bytes": 13860,
+      "modified_at": "2026-10-26T08:30:10+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "notice",
@@ -187,10 +187,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "fd01f89f24c04636914608d4786b1069b11d246158c65228da6dfe42accd2928",
-      "size_bytes": 7720,
-      "modified_at": "2026-10-19T06:39:21+00:00",
-      "build_commit": "01099b8"
+      "sha256": "ca796bca8c0c5984de316d0f99aa96ca0ee48308df9708bbaa46c0aac3204b3c",
+      "size_bytes": 8855,
+      "modified_at": "2026-10-26T15:09:47+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "synthetic-benchmark-report",
@@ -199,8 +199,8 @@
       "produced_by": "python scripts/benchmark_lcms.py",
       "path": "docs/V07_2_SYNTHETIC_BENCHMARK.md",
       "built": true,
-      "tested": true,
-      "tested_note": "证据齐备: output/benchmark_lcms.json",
+      "tested": false,
+      "tested_note": "缺少证据文件: output/benchmark_lcms.json",
       "published": false,
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
@@ -208,7 +208,7 @@
       "sha256": "3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661",
       "size_bytes": 8813,
       "modified_at": "2026-10-14T12:05:04+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "node-capability-catalogue",
@@ -223,10 +223,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "5198cf7250ef329e10adc8b200912deae6b43d8f8b641a73a469ff63fdf0fe80",
-      "size_bytes": 16981,
+      "sha256": "6f0ed1944e5307019f70e66a772f6f14d0e1dbab58c887ea780a160b355ae2df",
+      "size_bytes": 16784,
       "modified_at": "2026-10-19T06:28:16+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "python-dependency-lock",
@@ -241,10 +241,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "7f010d168c157323eed364bb5c005aab1c8bb7e846e675ddfc3f2a8a6da40da6",
-      "size_bytes": 1526,
+      "sha256": "7f8862a24cd3acc351000cc0f269140acb58fcd247d8f1eb28ab902e0979e6b3",
+      "size_bytes": 1474,
       "modified_at": "2026-10-14T12:19:16+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "frontend-dependency-lock",
@@ -259,10 +259,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "6f98177d4ad9646e483c75de26f65026e9effab18d4199837e3e40bd237a0ec4",
-      "size_bytes": 47329,
-      "modified_at": "2026-10-16T10:50:39+00:00",
-      "build_commit": "01099b8"
+      "sha256": "abf8189cc012b05cbb50b5bd1f0878d4e2821b684a3bdfc900ce1a1dc411f483",
+      "size_bytes": 45443,
+      "modified_at": "2026-10-26T08:30:10+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "desktop-runtime-probe",
@@ -280,7 +280,7 @@
       "sha256": "347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6",
       "size_bytes": 21712,
       "modified_at": "2026-10-14T11:58:56+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "reproducibility-report",
@@ -295,10 +295,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": true,
-      "sha256": "eee3b99795036958eb808209649d24c8fe8ff0f61d21995de5771e49b69cd7e5",
+      "sha256": "d6fc3f86ff19cfdfc0f109a0b8512f20d89322cf37078d56ba399ba906204b9f",
       "size_bytes": 2026,
-      "modified_at": "2026-10-19T06:41:55+00:00",
-      "build_commit": "01099b8"
+      "modified_at": "2026-10-26T13:32:10+00:00",
+      "build_commit": "221f7e9"
     },
     {
       "id": "plugin-spec",
@@ -316,7 +316,7 @@
       "sha256": "2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a",
       "size_bytes": 10003,
       "modified_at": "2026-10-14T12:38:33+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "release-report",
@@ -331,10 +331,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "133832427ec333eac049109264a49a352f34d7484128bc003329e87ad117da98",
-      "size_bytes": 38124,
+      "sha256": "0b84bfa610efcc25f901467c5aaa5b050b1a083b8e8bb4c4327013ad81b1537c",
+      "size_bytes": 37630,
       "modified_at": "2026-10-14T19:24:45+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "issue-log",
@@ -352,7 +352,7 @@
       "sha256": "ea0c905bdcdeddd011cfa8a759488bd0fcd88729127dc1dcbb0ef2f3e3584105",
       "size_bytes": 37522,
       "modified_at": "2026-10-14T19:18:29+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "clean-env-test-record",
@@ -367,10 +367,10 @@
       "published_note": "未从本机上传到任何发布渠道",
       "not_applicable_reason": "",
       "volatile": false,
-      "sha256": "89b7b543cf1d305d86842b01c7b3dba77aa761690c7a3e646385db6a43303d5f",
-      "size_bytes": 2488,
+      "sha256": "e862f3e7f7ea5b9f45a3aac1303ec9f13fb0d422f9760b4fbd67fd876d6831fc",
+      "size_bytes": 2449,
       "modified_at": "2026-10-14T18:57:50+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     },
     {
       "id": "real-data-validation-plan",
@@ -388,7 +388,7 @@
       "sha256": "226e588b50068abd8bebe004d114b5691e36da48411ce6a476167fc8b32e37fd",
       "size_bytes": 5914,
       "modified_at": "2026-10-14T12:05:18+00:00",
-      "build_commit": "01099b8"
+      "build_commit": "221f7e9"
     }
   ]
 }

@@ -41,8 +41,8 @@
   "files": [
     {
       "path": "nmr/bruker_nmr/sample_01.d/acqus",
-      "bytes": 246,
-      "sha256": "c013cbfbab69b9f88f774c8a26914f957c750a4a16d2ee7db2faa19dc7377e60"
+      "bytes": 233,
+      "sha256": "f22c1aa4d1a6ba198be58cc5f15306a47f5abe1ca2a46e29ae7a79e84f2e55f9"
     },
     {
       "path": "nmr/bruker_nmr/sample_01.d/pdata/1/1r",
@@ -51,8 +51,8 @@
     },
     {
       "path": "nmr/bruker_nmr/sample_01.d/pdata/1/procs",
-      "bytes": 90,
-      "sha256": "13319232ed39933ccac89fc846da59f439b306ca599de57e90d2c0c81afe7a2e"
+      "bytes": 85,
+      "sha256": "891df2ead7fe4f2bcbc9d9edf233c7a5e09a3377de53ec2590c0507496027f1c"
     }
   ]
 }

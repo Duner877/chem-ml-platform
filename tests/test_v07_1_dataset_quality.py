@@ -145,3 +145,55 @@ class TestApi:
             body = client.get("/api/data/quality").json()
         assert body["ok"] is True, body["problems"]
         assert body["datasets"] >= 8
+
+
+class TestChecksumsDoNotDependOnTheCheckout:
+    """A checksum must answer "is this the same data?", not "on a machine like mine".
+
+    Git's ``core.autocrlf`` rewrites LF to CRLF on checkout, so the same
+    commit gives a Windows working tree a 6 823-byte ``caffeine_ms.xy`` and a
+    Linux checkout a 6 420-byte one.  The shipped metadata had recorded the
+    Windows bytes, so the dataset-quality stage failed on every Linux runner
+    for data that was never modified -- and passed only on the machine that
+    had generated it.
+
+    The fix is to measure the bytes the *repository* stores, which every
+    machine agrees on.
+    """
+
+    def test_the_shipped_datasets_pass_on_any_checkout(self):
+        """The real dataset tree must validate as shipped."""
+        report = quality_report(DATASETS)
+        assert report["ok"] is True, report["problems"]
+
+    def test_a_tracked_dataset_is_hashed_from_the_repository(self):
+        """The digest must be the repository's, not the working tree's."""
+        import hashlib
+        import subprocess
+
+        from data_layer.quality import sha256_file
+
+        target = DATASETS / "demo" / "caffeine_ms.xy"
+        if not target.is_file():
+            pytest.skip("demo dataset not present")
+
+        committed = subprocess.run(
+            ["git", "cat-file", "-p", "HEAD:datasets/demo/caffeine_ms.xy"],
+            cwd=str(DATASETS.parents[1]),
+            capture_output=True,
+            timeout=30,
+        )
+        if committed.returncode != 0:
+            pytest.skip("not a git checkout")
+        assert sha256_file(target) == hashlib.sha256(committed.stdout).hexdigest()
+
+    def test_an_untracked_dataset_falls_back_to_the_bytes_on_disk(self, tmp_path):
+        """A dataset outside the repository has no other definition."""
+        import hashlib
+
+        from data_layer.quality import sha256_file
+
+        payload = b"line one\nline two\n"
+        target = tmp_path / "loose.xy"
+        target.write_bytes(payload)
+        assert sha256_file(target) == hashlib.sha256(payload).hexdigest()

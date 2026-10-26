@@ -302,6 +302,25 @@ def _candidate_install_dirs() -> list[Path]:
             return
         seen[lowered] = path
 
+    def offer_always(path: Path) -> None:
+        """Offer a path even when it does not exist yet.
+
+        Used for the repository's own build output.  The function's contract
+        says that output is *always* in the list, and it has to be: a fresh
+        checkout has no ``desktop/dist/win-unpacked/resources/app`` yet, and
+        a tool that silently omits it then reports "nothing found" instead of
+        "not built yet".  Those are different answers and only one of them is
+        useful -- the same reason a missing directory must be named rather
+        than hidden.
+
+        The backup filter still applies: a ``.bak`` copy is never the thing
+        to report.
+        """
+        lowered = str(path).lower()
+        if any(marker in lowered for marker in _BACKUP_MARKERS):
+            return
+        seen[lowered] = path
+
     # The repo lives inside a working folder (``Desktop/0.5 - 副本/``) while the
     # launcher often lives in a *sibling* of that folder (``Desktop/0.5/``).
     # Every ancestor is searched, not just the first two: a fixed depth silently
@@ -326,8 +345,9 @@ def _candidate_install_dirs() -> list[Path]:
         for child in sorted(base.glob("*/*")):
             if child.is_dir():
                 offer(child / "resources" / "app")
-    # The repo's own build output is always in the list.
-    offer(DEFAULT_APP)
+    # The repo's own build output is always in the list -- whether or not it
+    # has been built yet.
+    offer_always(DEFAULT_APP)
     return [seen[key] for key in sorted(seen)]
 
 
@@ -354,9 +374,21 @@ def main() -> int:
             return 2
         print(f"found {len(targets)} installed app director(ies)\n")
         failures = 0
+        checked = 0
         for target in targets:
             marker = "repo" if target.resolve() == DEFAULT_APP.resolve() else "installed"
             print(f"--- {marker}: {target}")
+            if not target.is_dir():
+                # A candidate that does not exist yet is not a stale snapshot --
+                # it is an app that was never built.  Two reasons this must not
+                # be swept up with the rest: ``refresh()`` would *create* the
+                # directory tree and leave a half-populated app behind, and
+                # ``verify()`` would call every payload file missing and report
+                # STALE for something that was never shipped.  Name it, skip it.
+                print("  not built yet -- nothing to verify or refresh")
+                print()
+                continue
+            checked += 1
             if args.all_installed:
                 failures += verify(target)
             else:
@@ -364,7 +396,7 @@ def main() -> int:
                 print(f"  updated {copied}/{total}, removed {stale}")
             print()
         if failures:
-            print(f"{failures} of {len(targets)} snapshot(s) STALE")
+            print(f"{failures} of {checked} snapshot(s) STALE")
             return 1
         return 0
 

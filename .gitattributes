@@ -1,0 +1,67 @@
+# Normalise line endings for text that the repository stores as LF.
+#
+# Why this file exists
+# --------------------
+# Git's ``core.autocrlf`` rewrites LF to CRLF on checkout.  That is a
+# convenience for source code, and it is *wrong* for data: a spectrum file
+# whose bytes change between machines is not the same measurement any more.
+#
+# The damage was concrete.  ``datasets/demo/caffeine_ms.xy`` is 6 420 bytes
+# in the repository and 6 823 bytes in a Windows working tree.  The metadata
+# recorded ``"bytes": 6823`` and the SHA-256 of the CRLF version -- measured
+# on the machine that generated it -- so the checksum matched there and
+# failed everywhere else.  On a Linux runner the file is 6 420 bytes, the
+# recorded size does not match, and the dataset-quality stage reports a
+# checksum mismatch for data that was never modified.
+#
+# A checksum is supposed to answer "is this the same data?".  When the bytes
+# depend on the reader's operating system, it answers "is this the same data,
+# on a machine like mine?" -- which is not the question, and it is not
+# checkable by anyone else.
+#
+# The rule below keeps the repository's bytes authoritative: text is stored
+# with LF and checked out with LF, on every platform.
+
+# Text: normalised to LF in the repository, checked out as LF.
+* text=auto eol=lf
+
+# The whole dataset tree is data, not source.  Binary formats are marked so
+# explicitly; the text formats among them are pinned to LF so their checksum
+# is the same everywhere.
+datasets/** binary
+datasets/**/*.xy text eol=lf
+datasets/**/*.csv text eol=lf
+datasets/**/*.jdx text eol=lf
+
+# ``.mzml`` / ``.imzML`` are XML, but Git's own binary heuristic classifies
+# them as binary (an mzML file contains base64 blobs).  That classification is
+# what let ``core.autocrlf`` rewrite their line endings, so they are named
+# explicitly as text.
+datasets/**/*.mzml text eol=lf
+datasets/**/*.imzML text eol=lf
+
+# Measurement files that are binary in every sense.
+datasets/**/*.spc binary
+datasets/**/*.png binary
+
+# Bruker ``.d`` directories: the ``pdata`` tree holds binary spectra, the
+# acquisition parameters are text.  Git's ``**`` does not cross directory
+# levels, so the text files inside ``.d`` need their own rule -- otherwise
+# they keep the ``attr/-text`` default and ``core.autocrlf`` rewrites them.
+datasets/**/*.d/acqus text eol=lf
+datasets/**/*.d/procs text eol=lf
+datasets/**/*.d/pdata/1/procs text eol=lf
+datasets/**/*.d/pdata/1/1r binary
+
+# The Electron shell and the Python payload ship inside the installer; their
+# line endings are irrelevant to the product but must not depend on who
+# built it.
+desktop/package-lock.json text eol=lf
+frontend/package-lock.json text eol=lf
+
+# The release manifest and the checksum file are compared byte-for-byte by
+# ``release_manifest.py --check``; a CRLF rewrite would make the recorded
+# digest describe one machine instead of the release.
+SHA256SUMS text eol=lf
+docs/RELEASE_MANIFEST.json text eol=lf
+docs/RELEASE_MANIFEST.md text eol=lf

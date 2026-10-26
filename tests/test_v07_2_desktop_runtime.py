@@ -678,6 +678,52 @@ class TestInstalledSnapshotsAreDiscoverable:
         candidates = module._candidate_install_dirs()
         assert module.DEFAULT_APP.resolve() in {p.resolve() for p in candidates}
 
+    def test_repo_build_output_is_a_candidate_before_it_is_built(self, tmp_path, monkeypatch):
+        """The candidate list must not depend on the build having happened.
+
+        The repository's own ``win-unpacked`` only exists after a local
+        ``electron-builder`` run, so a clean checkout -- which is exactly what
+        CI has -- had an empty list and the discovery test failed on every
+        run.  A directory that was never built is a *different* answer from
+        "nothing found", and the list has to be able to say so.
+        """
+        module = self._tool()
+
+        repo = tmp_path / "work" / "v0.7.3-active"
+        (repo / "desktop" / "dist").mkdir(parents=True)
+        monkeypatch.setattr(module, "ROOT", repo)
+        monkeypatch.setattr(module, "DEFAULT_APP", repo / "desktop" / "dist" / "win-unpacked" / "resources" / "app")
+
+        assert not module.DEFAULT_APP.exists(), "precondition: not built yet"
+        found = {p.resolve() for p in module._candidate_install_dirs()}
+        assert module.DEFAULT_APP.resolve() in found
+
+    def test_a_candidate_that_was_never_built_is_reported_not_created(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """``--all-installed`` must name an unbuilt app, not build it.
+
+        Two failure modes, both real: ``refresh()`` copies the payload into the
+        target, so a missing directory would be *created* and a half-populated
+        app left behind; ``verify()`` counts every payload file as missing and
+        reports STALE for something that was never shipped.  Neither is what
+        the user needs to hear -- "not built yet" is.
+        """
+        module = self._tool()
+
+        repo = tmp_path / "work" / "v0.7.3-active"
+        repo.mkdir(parents=True)
+        unbuilt = repo / "desktop" / "dist" / "win-unpacked" / "resources" / "app"
+        monkeypatch.setattr(module, "ROOT", repo)
+        monkeypatch.setattr(module, "DEFAULT_APP", unbuilt)
+        monkeypatch.setattr(module.sys, "argv", ["refresh", "--refresh-all"])
+
+        assert module.main() == 0
+        assert not unbuilt.exists(), (
+            "refreshing must never create an app that was never built"
+        )
+        assert "not built yet" in capsys.readouterr().out
+
     def test_candidates_live_at_the_expected_depths(self, tmp_path, monkeypatch):
         """Discovery must reach a launcher however deep the repo is nested.
 

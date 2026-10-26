@@ -23,8 +23,8 @@
   "files": [
     {
       "path": "demo/molecule_library.csv",
-      "bytes": 564,
-      "sha256": "11e6cbf70e0888020ffb2cc2ed47f78602a397cfeaddddf6e5a885857bfca451"
+      "bytes": 553,
+      "sha256": "460fbd0d920625d6dcf230238de9380edee9ce1c52b5e8e38b7750662aaf8c03"
     }
   ],
   "format": "CSV"
