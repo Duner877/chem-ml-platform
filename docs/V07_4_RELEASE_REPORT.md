@@ -283,6 +283,11 @@ scan    : clean (no secret patterns, no forbidden paths)
 - 节点注册：`71 modules / 101 nodes / 30 categories`。
 - 工作流实跑（`workflows/11_solid_state_dft.json`）：`validate errors: []`、
   `status: completed`、`failed: 0`。
+- **旧导入路径在打包载荷上同样完整**（§1.3 第 7 项的修复必须在这份载荷上成立，
+  而不只是源码树）：`nodes.agent` 23 个符号（0.7.3 基线 23）、
+  `nodes.instruments` 51 个（基线 36）、`nodes.ai` 15 个（基线 12）；
+  `nodes.agent.__version__`、`nodes.agent.INTENT_KEYWORDS`、
+  `nodes.instruments.InstrumentNode` 三者均可取到。
 
 ### 2.8 更新功能的真实端到端演练：未执行
 
