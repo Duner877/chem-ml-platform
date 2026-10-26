@@ -183,7 +183,7 @@ def build_stamp(produced_by: str) -> Dict[str, Any]:
         "commit": commit,
         "commit_short": commit[:7] if commit else "unknown",
         "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
-        "dirty": bool(_git("status", "--porcelain")),
+        "dirty": _tree_is_dirty(),
         "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "produced_by": produced_by,
         "note": (
@@ -192,6 +192,67 @@ def build_stamp(produced_by: str) -> Dict[str, Any]:
             "so the commit identifies the base, not the exact content."
         ),
     }
+
+
+#: Files that are *derived* from the tree rather than part of it.
+#:
+#: The release process is deliberately "commit the source, generate the
+#: manifest, do not commit the manifest" -- a manifest that records its own
+#: commit cannot exist inside that commit.  So the manifest, its checksum
+#: list and the build stamp are **always** uncommitted at packaging time.
+#:
+#: Counting them as "the tree is dirty" would make every single build stamp
+#: say ``dirty: true``, which says "the code you are running may not be the
+#: code in this commit" -- a serious provenance claim that is false here.
+#: The flag has to mean what it says: *the source* differs from the commit.
+#:
+#: Untracked build output (``output/``, ``dist/``, caches) is ignored for the
+#: same reason: it is produced by running the tree, not by editing it.
+_DERIVED_ARTEFACTS = (
+    "docs/RELEASE_MANIFEST.md",
+    "docs/RELEASE_MANIFEST.json",
+    "SHA256SUMS",
+    "BUILD_INFO.json",
+)
+
+
+def _tree_is_dirty() -> bool:
+    """True when the *source* differs from the commit.
+
+    Derived artefacts (the release manifest, the checksum list, the build
+    stamp) and untracked build output are excluded: they are products of the
+    tree, not edits to it.  See :data:`_DERIVED_ARTEFACTS` for why they are
+    necessarily uncommitted.
+    """
+    if not _git_repo_is_this_tree():
+        return False
+    try:
+        out = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    if out.returncode != 0:
+        return False
+    for line in (out.stdout or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # Porcelain v1: "XY path" (or "XY -> path" for a rename).
+        path = line[3:].strip() if len(line) > 3 else ""
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip()
+        path = path.strip('"').replace("\\", "/")
+        if path in _DERIVED_ARTEFACTS:
+            continue
+        if path.startswith("output/") or path.startswith("desktop/dist/"):
+            continue
+        return True
+    return False
 
 
 def build_metadata() -> Dict[str, Any]:
