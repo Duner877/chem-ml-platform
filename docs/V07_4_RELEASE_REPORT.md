@@ -185,7 +185,7 @@ v0.7.4 的定位是 **Alpha / Research Preview**。
 | `python scripts/release_manifest.py` | 清单已生成，见 §2.4 | 发布清单 |
 | `python scripts/package.py` | `460 files · scan : clean`，见 §2.5 | 源码归档 |
 | 前端 `npm run build`（tsc + vite） | `tsc clean` · 3 files | 生产构建 |
-| `desktop` 构建（NSIS） | `Setup 0.7.4.exe`（79,228,091 字节），见 §2.6 | 安装包 |
+| `desktop` 构建（NSIS） | `Setup 0.7.4.exe`（79,228,068 字节），见 §2.6 | 安装包 |
 | 打包载荷后端导入（`D:/python 3.13.6`，**无 torch**） | `66 routes` · 3 个 update 端点 · `plan_question` 可导入 | 见 §2.7 |
 | 打包载荷工作流实跑（无 torch 宿主机） | `status: completed` · `failed: 0` · 101 节点 | 见 §2.7 |
 | `node_registry` 校验 | `101 node types, schemas valid` · 30 分类 | 注册表 |
@@ -231,10 +231,10 @@ SKIP 的那一项是 `host_gpu_status`：本机为 `torch 2.14.1+cpu`，**无 CU
 ### 2.4 发布清单
 
 `python scripts/release_manifest.py` → `wrote docs/RELEASE_MANIFEST.md,
-docs/RELEASE_MANIFEST.json, SHA256SUMS`。
+docs/RELEASE_MANIFEST.json, SHA256SUMS (20/21 built)`。
 
-清单摘要与 commit 字段以 `docs/RELEASE_MANIFEST.json` 为准（本报告不写死提交哈希，
-理由见文首）。
+清单摘要：`{"declared": 21, "built": 20, "tested": 19, "published": 0, "not_built": 1}`。
+未构建的那 1 项是 `ci-pipeline-json`——它由 CI 运行产生，本机没有 CI。
 
 按流程约定，清单**不随源码提交**——记录了自身提交的清单无法存在于那个提交里。
 
@@ -255,7 +255,7 @@ scan    : clean (no secret patterns, no forbidden paths)
 
 ### 2.6 安装包
 
-`desktop` 的 NSIS 构建 → `Chem ML Platform Setup 0.7.4.exe`，**79,228,091 字节**。
+`desktop` 的 NSIS 构建 → `Chem ML Platform Setup 0.7.4.exe`，**79,228,068 字节**。
 
 构建戳记录 `dirty: false`，其 `commit` 字段与 `docs/RELEASE_MANIFEST.json` 的
 `commit` 一致——即安装包与源码提交一致。这一点在本版之前是做不到的（见 §1.3 关于
