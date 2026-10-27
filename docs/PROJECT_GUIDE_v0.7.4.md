@@ -776,6 +776,20 @@ cd desktop && npm run build             # 安装包（NSIS）
 打包器是「什么该进包」的权威（`package.py` 的 `should_skip()`）——
 缓存、密钥、运行时数据、`node_modules` 都不进包。
 
+> **先提交再打包**。`BUILD_INFO.json` 记录构建时的 commit 与 `dirty` 标记，
+> 改动未提交时 `dirty: true`，这个安装包就无法对应到任何一个确切版本。
+
+> **安装包要带齐运行时探测要读的文件**。
+> 探测按 `requirements.runtime.txt` → `requirements.lock` → `requirements.txt`
+> 的顺序找依赖声明。第一个安装包只带了 `requirements.txt`——
+> 而它是「清单的清单」（三行 `-r` 引用），不是包列表。
+> 探测于是把它当成两条依赖解析，报出 `satisfied=0/2`，
+> **并且把环境分类为 `ok`——依赖校验静默地不再校验任何东西**。
+>
+> 门禁的 `electron_build_config` 阶段现在会检查这四个清单是否都在
+> `build.extraResources` 里，少一个就 FAIL 并指名缺哪个。
+> 「声明要校验什么」这个声明本身，必须随软件一起交付。
+
 ### 8.5 交付清单
 
 一次完整交付包含：
