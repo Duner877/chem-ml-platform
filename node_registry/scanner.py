@@ -20,7 +20,7 @@ The result is a list of records with exactly the shape required by the spec::
       "version": "0.7.1",
       "inputs": [...],
       "outputs": [...],
-      "author": "",
+      "author": "Duner",
       "description": "..."
     }
 """
@@ -41,6 +41,11 @@ __all__ = ["scan", "iter_node_modules", "collect_records", "author_of"]
 
 #: Repository root (the parent of ``node_registry``).
 ROOT = Path(__file__).resolve().parents[1]
+
+#: The author recorded for a node that declares no ``Author:`` tag of its own.
+#: Every node in this repository is authored by the project author; leaving the
+#: field empty would hide the node from the marketplace's author filter.
+DEFAULT_AUTHOR = "Duner"
 
 
 def iter_node_modules(package: str = "nodes") -> List[str]:
@@ -91,13 +96,20 @@ def _package_has_modules(package: str) -> bool:
 
 
 def author_of(node_cls: type) -> str:
-    """Best effort author of a node class (``Author:`` docstring tag)."""
+    """Best effort author of a node class (``Author:`` docstring tag).
+
+    A node that declares no ``Author:`` tag falls back to the project's
+    author rather than to an empty string.  An empty author is not "nobody
+    wrote this" -- it is a missing field that the marketplace search treats as
+    a filter that never matches anything, so the node silently disappears from
+    every author-scoped query.
+    """
     for source in (inspect.getdoc(node_cls), inspect.getdoc(inspect.getmodule(node_cls))):
         for line in (source or "").splitlines():
             stripped = line.strip()
             if stripped.lower().startswith("author:"):
                 return stripped.split(":", 1)[1].strip()
-    return ""
+    return DEFAULT_AUTHOR
 
 
 def collect_records() -> List[Dict[str, Any]]:

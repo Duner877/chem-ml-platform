@@ -4,7 +4,7 @@
   "version": "0.7.4",
   "description": "Chem ML Platform v0.7.4 -- Desktop Scientific AI OS (Electron shell)",
   "main": "src/main.js",
-  "author": "Chem ML Platform contributors",
+  "author": "Duner",
   "license": "Apache-2.0",
   "private": true,
   "scripts": {

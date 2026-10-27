@@ -75,7 +75,7 @@ async def registry_full() -> Dict[str, Any]:
                     "category": spec["category"],
                     "description": spec["description"],
                     "tags": spec["tags"],
-                    "author": "",
+                    "author": "Duner",
                     "module": "",
                     "inputs": [p["name"] for p in spec["inputs"]],
                     "outputs": [p["name"] for p in spec["outputs"]],

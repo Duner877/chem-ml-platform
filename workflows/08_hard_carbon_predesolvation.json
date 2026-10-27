@@ -3,7 +3,7 @@
   "description": "复现 Nat. Commun. 15, 3497 (2024) 的尺寸筛分预脱溶剂机制：按溶剂化结构特征尺寸判定能否穿过 ~4 Å 墨水瓶孔，给出过孔能垒与孔内 Na–P 配位，再串起静置老化动力学与双 SEI 活化能证据链，最后由汇总节点检查三条支路是否自洽。首效曲线锚定在论文两个实测点（12 h 的 90.14% 与 10 天的 99.09%）。",
   "version": "0.7.4",
   "metadata": {
-    "author": "Chem ML Platform",
+    "author": "Duner",
     "category": "Demo",
     "tags": [
       "hard-carbon",

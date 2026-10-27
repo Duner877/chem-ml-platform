@@ -62,7 +62,14 @@ PROJECT_LICENSE = "Apache-2.0"
 #: this and under what name exactly nothing, and the LICENSE shipped the
 #: template's own ``[yyyy] [name of copyright owner]`` for the same reason.
 #: Set here so the two files cannot drift apart again.
-COPYRIGHT_HOLDER = "Duner877"
+#:
+#: v0.7.4: the holder is the project author.  The GitHub *account* is
+#: ``Duner877`` (it is the owner of the repository the code lives in, and it
+#: appears in clone URLs); the *name* the software is published under is
+#: ``Duner``.  Keeping the two apart is deliberate: renaming the account would
+#: break every clone URL and the update checker's owner lookup, neither of
+#: which is what a copyright notice is for.
+COPYRIGHT_HOLDER = "Duner"
 
 #: licences that require a human review before distribution (strong copyleft)
 _REVIEW_LICENCES = ("GPL", "AGPL", "SSPL", "CC-BY-NC", "BUSL", "Commons Clause")
@@ -1637,7 +1644,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="(re)generate sbom.json, NOTICE and docs/THIRD_PARTY_LICENSES.md",
     )
     parser.add_argument("--print", dest="do_print", action="store_true", help="print the summary")
+    parser.add_argument(
+        "--out-dir",
+        default=None,
+        help=(
+            "write the artefacts under this directory instead of the repository root. "
+            "Used by the test suite so that exercising --write never touches the "
+            "real sbom.json / NOTICE / THIRD_PARTY_LICENSES.md in the tree."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    out_root = Path(args.out_dir).resolve() if args.out_dir else ROOT
 
     data = collect()
     sbom = build_sbom(data["python"], data["npm"], data["external"], data["datasets"])
@@ -1648,9 +1666,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     sbom_text = json.dumps(sbom, indent=2, ensure_ascii=False)
     targets = [
-        (ROOT / "sbom.json", sbom_text),
-        (ROOT / "NOTICE", notice),
-        (ROOT / "docs" / "THIRD_PARTY_LICENSES.md", markdown),
+        (out_root / "sbom.json", sbom_text),
+        (out_root / "NOTICE", notice),
+        (out_root / "docs" / "THIRD_PARTY_LICENSES.md", markdown),
     ]
 
     # v0.7.2 fix: this function used to write all three files *unconditionally*,
@@ -1675,13 +1693,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     drift: List[str] = []
     if args.check:
         for path, expected in targets:
+            try:
+                label = path.relative_to(ROOT).as_posix()
+            except ValueError:
+                # The artefact lives outside the repository (a test's temporary
+                # output directory).  Its absolute path is the only honest label.
+                label = path.as_posix()
             if not path.exists():
-                drift.append(f"missing:{path.relative_to(ROOT).as_posix()}")
+                drift.append(f"missing:{label}")
                 continue
             if _read_normalised(path) != _normalise_newlines(expected):
                 if _differs_only_in_versions(path, expected):
                     continue
-                drift.append(f"stale:{path.relative_to(ROOT).as_posix()}")
+                drift.append(f"stale:{label}")
     else:
         for path, expected in targets:
             path.parent.mkdir(parents=True, exist_ok=True)

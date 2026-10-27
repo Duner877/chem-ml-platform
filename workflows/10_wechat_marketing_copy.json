@@ -3,7 +3,7 @@
   "description": "输入产品卖点与目标人群，先由模型产出选题策划（标题备选、卖点排序、开头钩子），再据此撰写公众号正文成稿，最后汇总为可交付的结构化稿件并导出 Markdown。",
   "version": "0.7.4",
   "metadata": {
-    "author": "Chem ML Platform",
+    "author": "Duner",
     "category": "Content",
     "tags": [
       "marketing",

@@ -2,7 +2,7 @@
   "name": "铝原胞弛豫与能带态密度 / Al primitive-cell relaxation, bands and PDOS",
   "description": "先用内置 Slater-Koster 引擎把铝的面心立方晶格常数弛豫到总能量极小，再在**弛豫后的同一个晶胞**上计算能带、总态密度与分轨道态密度，最后交付 6 张关键产物图并汇总成 HTML 报告。能带沿 Γ-X-W-K-Γ-L-W-X 高对称点路径，态密度分 s / px / py / pz 四个通道，E_F 处态密度非零即铝为金属。弛豫的能量 / 力 / 应力各出一张图：三者量纲不同且量级相差三到四个数量级，叠在一张图上只有最靠边的那条曲线看得见。",
   "metadata": {
-    "author": "Chem ML Platform",
+    "author": "Duner",
     "category": "Materials",
     "tags": [
       "solid-state",

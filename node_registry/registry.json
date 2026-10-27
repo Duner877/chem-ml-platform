@@ -123,7 +123,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 ABACUS 输入（INPUT/STRU）并运行；未安装时使用内置 Slater-Koster 紧束缚引擎，输出 STRU、能带、态密度与分轨道态密度。",
       "name_zh": "ABACUS",
       "category_zh": "模拟 / 材料",
@@ -217,7 +217,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 AFLOW 高通量计算材料数据库（热力学与电子结构）。",
       "name_zh": "AFLOW 材料库",
       "category_zh": "数据库 / 材料",
@@ -300,7 +300,7 @@
           "description_en": "Analysis report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "原子力显微镜：表面形貌与粗糙度分析，输出 Ra / Rq 粗糙度指标。",
       "name_zh": "原子力显微镜",
       "category_zh": "仪器 / 显微",
@@ -373,7 +373,7 @@
           "description_en": "Planning rationale"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "只做规划不执行：把自然语言问题转成工作流 JSON，便于人工审查后再运行。",
       "name_zh": "智能体规划器",
       "category_zh": "智能体",
@@ -445,7 +445,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "氮气吸附-脱附仪：BET 比表面积与孔容分析，输出 BET 线性拟合结果。",
       "name_zh": "BET 比表面积",
       "category_zh": "仪器 / 粒度",
@@ -518,7 +518,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 BMRB 生物核磁共振化学位移数据。",
       "name_zh": "BMRB 生物核磁库",
       "category_zh": "数据库 / 谱图",
@@ -586,7 +586,7 @@
           "description_en": "Correction statistics"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "使用不对称最小二乘 (ALS) 算法扣除谱图基线，适用于拉曼与红外光谱。",
       "name_zh": "基线校正",
       "category_zh": "分析",
@@ -659,7 +659,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 Crystallography Open Database 晶体学条目。",
       "name_zh": "COD 晶体库",
       "category_zh": "数据库 / 材料",
@@ -742,7 +742,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 CP2K 输入并运行 DFT；未安装时使用内置扩展 Hückel 引擎。",
       "name_zh": "CP2K 量子化学",
       "category_zh": "模拟 / 量子化学",
@@ -833,7 +833,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "循环伏安工作站：有限差分扩散 + Butler-Volmer 动力学，输出峰电位与峰电流。",
       "name_zh": "循环伏安",
       "category_zh": "仪器 / 电化学",
@@ -906,7 +906,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 ChEMBL 生物活性分子（含靶点与活性标注）。",
       "name_zh": "ChEMBL 活性库",
       "category_zh": "数据库 / 化学",
@@ -981,7 +981,7 @@
           "description_en": "Model summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "基于 SMILES 子词哈希的化学语言模型编码器，输出分子嵌入与性质预测。",
       "name_zh": "ChemBERTa 编码器",
       "category_zh": "AI / 基座模型",
@@ -1056,7 +1056,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "动态光散射粒度仪：基于累积量法输出粒径分布、Z-average 与 PDI。",
       "name_zh": "动态光散射",
       "category_zh": "仪器 / 粒度",
@@ -1129,7 +1129,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "动态力学分析仪：储能 / 损耗模量与 tan δ 随温度变化曲线。",
       "name_zh": "动态力学分析",
       "category_zh": "仪器 / 热分析",
@@ -1202,7 +1202,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "差示扫描量热仪：玻璃化转变、熔融与结晶热分析。",
       "name_zh": "差示扫描量热",
       "category_zh": "仪器 / 热分析",
@@ -1275,7 +1275,7 @@
           "description_en": "预脱溶剂机理说明与数据出处"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "硬碳纳米孔的尺寸筛分模型：按溶剂化结构特征尺寸判定能否穿过孔口，给出过孔能垒曲线与孔内 Na–P 配位（Fig. 2d/2e + 补充 Fig. 9）。",
       "name_zh": "Pre-desolvation Sieve",
       "category_zh": "仪器 / 电化学",
@@ -1343,7 +1343,7 @@
           "description_en": "双 SEI 机理与 LUMO 估算"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "双 SEI 能量学：对比表面 SEI 与孔内 SEI 的活化能（Fig. 4h/4i），给出 Arrhenius 直线，并估算预脱溶剂引起的电解液 LUMO 位移。",
       "name_zh": "Double SEI Energetics",
       "category_zh": "仪器 / 电化学",
@@ -1419,7 +1419,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "电化学阻抗谱：Randles 等效电路 + Warburg 扩散阻抗，输出 Nyquist / Bode 数据。",
       "name_zh": "电化学阻抗谱",
       "category_zh": "仪器 / 电化学",
@@ -1483,7 +1483,7 @@
           "description_en": "老化机理说明"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "电解液静置老化动力学：按孔填充时间常数给出界面阻抗、开路电压与首效随静置时间的演化（Fig. 1a/1c/1d）。",
       "name_zh": "Electrolyte Aging",
       "category_zh": "仪器 / 电化学",
@@ -1551,7 +1551,7 @@
           "description_en": "Pass-through input object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "将任意科学对象导出为 JSON / CSV / PNG / Markdown / TXT 文件。",
       "name_zh": "结果导出",
       "category_zh": "输入输出",
@@ -1633,7 +1633,7 @@
           "description_en": "Imaging report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "红外化学成像：基于特征吸收带生成组分分布图与平均红外谱。",
       "name_zh": "红外化学成像",
       "category_zh": "仪器 / 成像",
@@ -1730,7 +1730,7 @@
           "description_en": "反演方法、验证结果与诚实说明"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "二维声学全波形反演：频率递进 + 伴随梯度 + 照明度均衡 + 线搜索，输出速度模型、估计子波与分阶段误差。",
       "name_zh": "FWI Inversion",
       "category_zh": "Instruments/Seismic",
@@ -1806,7 +1806,7 @@
           "description_en": "透传的上游光谱"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "把上游能带 / 态密度 / 投影态密度 / 弛豫收敛结果渲染为独立 PNG 产物图。",
       "name_zh": "Figure Export",
       "category_zh": "报告",
@@ -1883,7 +1883,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "荧光光谱仪：基于镜像规则与 Stokes 位移生成激发 / 发射谱。",
       "name_zh": "荧光光谱",
       "category_zh": "仪器 / 电子谱",
@@ -1964,7 +1964,7 @@
           "description_en": "AI 助手对证据链的解读（无模型时为规则引擎说明）"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "由实测质谱推导裂解链路：按 CID 规则枚举中性丢失与结构可行的键断裂位点，与观测峰按质量容差匹配并给出每步置信度；可再由 AI 助手解读证据链。",
       "name_zh": "裂解链路推导",
       "category_zh": "分析 / 质谱",
@@ -2033,7 +2033,7 @@
           "description_en": "Functional-group assignment notes"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "从分子结构或红外 / 拉曼谱带指认官能团，输出统计表与文字说明。",
       "name_zh": "官能团指认",
       "category_zh": "分析",
@@ -2106,7 +2106,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "气相色谱-质谱联用：电子轰击电离 (70 eV)，适合挥发性 / 热稳定化合物。",
       "name_zh": "气相色谱-质谱",
       "category_zh": "仪器 / 质谱",
@@ -2179,7 +2179,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 GNPS 社区质谱库（分子网络 / 分子式匹配）。",
       "name_zh": "GNPS 质谱网络",
       "category_zh": "数据库 / 谱图",
@@ -2263,7 +2263,7 @@
           "description_en": "Simulation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "调用 GROMACS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
       "name_zh": "GROMACS 分子动力学",
       "category_zh": "模拟 / 分子动力学",
@@ -2352,7 +2352,7 @@
           "description_en": "Model summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "基于图消息传递网络的分子表征模型，输出原子级与分子级嵌入。",
       "name_zh": "GROVER 分子表征",
       "category_zh": "AI / 基座模型",
@@ -2436,7 +2436,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 Gaussian 输入并运行；未安装时使用内置扩展 Hückel 引擎。",
       "name_zh": "Gaussian 量子化学",
       "category_zh": "模拟 / 量子化学",
@@ -2510,7 +2510,7 @@
           "description_en": "Per-GPU memory table, one row per device"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检测 PyTorch 版本、CUDA 可用性、GPU 名称与显存。GPU 不可用时如实报告原因，绝不虚报加速。",
       "name_zh": "GPU 设备信息",
       "category_zh": "GPU",
@@ -2585,7 +2585,7 @@
           "description_en": "Model summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "图 Transformer 编码器：带度数与最短路径结构编码的自注意力分子表征。",
       "name_zh": "Graphormer 编码器",
       "category_zh": "AI / 基座模型",
@@ -2660,7 +2660,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 HMDB 代谢物质谱 / 核磁记录。",
       "name_zh": "HMDB 代谢组库",
       "category_zh": "数据库 / 谱图",
@@ -2744,7 +2744,7 @@
           "description_en": "Imaging report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "通用高光谱成像：匹配滤波生成组分丰度图与端元光谱。",
       "name_zh": "高光谱成像",
       "category_zh": "仪器 / 成像",
@@ -2817,7 +2817,7 @@
           "description_en": "Analysis report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "电感耦合等离子体质谱：元素定性定量分析，按天然同位素丰度给出同位素峰簇。",
       "name_zh": "电感耦合质谱",
       "category_zh": "仪器 / 质谱",
@@ -2890,7 +2890,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "ICSD 无机晶体结构数据库（需授权；本节点使用内置晶体参考数据）。",
       "name_zh": "ICSD 晶体库",
       "category_zh": "数据库 / 材料",
@@ -2965,7 +2965,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "傅里叶变换红外光谱仪：由官能团特征频率预测红外吸收谱并完成谱带指认。",
       "name_zh": "傅里叶红外光谱",
       "category_zh": "仪器 / 振动谱",
@@ -3013,7 +3013,7 @@
           "description_en": "Decoded image object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "读取 PNG / TIFF / JPEG 显微图像，转换为带物理像素尺寸的 Image 科学对象。",
       "name_zh": "加载图像",
       "category_zh": "输入输出",
@@ -3063,7 +3063,7 @@
           "description_en": "Timing result table, one row per measurement"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "对指定设备进行前向吞吐基准测试（真实计时，不做假数据）。",
       "name_zh": "推理基准测试",
       "category_zh": "GPU",
@@ -3146,7 +3146,7 @@
           "description_en": "Simulation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "调用 LAMMPS 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
       "name_zh": "LAMMPS 分子动力学",
       "category_zh": "模拟 / 分子动力学",
@@ -3235,7 +3235,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "液相色谱-质谱联用：电喷雾电离，适合极性 / 热不稳定化合物的一级与二级质谱。",
       "name_zh": "液相色谱-质谱",
       "category_zh": "仪器 / 质谱",
@@ -3308,7 +3308,7 @@
           "description_en": "Structured fields"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "调用 GPT / Claude / Gemini / Qwen / DeepSeek / NVIDIA NIM / Ollama 进行科学推理与解释生成。",
       "name_zh": "大模型推理",
       "category_zh": "AI / 大语言模型",
@@ -3388,7 +3388,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "基质辅助激光解吸电离飞行时间质谱，适合多肽 / 聚合物 / 大分子。",
       "name_zh": "MALDI-TOF 质谱",
       "category_zh": "仪器 / 质谱",
@@ -3461,7 +3461,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 MassBank 高分辨质谱库（按精确质量 / 分子式匹配）。",
       "name_zh": "MassBank 质谱库",
       "category_zh": "数据库 / 谱图",
@@ -3569,7 +3569,7 @@
           "description_en": "Decision rationale"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "材料发现与优化：融合 XRD / SEM / XPS / DFT 证据，按目标性质对候选组分排序并输出优化材料。",
       "name_zh": "材料发现",
       "category_zh": "科学问题",
@@ -3618,7 +3618,7 @@
           "description_en": "Material object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "由化学式与晶胞参数构建材料对象（用于电池 / 催化 / 半导体工作流）。",
       "name_zh": "材料输入",
       "category_zh": "输入输出",
@@ -3690,7 +3690,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "查询 Materials Project 晶体结构摘要（需要 MP_API_KEY，否则回退内置材料库）。",
       "name_zh": "Materials Project",
       "category_zh": "数据库 / 材料",
@@ -3765,7 +3765,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 MoNA 质谱记录（按质量 / 分子式匹配）。",
       "name_zh": "MoNA 质谱库",
       "category_zh": "数据库 / 谱图",
@@ -3815,7 +3815,7 @@
           "description_en": "Inference result summary (JSON)"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "在 CPU/GPU 上执行一个小型 MLP 前向推理，标注实际设备与耗时。",
       "name_zh": "模型推理",
       "category_zh": "GPU",
@@ -3890,7 +3890,7 @@
           "description_en": "Descriptor summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "计算分子量、LogP、TPSA、氢键供受体、可旋转键、Lipinski 违背数与 QED。",
       "name_zh": "分子描述符",
       "category_zh": "分析",
@@ -3938,7 +3938,7 @@
           "description_en": "Molecule object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "由 SMILES 构建分子对象，自动计算分子式、精确质量与理化描述符。",
       "name_zh": "分子输入",
       "category_zh": "输入输出",
@@ -4015,7 +4015,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "NIST 质谱 / 红外谱库检索（需本地授权库；未授权时回退到内置参考库）。",
       "name_zh": "NIST 谱库",
       "category_zh": "数据库 / 谱图",
@@ -4091,7 +4091,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "核磁共振波谱仪：支持 FID / JCAMP-DX / Bruker 数据读取，输出化学位移、峰列表、积分与二维谱。",
       "name_zh": "核磁共振波谱仪",
       "category_zh": "仪器 / 核磁",
@@ -4149,7 +4149,7 @@
           "description_en": "Normalised spectrum"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "按最大值、面积、min-max 或 SNV 归一化谱图强度。",
       "name_zh": "归一化",
       "category_zh": "分析",
@@ -4233,7 +4233,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "调用 ORCA 做单点能 / 几何优化 / 频率计算；未安装时使用内置扩展 Hückel 引擎。",
       "name_zh": "ORCA 量子化学",
       "category_zh": "模拟 / 量子化学",
@@ -4332,7 +4332,7 @@
           "description_en": "Simulation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "调用 OpenMM 运行分子动力学；未安装时使用内置 Lennard-Jones 引擎。",
       "name_zh": "OpenMM 分子动力学",
       "category_zh": "模拟 / 分子动力学",
@@ -4418,7 +4418,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 RCSB PDB 结构条目（大分子 / 配合物）。",
       "name_zh": "PDB 结构库",
       "category_zh": "数据库 / 化学",
@@ -4494,7 +4494,7 @@
           "description_en": "Peak-detection summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "基于局部极大值与峰 prominence 的峰检测，输出峰表与带峰标注的谱图。",
       "name_zh": "峰检测",
       "category_zh": "分析",
@@ -4604,7 +4604,7 @@
           "description_en": "机制证据链与限制说明"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "预脱溶剂机制汇总节点：把尺寸筛分、静置老化与双 SEI 能量学三条支路接成一条证据链，逐项检查三者是否自洽，输出论文 Fig.1a 的首效主曲线与可交互的分阶段判据表。",
       "name_zh": "Pre-desolvation Mechanism",
       "category_zh": "仪器 / 电化学",
@@ -4680,7 +4680,7 @@
           "description_en": "Conversion summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "把连续谱（profile）转换为峰列表（centroid）：每个峰用半高宽内的强度加权位置表示，并输出峰面积与相对强度。",
       "name_zh": "连续谱转峰谱",
       "category_zh": "分析",
@@ -4762,7 +4762,7 @@
           "description_en": "Summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "预测 LogP / TPSA / 溶解度 / QED / Lipinski 等分子性质，可加载训练好的模型。",
       "name_zh": "性质预测",
       "category_zh": "AI / 机器学习",
@@ -4843,7 +4843,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 Psi4 输入脚本并运行；未安装时使用内置扩展 Hückel 引擎。",
       "name_zh": "Psi4 量子化学",
       "category_zh": "模拟 / 量子化学",
@@ -4933,7 +4933,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "通过 PubChem PUG REST 按名称 / SMILES 查询分子结构与性质。",
       "name_zh": "PubChem",
       "category_zh": "数据库 / 化学",
@@ -4983,7 +4983,7 @@
           "description_en": "Operation result with device tag (JSON)"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "在指定设备上执行张量运算（matmul / add / sigmoid），输出包含实际执行设备标注。",
       "name_zh": "PyTorch 张量运算",
       "category_zh": "GPU",
@@ -5065,7 +5065,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 Quantum ESPRESSO 输入并运行；未安装时使用内置紧束缚引擎。",
       "name_zh": "Quantum ESPRESSO",
       "category_zh": "模拟 / 材料",
@@ -5165,7 +5165,7 @@
           "description_en": "Imaging report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "拉曼面扫成像：生成高光谱数据立方体并输出组分分布图与平均谱。",
       "name_zh": "拉曼面扫成像",
       "category_zh": "仪器 / 成像",
@@ -5238,7 +5238,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "拉曼光谱仪：预测拉曼位移谱（芳香环呼吸振动等强峰）并完成谱带指认。",
       "name_zh": "拉曼光谱",
       "category_zh": "仪器 / 振动谱",
@@ -5302,7 +5302,7 @@
           "description_en": "Rendered document text / path"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "汇总上游科学对象，自动生成 Markdown / HTML / PDF 研究报告并写入产物目录。",
       "name_zh": "报告智能体",
       "category_zh": "智能体 / 报告",
@@ -5411,7 +5411,7 @@
           "description_en": ""
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "把上游的谱图、分子、材料、表格与文本结果汇总为一份结构化科学报告。",
       "name_zh": "报告构建",
       "category_zh": "报告",
@@ -5476,7 +5476,7 @@
           "description_en": ""
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "把结构化报告落盘为 Markdown / HTML / DOCX / JSON 产物文件，返回路径文本。",
       "name_zh": "报告导出",
       "category_zh": "报告",
@@ -5535,7 +5535,7 @@
           "description_en": "Resampled spectrum"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "将谱图重采样到等间距网格，便于多谱图对齐与融合。",
       "name_zh": "重采样",
       "category_zh": "分析",
@@ -5615,7 +5615,7 @@
           "description_en": "Analysis report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "扫描电子显微镜：形貌衬度成像，输出颗粒形貌统计（等效直径、长径比）。",
       "name_zh": "扫描电子显微镜",
       "category_zh": "仪器 / 显微",
@@ -5704,7 +5704,7 @@
           "description_en": "Per-node execution results"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "AI 科学助手节点：理解自然语言科学问题，自动规划并生成工作流，调用节点执行，最后给出带置信度的结论与报告。",
       "name_zh": "科学助手",
       "category_zh": "智能体",
@@ -5785,7 +5785,7 @@
           "description_en": "正演设置说明"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "用给定或估计的震源子波做正演计算，输出炮集道集与格林函数，并在违反 CFL 稳定条件时明确报错。",
       "name_zh": "Seismic Forward",
       "category_zh": "Instruments/Seismic",
@@ -5901,7 +5901,7 @@
           "description_en": "提交说明与读回校验结果"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "导出赛题要求的三个文件（velocity_model.npy / wavelet.npy / run_summary.json），并在有真值时计算深度均值去除后的横向相关评分。",
       "name_zh": "Seismic Submission",
       "category_zh": "Instruments/Seismic",
@@ -5984,7 +5984,7 @@
           "description_en": "采集几何说明与数据出处"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "构建二维声学地震采集：一维深度趋势起始模型 + 炮检几何，无外部数据时生成可复现的合成含断层剖面。",
       "name_zh": "Seismic Survey",
       "category_zh": "Instruments/Seismic",
@@ -6060,7 +6060,7 @@
           "description_en": "Similarity summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "计算两个分子的 Morgan 指纹 Tanimoto / Dice 相似度。",
       "name_zh": "分子相似度",
       "category_zh": "分析",
@@ -6133,7 +6133,7 @@
           "description_en": "Summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "以 Morgan 指纹相似度对候选库排序，用于虚拟筛选与结构确认。",
       "name_zh": "相似度检索",
       "category_zh": "AI / 机器学习",
@@ -6206,7 +6206,7 @@
           "description_en": "Refinement report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "单晶 X 射线衍射：衍射峰指标化、晶胞参数精修并输出晶体结构对象。",
       "name_zh": "单晶 X 射线衍射",
       "category_zh": "仪器 / 衍射",
@@ -6263,7 +6263,7 @@
           "description_en": "Smoothed spectrum"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "移动平均或 Savitzky-Golay 平滑滤波，降低高频噪声。",
       "name_zh": "平滑滤波",
       "category_zh": "分析",
@@ -6314,7 +6314,7 @@
           "description_en": "Parsed spectrum object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "读取 mzML、mzXML、MGF、MSP、JCAMP-DX、XY 或 Bruker 目录中的谱图，返回统一的 Spectrum 科学对象。",
       "name_zh": "加载谱图",
       "category_zh": "输入输出",
@@ -6388,7 +6388,7 @@
           "description_en": "Operation summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "两个谱图之间的加 / 减 / 乘 / 除运算（按 x 轴线性插值对齐）。",
       "name_zh": "谱图运算",
       "category_zh": "分析",
@@ -6452,7 +6452,7 @@
           "description_en": "Search summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "使用 VF2 子图同构在分子中检索指定子结构（SMILES 片段）。",
       "name_zh": "子结构检索",
       "category_zh": "分析",
@@ -6540,7 +6540,7 @@
           "description_en": ""
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "将任意上游科学对象压平为一张“指标 / 数值”汇总表，便于直接与报告或导出节点衔接。",
       "name_zh": "汇总表",
       "category_zh": "报告",
@@ -6621,7 +6621,7 @@
           "description_en": "Analysis report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "透射电子显微镜：高分辨晶格成像，输出粒径分布与晶面间距统计。",
       "name_zh": "透射电子显微镜",
       "category_zh": "仪器 / 显微",
@@ -6694,7 +6694,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "热重分析仪：多步失重过程模拟，输出各步起始温度与残余质量。",
       "name_zh": "热重分析",
       "category_zh": "仪器 / 热分析",
@@ -6742,7 +6742,7 @@
           "description_en": "Table object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "读取 CSV / TSV 表格文件，输出 Table 科学对象。",
       "name_zh": "加载表格",
       "category_zh": "输入输出",
@@ -6789,7 +6789,7 @@
           "description_en": "Text object"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "输出一段文本对象，可作为 LLM 节点的提示词或报告素材。",
       "name_zh": "文本输入",
       "category_zh": "输入输出",
@@ -6853,7 +6853,7 @@
           "description_en": "Evaluation metrics"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "由含 SMILES 与目标列的表格训练分子性质预测模型（PyTorch MPNN 或 NumPy 岭回归）。",
       "name_zh": "训练模型",
       "category_zh": "AI / 机器学习",
@@ -6929,7 +6929,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "紫外-可见吸收光谱仪：基于 Woodward-Fieser 规则估算最大吸收波长 λmax。",
       "name_zh": "紫外-可见光谱",
       "category_zh": "仪器 / 电子谱",
@@ -7002,7 +7002,7 @@
           "description_en": "Model summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "三维分子编码器：基于原子间距离矩阵的几何感知注意力表征。",
       "name_zh": "Uni-Mol 编码器",
       "category_zh": "AI / 基座模型",
@@ -7117,7 +7117,7 @@
           "description_en": "Evidence interpretation"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "未知物结构鉴定：融合质谱分子离子与碎片、核磁化学位移、红外拉曼谱带，输出候选结构、置信度与解释。",
       "name_zh": "未知物鉴定",
       "category_zh": "科学问题",
@@ -7206,7 +7206,7 @@
           "description_en": "Calculation report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "生成 VASP/POSCAR 输入并运行；未安装时使用内置紧束缚引擎。",
       "name_zh": "VASP 量子化学",
       "category_zh": "模拟 / 材料",
@@ -7289,7 +7289,7 @@
           "description_en": "Data source and provenance notes"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "读取厂商原始数据（Bruker .d / 1r、Shimadzu SPC/QGD/LCD、Thermo/Waters/Agilent 文件夹）或开放格式（mzML/mzXML/MGF/MSP/JCAMP-DX/XY），返回统一的 Spectrum 对象。",
       "name_zh": "加载厂商谱图",
       "category_zh": "输入输出",
@@ -7367,7 +7367,7 @@
           "description_en": "Summary"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "对显微图像 / 化学成像图运行 ViT / CLIP / SAM / DINO 风格的视觉模型。",
       "name_zh": "视觉模型",
       "category_zh": "AI / 视觉",
@@ -7442,7 +7442,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "X 射线吸收谱：吸收边 + 白线 + EXAFS 振荡，可用于价态与配位环境分析。",
       "name_zh": "X 射线吸收谱",
       "category_zh": "仪器 / 表面",
@@ -7516,7 +7516,7 @@
           "description_en": "映射方法与可靠性说明"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "XANES 谱到谱双向迁移：sim2exp 由标准化模拟谱预测实验谱，exp2sim 反向。采用恒等映射 + 岭回归/近邻残差修正，输出方法来源、支撑样本量与外推标记，不做物相或结构判定。",
       "name_zh": "XAS 谱域映射",
       "category_zh": "仪器 / 表面",
@@ -7591,7 +7591,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "X 射线光电子能谱：按元素特征结合能生成 Survey 全谱，含 Shirley 型本底。",
       "name_zh": "X 射线光电子能谱",
       "category_zh": "仪器 / 表面",
@@ -7664,7 +7664,7 @@
           "description_en": "Instrument log and conclusions"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "粉末 X 射线衍射仪：由晶胞与原子占位计算衍射峰位与强度（含 Scherrer 展宽）。",
       "name_zh": "粉末 X 射线衍射",
       "category_zh": "仪器 / 衍射",
@@ -7737,7 +7737,7 @@
           "description_en": "Search report"
         }
       ],
-      "author": "",
+      "author": "Duner",
       "description": "检索 ZINC 可购买化合物库（虚拟筛选常用）。",
       "name_zh": "ZINC 化合物库",
       "category_zh": "数据库 / 化学",

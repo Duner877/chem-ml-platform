@@ -100,15 +100,28 @@ class TestCheckModeDoesNotWrite:
     made the release manifest's recorded hashes drift on every gate run, so no
     released digest could be reproduced.  These tests pin the corrected
     contract: ``--check`` never writes, but it does detect drift.
+
+    v0.7.4 fix: these tests used to exercise ``--write`` against the *real*
+    artefacts in the repository.  That made the test suite a writer of the
+    tree, and it is exactly what broke the release manifest on CI: pytest ran
+    before the manifest stage, regenerated ``sbom.json`` / ``NOTICE`` /
+    ``THIRD_PARTY_LICENSES.md`` with the runner's own dependency versions, and
+    the manifest then compared the tree against digests recorded for different
+    bytes.  The artefacts are now written into a temporary directory, and the
+    repository's own copies are asserted to be untouched.
     """
 
     FILES = ("sbom.json", "NOTICE", "docs/THIRD_PARTY_LICENSES.md")
 
-    def _rm(self, name: str) -> str:
-        return (ROOT / name).read_text(encoding="utf-8")
+    def _rm(self, name: str, root: Path = ROOT) -> str:
+        return (root / name).read_text(encoding="utf-8")
 
     @staticmethod
-    def _rebaseline(lic) -> None:
+    def _write(lic, out_dir: Path) -> int:
+        return lic.main(["--write", "--out-dir", str(out_dir)])
+
+    @staticmethod
+    def _rebaseline(lic, out_dir: Path) -> None:
         """Regenerate the artefacts so a test starts from a known-good state.
 
         Without this the tampering tests would silently depend on whatever the
@@ -116,46 +129,72 @@ class TestCheckModeDoesNotWrite:
         ``frontend/dist`` left over from an earlier build), which is exactly the
         kind of hidden coupling the v0.7.2 gate is meant to eliminate.
         """
-        assert lic.main(["--write"]) == 0
+        assert TestCheckModeDoesNotWrite._write(lic, out_dir) == 0
 
-    def test_check_leaves_artifacts_untouched(self, lic):
-        self._rebaseline(lic)
-        before = {name: self._rm(name) for name in self.FILES}
-        assert lic.main(["--check"]) in (0, 1)
-        after = {name: self._rm(name) for name in self.FILES}
+    def test_check_leaves_artifacts_untouched(self, lic, tmp_path):
+        out = tmp_path / "out"
+        self._rebaseline(lic, out)
+        before = {name: self._rm(name, out) for name in self.FILES}
+        assert lic.main(["--check", "--out-dir", str(out)]) in (0, 1)
+        after = {name: self._rm(name, out) for name in self.FILES}
         assert after == before, "--check must never modify the artefacts it verifies"
 
-    def test_check_detects_a_tampered_artifact(self, lic):
-        self._rebaseline(lic)
-        target = ROOT / "NOTICE"
+    def test_check_detects_a_tampered_artifact(self, lic, tmp_path):
+        out = tmp_path / "out"
+        self._rebaseline(lic, out)
+        target = out / "NOTICE"
         original = target.read_text(encoding="utf-8")
         try:
             target.write_text(original + "\n# injected\n", encoding="utf-8")
-            assert lic.main(["--check"]) == 1, "--check must fail on a stale artefact"
+            assert lic.main(["--check", "--out-dir", str(out)]) == 1, (
+                "--check must fail on a stale artefact"
+            )
         finally:
             target.write_text(original, encoding="utf-8")
-        assert lic.main(["--check"]) == 0, "--check must pass once the artefact is restored"
+        assert lic.main(["--check", "--out-dir", str(out)]) == 0, (
+            "--check must pass once the artefact is restored"
+        )
 
-    def test_check_does_not_repair_the_tampered_artifact(self, lic):
-        self._rebaseline(lic)
-        target = ROOT / "NOTICE"
+    def test_check_does_not_repair_the_tampered_artifact(self, lic, tmp_path):
+        out = tmp_path / "out"
+        self._rebaseline(lic, out)
+        target = out / "NOTICE"
         original = target.read_text(encoding="utf-8")
         try:
             target.write_text(original + "\n# injected\n", encoding="utf-8")
-            lic.main(["--check"])
+            lic.main(["--check", "--out-dir", str(out)])
             assert target.read_text(encoding="utf-8") == original + "\n# injected\n", (
                 "--check silently repaired the file it was asked to verify"
             )
         finally:
             target.write_text(original, encoding="utf-8")
 
-    def test_write_flag_exists_and_is_idempotent(self, lic):
+    def test_write_flag_exists_and_is_idempotent(self, lic, tmp_path):
         """CI stage 8 and the release manifest both document ``--write``."""
-        assert lic.main(["--write"]) == 0
-        first = {name: self._rm(name) for name in self.FILES}
-        assert lic.main(["--write"]) == 0
-        second = {name: self._rm(name) for name in self.FILES}
+        out = tmp_path / "out"
+        assert self._write(lic, out) == 0
+        first = {name: self._rm(name, out) for name in self.FILES}
+        assert self._write(lic, out) == 0
+        second = {name: self._rm(name, out) for name in self.FILES}
         assert first == second, "regeneration must be deterministic"
+
+    def test_writing_does_not_touch_the_repository(self, lic, tmp_path):
+        """The suite must never write the tree's own artefacts.
+
+        This is the regression that made the release manifest drift on CI: the
+        test suite regenerated the real ``sbom.json`` / ``NOTICE`` /
+        ``THIRD_PARTY_LICENSES.md`` with the runner's dependency versions, and
+        the manifest stage then compared those bytes against digests recorded
+        for the committed ones.
+        """
+        before = {name: self._rm(name) for name in self.FILES}
+        out = tmp_path / "out"
+        assert self._write(lic, out) == 0
+        after = {name: self._rm(name) for name in self.FILES}
+        assert after == before, (
+            "the test suite rewrote the repository's own licence artefacts; "
+            "their digests are pinned in the release manifest"
+        )
 
     def test_document_does_not_depend_on_the_local_build_output(self, lic, tmp_path):
         """Regression: the licence document must not vary with transient state.
@@ -170,8 +209,9 @@ class TestCheckModeDoesNotWrite:
         package and of the locked dependency graph, never of a build artefact
         that happens to sit in the tree.
         """
-        self._rebaseline(lic)
-        baseline = {name: self._rm(name) for name in self.FILES}
+        out = tmp_path / "out"
+        self._rebaseline(lic, out)
+        baseline = {name: self._rm(name, out) for name in self.FILES}
 
         dist = ROOT / "frontend" / "dist"
         stashed = None
@@ -181,8 +221,8 @@ class TestCheckModeDoesNotWrite:
                 shutil.rmtree(stashed)
             dist.rename(stashed)
         try:
-            assert lic.main(["--write"]) == 0
-            without_dist = {name: self._rm(name) for name in self.FILES}
+            assert self._write(lic, out) == 0
+            without_dist = {name: self._rm(name, out) for name in self.FILES}
             assert without_dist == baseline, (
                 "the licence document changed because frontend/dist was absent; "
                 "its digest is pinned in the release manifest and must be "
@@ -191,7 +231,6 @@ class TestCheckModeDoesNotWrite:
         finally:
             if stashed is not None and stashed.exists():
                 stashed.rename(dist)
-        self._rebaseline(lic)
 
 
 class TestPackagingRule:

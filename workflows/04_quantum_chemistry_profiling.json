@@ -3,7 +3,7 @@
   "description": "以咖啡因为示例，调用量子化学引擎（缺失外部程序时自动回退内置扩展 Hückel）计算电子结构，叠加分子描述符与 AI 性质预测，最终由 Report Agent 汇总为可分享的研究报告。",
   "version": "0.7.4",
   "metadata": {
-    "author": "Chem ML Platform",
+    "author": "Duner",
     "category": "Demo",
     "tags": [
       "quantum",

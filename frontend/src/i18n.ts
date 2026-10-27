@@ -282,7 +282,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     installed: "已安装",
     notInstalled: "未安装",
     aboutBody:
-      "Chem ML Platform v0.7.4 —— 节点化科学工作流平台：统一科学基座模型、云 / 本地 AI 切换、科学数据目录、模拟作业队列与自主科学助手。节点按设备分组（质谱、光谱、XPS、显微、衍射……），新增节点只需放入对应分组目录。",
+      "Chem ML Platform v0.7.4 —— 节点化科学工作流平台：统一科学基座模型、云 / 本地 AI 切换、科学数据目录、模拟作业队列与自主科学助手。节点按设备分组（质谱、光谱、XPS、显微、衍射……），新增节点只需放入对应分组目录。\n\n作者：Duner · 许可：Apache-2.0",
     aboutOk: "确定",
     // --- v0.7.4: software update ----------------------------------------- //
     updateTitle: "软件更新",
@@ -585,7 +585,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     installed: "installed",
     notInstalled: "not installed",
     aboutBody:
-      "Chem ML Platform v0.7.4 — a node-based scientific workflow platform: unified scientific foundation models, cloud / local AI switching, a scientific data catalog, a simulation job queue and an autonomous scientific agent. Nodes are grouped by device class (mass spectrometry, spectroscopy, XPS, microscopy, diffraction, ...); adding one means dropping a file into the matching directory.",
+      "Chem ML Platform v0.7.4 — a node-based scientific workflow platform: unified scientific foundation models, cloud / local AI switching, a scientific data catalog, a simulation job queue and an autonomous scientific agent. Nodes are grouped by device class (mass spectrometry, spectroscopy, XPS, microscopy, diffraction, ...); adding one means dropping a file into the matching directory.\n\nAuthor: Duner · License: Apache-2.0",
     aboutOk: "OK",
     // --- v0.7.4: software update ----------------------------------------- //
     updateTitle: "Software update",

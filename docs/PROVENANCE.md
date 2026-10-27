@@ -18,7 +18,7 @@
 | 名称 | Chem ML Platform |
 | 版本 | 0.7.4（硬碳预脱溶剂 + 二维声学 FWI + API Key 入口与 Agent 工具守卫） |
 | 许可证 | Apache-2.0（见根目录 `LICENSE`） |
-| 版权 | Copyright (c) 2026 Duner877 |
+| 版权 | Copyright (c) 2026 Duner |
 | 归属声明 | 根目录 `NOTICE` |
 
 ### 1.1 用户贡献、外部 PR 与版权归属
