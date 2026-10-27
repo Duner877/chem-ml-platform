@@ -14,14 +14,14 @@ BUNDLED SOFTWARE (distributed with the application)
   fastapi 0.143.0 — MIT <https://github.com/fastapi/fastapi>
   uvicorn 0.54.0 — BSD-3-Clause <https://uvicorn.dev/>
   pydantic 2.14.1 — MIT <https://github.com/pydantic/pydantic>
-  numpy 2.5.4 — BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 <https://numpy.org>
+  python-multipart 0.0.32 — Apache-2.0 <https://github.com/Kludex/python-multipart>
+  numpy 2.5.2 — BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 <https://numpy.org>
   scipy 1.18.1 — BSD License <https://scipy.org/>
   networkx 3.7 — BSD-3-Clause <https://networkx.org/>
   matplotlib 3.11.2 — Python Software Foundation License <https://matplotlib.org>
   python-docx 1.2.0 — MIT <https://python-docx.readthedocs.org/en/latest/>
   pytest 9.1.1 — MIT <https://docs.pytest.org/en/latest/>
   httpx 0.28.1 — BSD-3-Clause <https://www.python-httpx.org>
-  torch 2.14.1 — Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT <https://pytorch.org>
 
 -- JavaScript dependency notice (153 components) --
 

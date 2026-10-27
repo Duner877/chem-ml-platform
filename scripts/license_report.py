@@ -35,11 +35,14 @@ Usage
 from __future__ import annotations
 
 import argparse
+import importlib.util
+import itertools
 import json
+import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -121,6 +124,24 @@ _SECRET_ALLOW_FILES = {
 #: authoritative release check is ``check_release_cleanliness`` which applies the
 #: real packager rule.
 _INFO_KEYS = {"generated_assets", "runtime_data", "pyc", "pycache"}
+
+#: Every cleanliness bucket, in the order the report lists them.
+#:
+#: The list is fixed rather than derived from the scan result.  A bucket that
+#: only appears when the scan hits it (``runtime_data``, ``generated_assets``)
+#: would make the *number of lines* in the licence report depend on the state
+#: of the machine that generated it -- so a CI runner and a developer machine
+#: would produce documents of different lengths and the release check would
+#: report drift for a file nobody had touched.
+_CLEANLINESS_BUCKETS = (
+    "pyc",
+    "pycache",
+    "secrets",
+    "private_data",
+    "duplicate_assets",
+    "runtime_data",
+    "generated_assets",
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -351,10 +372,63 @@ def external_components() -> List[Dict[str, Any]]:
     return components
 
 
+#: Sample-data metadata comes in two naming conventions, and a report that
+#: only recognises one of them silently drops datasets from the SBOM.
+#:
+#: A dataset metadata document is recognised by the fields it carries, not by
+#: the name it happens to have.
+#:
+#: The flat demo datasets use ``<name>.metadata.json`` next to the data file.
+#: The Bruker NMR sample is a *vendor* directory (``sample_01.d/``) whose
+#: metadata file is simply called ``metadata.json`` -- the vendor layout
+#: dictates the name, and the file ends up nested one level deeper than the
+#: ``*.metadata.json`` pattern reaches.
+#:
+#: Matching on the name therefore breaks in both directions.  The old glob
+#: (``*.metadata.json``) dropped the Bruker spectrum from the SBOM, from
+#: NOTICE and from the licence report even though it is a shipped dataset;
+#: adding ``*.parser.json`` to the name list over-corrected and pulled the
+#: nine *parser configurations* in as datasets, because those files sit next to
+#: the metadata they describe and are named in the same family.
+#:
+#: So the question is asked of the content instead: a dataset metadata
+#: document carries a ``license`` and a ``source``; a parser configuration
+#: carries a ``parser`` and describes how to read a file, never where it came
+#: from or under what terms.  That distinction is the same one
+#: ``data_layer.quality`` leans on when it validates a dataset.
+
+#: Fields a dataset metadata document must carry to be inventoried.
+_METADATA_FIELDS = ("license", "source")
+
+
+def _is_metadata_file(path: Path) -> bool:
+    """True when ``path`` is a dataset metadata document.
+
+    The check is made on the parsed JSON, not on the file name: see
+    ``_METADATA_FIELDS``.
+    """
+    try:
+        meta = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    if not isinstance(meta, dict):
+        return False
+    return all(field in meta for field in _METADATA_FIELDS)
+
+
+def _dataset_metadata_files() -> List[Path]:
+    """Every dataset metadata document under ``datasets/``."""
+    root = ROOT / "datasets"
+    if not root.is_dir():
+        return []
+    candidates = root.rglob("*.json")
+    return [path for path in sorted(candidates) if _is_metadata_file(path)]
+
+
 def dataset_components() -> List[Dict[str, Any]]:
     """Sample-data provenance and licence."""
     components: List[Dict[str, Any]] = []
-    for path in sorted(ROOT.glob("datasets/**/*.metadata.json")):
+    for path in sorted(_dataset_metadata_files()):
         try:
             meta = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
@@ -398,6 +472,79 @@ def bundled_assets() -> List[Dict[str, Any]]:
 # --------------------------------------------------------------------------- #
 # Cleanliness scan
 # --------------------------------------------------------------------------- #
+#: Directories that are pruned from the walk before any file is opened.
+#:
+#: These hold thousands of files that are never opened by the scan itself
+#: (``node_modules``) or that are never part of a release package at all
+#: (``output/`` holds the results of previous runs, ``workspace/`` holds the
+#: user's uploads).  Pruning them is not an optimisation of convenience: the
+#: scan exists to answer "would a secret ship?", and a file that never ships
+#: cannot answer that question -- it can only make the answer depend on how
+#: many runs this particular machine happened to do.
+_PRUNED_DIRS = {
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".vite",
+    "output",
+    "workspace",
+    "artifacts",
+    ".tmp",
+    "venv",
+    ".venv",
+    "env",
+}
+
+
+def _iter_scannable_files(root: Path):
+    """Yield every file under *root* that a release package could contain.
+
+    The walk is pruned and the packager's own rule decides the rest, so the
+    scan sees exactly the set of files the archive would contain.  Two
+    consequences, both wanted:
+
+    * a secret hiding in a file that never ships is not reported as a release
+      blocker -- it is not one;
+    * the scan's cost stops depending on how much runtime state the machine
+      happens to have accumulated.
+    """
+    packager = _load_packager()
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in _PRUNED_DIRS]
+        base = Path(dirpath)
+        for filename in filenames:
+            path = base / filename
+            if packager is not None:
+                try:
+                    rel = path.relative_to(root)
+                except ValueError:  # pragma: no cover - defensive
+                    continue
+                if packager.should_skip(rel):
+                    continue
+            yield path
+
+
+def _load_packager():
+    """Load ``scripts/package.py`` if it is available (it defines the rules).
+
+    The packager is the authority on what ships.  If it cannot be loaded the
+    scan falls back to "scan everything reachable", which is slower but still
+    correct -- it can only ever report *more* problems, never fewer.
+    """
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "chemml_packager", ROOT / "scripts" / "package.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    except Exception:  # pragma: no cover - defensive
+        return None
+
+
 def cleanliness_scan() -> Dict[str, List[str]]:
     """Detect files that must not ship in a release package.
 
@@ -421,15 +568,16 @@ def cleanliness_scan() -> Dict[str, List[str]]:
             problems["pycache"].append(path.relative_to(ROOT).as_posix())
 
     # secrets: scan small text files only (tests are intentionally excluded)
-    for path in ROOT.rglob("*"):
-        if not path.is_file() or "node_modules" in path.parts or ".git" in path.parts:
-            continue
+    for path in _iter_scannable_files(ROOT):
         rel = path.relative_to(ROOT).as_posix()
         if rel.startswith("tests/") or rel in _SECRET_ALLOW_FILES:
             continue
         if rel.endswith((".png", ".jpg", ".spc", ".docx", ".zip", ".json")):
             continue
-        if path.stat().st_size > 400_000:
+        try:
+            if path.stat().st_size > 400_000:
+                continue
+        except OSError:
             continue
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
@@ -479,11 +627,37 @@ def cleanliness_scan() -> Dict[str, List[str]]:
 # Artefact builders
 # --------------------------------------------------------------------------- #
 def _license_review(components: List[Dict[str, Any]]) -> List[str]:
+    """The components that need a human licence review before distribution.
+
+    Only *redistributed* components are reviewed -- the same membership rule
+    the NOTICE uses (see ``build_notice``).  A strong-copyleft package that
+    the user installs for themselves (an optional accelerator) is not shipped
+    with the application, so it creates no obligation, and listing it here
+    would make the section's content depend on which optional packages happen
+    to be present on the machine that generated the report.
+
+    The rule this section states in its own text is "依赖被分发"; the code
+    used to review *every* component, which contradicted it.
+
+    The licence is matched on the *precise identifiers* it denotes rather
+    than on the raw metadata string, so an upstream project that renames its
+    licence metadata (``GPL-3.0`` versus ``GNU General Public License v3``)
+    does not make a package appear in -- or vanish from -- this list.
+    """
     flagged = []
     for component in components:
-        license_text = str(component.get("license", "")).upper()
-        if any(token in license_text for token in _REVIEW_LICENCES):
-            flagged.append(f"{component['ecosystem']}:{component['name']} ({component['license']})")
+        if not (component.get("declared") or component.get("ecosystem") == "npm"):
+            continue
+        identifiers = set()
+        for branch in _licence_branches(str(component.get("license", ""))):
+            for atom in branch:
+                identifiers |= set(atom)
+        licence_text = " ".join(sorted(identifiers)).upper()
+        if any(token in licence_text for token in _REVIEW_LICENCES):
+            flagged.append(
+                f"{component['ecosystem']}:{component['name']} "
+                f"({_licence_display(str(component.get('license', '')))})"
+            )
     return sorted(set(flagged))
 
 
@@ -528,7 +702,18 @@ def _component(item: Dict[str, Any], purl: str) -> Dict[str, Any]:
         "properties": [
             {"name": "chemml:ecosystem", "value": item["ecosystem"]},
             {"name": "chemml:installed", "value": str(item.get("installed", False)).lower()},
-            {"name": "chemml:bundled", "value": str(item["ecosystem"] in {"python", "npm"}).lower()},
+            # ``bundled`` must mean the same thing here as it means in NOTICE:
+            # "this component is redistributed with the application".  The
+            # python packages the *user* installs for themselves -- the
+            # optional accelerators in ``requirements.optional.txt`` -- are not
+            # redistributed, so they are not bundled.  Saying otherwise made
+            # the SBOM claim a redistribution that the NOTICE does not list.
+            {
+                "name": "chemml:bundled",
+                "value": str(
+                    item["ecosystem"] == "npm" or bool(item.get("declared"))
+                ).lower(),
+            },
         ],
     }
     if purl:
@@ -561,7 +746,18 @@ def build_notice(
         "",
     ]
     for ecosystem, deps in (("Python", python_deps), ("JavaScript", npm_deps)):
-        bundled = [dep for dep in deps if dep.get("installed") or dep["ecosystem"] == "npm"]
+        # The bundled list is the set of components this product *ships*, so it
+        # must be derived from the **declaration**, not from what happens to be
+        # installed on the machine that ran the generator.
+        #
+        # The old filter was ``installed or ecosystem == "npm"``: a Python
+        # component appeared only when the local interpreter happened to have
+        # it, so the same commit produced a different NOTICE on a machine with
+        # torch installed and on one without.  Since a NOTICE has to name every
+        # redistributed component, the membership question is "is this declared
+        # as part of the distribution", and that answer comes from the
+        # requirements files -- the same answer everywhere.
+        bundled = [dep for dep in deps if dep.get("declared") or dep["ecosystem"] == "npm"]
         if not bundled:
             continue
         lines.append(f"-- {ecosystem} dependency notice ({len(bundled)} components) --")
@@ -679,7 +875,17 @@ def build_markdown(
     # the real problem (a cache accidentally shipped) while keeping the document
     # stable; and a genuinely dirty tree *should* make the recorded digest drift,
     # because then the release material and the tree no longer agree.
-    for key, values in problems.items():
+    #
+    # v0.7.4 fix: the buckets were emitted by iterating the scan result, so the
+    # *set* of lines depended on the machine -- ``runtime_data`` and
+    # ``generated_assets`` only appeared when the scan happened to hit them.
+    # A CI runner that has not run the test suite and a developer machine that
+    # has would therefore produce documents with a different number of lines,
+    # and the release check would report drift for a file nobody had touched.
+    # The bucket list is fixed here; only the *value* of a blocking bucket
+    # varies, and a blocking bucket is a release blocker in its own right.
+    for key in _CLEANLINESS_BUCKETS:
+        values = problems.get(key, [])
         if key in _INFO_KEYS:
             # Build/run-time state (`__pycache__`, `*.pyc`).  It is *expected* to
             # exist in a working tree and is never shipped, so the document must
@@ -737,6 +943,666 @@ def build_markdown(
 # --------------------------------------------------------------------------- #
 # Entry point
 # --------------------------------------------------------------------------- #
+#: Licence strings that mean "this package's licence could not be determined
+#: here".  A package that is not installed on the machine running the check
+#: has no licence metadata, so the report records a placeholder.  That
+#: placeholder must not be read as a licence change: the fact that a
+#: distribution is *not installed here* is an environment fact, exactly like
+#: the version it would have been.
+_UNRESOLVED_LICENCES = frozenset({"", "UNKNOWN", "NOASSERTION"})
+
+
+# --------------------------------------------------------------------------- #
+# Licence identity
+# --------------------------------------------------------------------------- #
+#: Free-form licence spellings, and the precise SPDX identifiers each of them
+#: can denote.
+#:
+#: Upstream projects rewrite the *spelling* of their licence metadata without
+#: changing the licence: fastapi 0.110.0 ships ``License: MIT License`` while
+#: 0.162.0 ships the PEP 639 expression ``MIT``; uvicorn went from ``BSD
+#: License`` to ``BSD-3-Clause``; python-multipart from ``Apache Software
+#: License`` to ``Apache-2.0``; matplotlib from ``PSF`` to ``Python Software
+#: Foundation License``.  The licence is identical in every one of those
+#: pairs -- only the metadata spelling moved -- so a gate that compares the
+#: strings literally reports drift for a document nobody touched, on every
+#: machine that resolved a different patch release than the one that wrote
+#: the file.
+#:
+#: Each entry maps a spelling to the set of precise SPDX identifiers it can
+#: denote.  The set holds more than one member only where the spelling is
+#: genuinely ambiguous: the trove classifier ``License :: OSI Approved :: BSD
+#: License`` covers the whole BSD family without saying which revision, so
+#: it is compatible with any of them.  Two *precise* identifiers are never
+#: compatible with each other unless they are equal -- ``BSD-3-Clause`` and
+#: ``BSD-2-Clause`` are different licences, and a change between them is a
+#: change worth reporting.
+#:
+#: The identifiers are SPDX short identifiers, and the table is deliberately
+#: explicit rather than derived from a licence database: a database would make
+#: the gate's verdict depend on the version of that database installed on the
+#: machine running the check, which is the same class of machine-dependent
+#: verdict this comparison exists to eliminate.
+_LICENCE_ALIASES: Dict[str, Tuple[str, ...]] = {
+    # -- MIT -------------------------------------------------------------- #
+    "mit license": ("MIT",),
+    "mit licence": ("MIT",),
+    "the mit license": ("MIT",),
+    # -- BSD: the bare name does not say which revision ------------------ #
+    "bsd license": ("BSD-2-Clause", "BSD-3-Clause"),
+    "bsd licence": ("BSD-2-Clause", "BSD-3-Clause"),
+    "bsd": ("BSD-2-Clause", "BSD-3-Clause"),
+    # -- Apache ----------------------------------------------------------- #
+    "apache software license": ("Apache-2.0",),
+    "apache software license 2.0": ("Apache-2.0",),
+    "apache license": ("Apache-2.0",),
+    "apache license 2.0": ("Apache-2.0",),
+    "apache license, version 2.0": ("Apache-2.0",),
+    "apache 2.0": ("Apache-2.0",),
+    # -- Python Software Foundation --------------------------------------- #
+    "python software foundation license": ("PSF-2.0",),
+    "psf": ("PSF-2.0",),
+    "psf license": ("PSF-2.0",),
+    # -- ISC -------------------------------------------------------------- #
+    "isc license": ("ISC",),
+    "isc license (iscl)": ("ISC",),
+    # -- Mozilla ---------------------------------------------------------- #
+    "mozilla public license 2.0 (mpl 2.0)": ("MPL-2.0",),
+    "mozilla public license 2.0": ("MPL-2.0",),
+    # -- zlib ------------------------------------------------------------- #
+    "zlib": ("Zlib",),
+    "zlib license": ("Zlib",),
+    "zlib/libpng license": ("Zlib",),
+    # -- Boost ------------------------------------------------------------ #
+    "boost software license 1.0": ("BSL-1.0",),
+    "boost software license 1.0 (bsl-1.0)": ("BSL-1.0",),
+    # -- PostgreSQL / Unlicense / WTFPL ----------------------------------- #
+    "postgresql license": ("PostgreSQL",),
+    "the unlicense (unlicense)": ("Unlicense",),
+    "do what the f*ck you want to public license": ("WTFPL",),
+    # -- The deprecated GNU spellings, and their current equivalents ------ #
+    # SPDX retired ``GPL-3.0`` in favour of ``GPL-3.0-only``: the same
+    # licence, renamed.  ``-or-later`` is a *different* grant (the user may
+    # pick a later version), so it stays a separate identifier.
+    "gpl-2.0": ("GPL-2.0-only",),
+    "gpl-3.0": ("GPL-3.0-only",),
+    "lgpl-2.1": ("LGPL-2.1-only",),
+    "lgpl-3.0": ("LGPL-3.0-only",),
+    "agpl-3.0": ("AGPL-3.0-only",),
+    "gpl-2.0+": ("GPL-2.0-or-later",),
+    "gpl-3.0+": ("GPL-3.0-or-later",),
+    "gplv2+": ("GPL-2.0-or-later",),
+    "gplv3+": ("GPL-3.0-or-later",),
+    "lgpl-3.0+": ("LGPL-3.0-or-later",),
+    "lgplv3+": ("LGPL-3.0-or-later",),
+    # -- The trove classifier tails, which name the same licences --------- #
+    "gnu general public license v2 (gplv2)": ("GPL-2.0-only",),
+    "gnu general public license v3 (gplv3)": ("GPL-3.0-only",),
+    "gnu lesser general public license v2 (lgplv2)": ("LGPL-2.1-only",),
+    "gnu lesser general public license v3 (lgplv3)": ("LGPL-3.0-only",),
+    "gnu affero general public license v3 (agplv3)": ("AGPL-3.0-only",),
+    "gnu general public license v2 or later (gplv2+)": ("GPL-2.0-or-later",),
+    "gnu general public license v3 or later (gplv3+)": ("GPL-3.0-or-later",),
+    "gnu lesser general public license v2 or later (lgplv2+)": ("LGPL-2.1-or-later",),
+    "gnu lesser general public license v3 or later (lgplv3+)": ("LGPL-3.0-or-later",),
+    "gnu affero general public license v3 or later (agplv3+)": ("AGPL-3.0-or-later",),
+    # -- Other classifier tails that name a precise licence --------------- #
+    "artistic license 2.0": ("Artistic-2.0",),
+    "academic free license (afl)": ("AFL-3.0",),
+    "eclipse public license 1.0 (epl-1.0)": ("EPL-1.0",),
+    "eclipse public license 2.0 (epl-2.0)": ("EPL-2.0",),
+    "common development and distribution license 1.0 (cddl-1.0)": ("CDDL-1.0",),
+    "common public license 1.0 (cpl-1.0)": ("CPL-1.0",),
+}
+
+
+def _split_top_level(text: str, keyword: str) -> List[str]:
+    """Split ``text`` on ``keyword``, ignoring occurrences inside brackets.
+
+    ``MIT AND (Apache-2.0 OR BSD-3-Clause)`` splits on ``OR`` into one part,
+    because the ``OR`` sits inside brackets; it splits on ``AND`` into two.
+    """
+    tokens = text.split()
+    parts: List[str] = []
+    current: List[str] = []
+    depth = 0
+    for token in tokens:
+        if token == "(":
+            depth += 1
+            current.append(token)
+            continue
+        if token == ")":
+            depth -= 1
+            current.append(token)
+            continue
+        if token == keyword and depth == 0:
+            parts.append(" ".join(current))
+            current = []
+            continue
+        current.append(token)
+    parts.append(" ".join(current))
+    return [part for part in parts if part]
+
+
+def _licence_atom(text: str) -> FrozenSet[str]:
+    """One term of a licence expression: the identifiers it can denote."""
+    value = " ".join((text or "").split())
+    if value.startswith("(") and value.endswith(")"):
+        value = value[1:-1].strip()
+    alias = _LICENCE_ALIASES.get(value.casefold())
+    if alias:
+        return frozenset(alias)
+    return frozenset({value})
+
+
+def _licence_branches(text: str) -> List[Tuple[FrozenSet[str], ...]]:
+    """The disjunctive normal form of a licence string.
+
+    A licence is a set of alternatives, each of which is a set of terms that
+    must all hold.  ``MIT`` is one alternative with one term; ``MIT AND
+    Apache-2.0`` is one alternative with two terms; ``MIT OR Apache-2.0`` is
+    two alternatives with one term each.  Reducing everything to this shape
+    is what lets two spellings of the same licence be recognised as such
+    without hand-writing a rule for every combination.
+    """
+    value = " ".join((text or "").split())
+    if not value:
+        return []
+    branches: List[Tuple[FrozenSet[str], ...]] = []
+    for alternative in _split_top_level(value, "OR"):
+        # Each term of the conjunction may itself expand into several
+        # alternatives (``MIT AND (Apache-2.0 OR BSD-3-Clause)``); the
+        # conjunction is therefore the product of its terms.
+        per_term: List[List[Tuple[FrozenSet[str], ...]]] = []
+        for term in _split_top_level(alternative, "AND"):
+            if term.startswith("(") and term.endswith(")"):
+                per_term.append(_licence_branches(term[1:-1]))
+            else:
+                per_term.append([(_licence_atom(term),)])
+        for combination in itertools.product(*per_term):
+            merged: Tuple[FrozenSet[str], ...] = ()
+            for conjunction in combination:
+                merged = merged + conjunction
+            branches.append(merged)
+    return branches
+
+
+def _atoms_compatible(
+    left: List[FrozenSet[str]], right: List[FrozenSet[str]], _taken: Optional[set] = None
+) -> bool:
+    """Can every term on the left be paired with a different term on the right?
+
+    A greedy pairing would be wrong in principle: ``BSD License`` is
+    compatible with both ``BSD-2-Clause`` and ``BSD-3-Clause``, so pairing it
+    with the wrong one could strand the other side.  The lists hold one entry
+    per term, so the search space is tiny and a backtracking match is both
+    exact and cheap.
+    """
+    if not left:
+        return True
+    taken = _taken or set()
+    for index, atom in enumerate(left):
+        for other, candidate in enumerate(right):
+            if other in taken:
+                continue
+            if not (atom & candidate):
+                continue
+            taken.add(other)
+            if _atoms_compatible(left[:index] + left[index + 1:], right, taken):
+                return True
+            taken.discard(other)
+    return False
+
+
+def _licences_compatible(left: str, right: str) -> bool:
+    """Do two licence strings denote the same licence?
+
+    Two licences agree when they share at least one alternative whose terms
+    can all be matched.  ``MIT`` and ``MIT License`` agree; ``MIT`` and
+    ``Apache-2.0`` do not; ``BSD License`` and ``BSD-3-Clause`` agree;
+    ``BSD-2-Clause`` and ``BSD-3-Clause`` do not.
+    """
+    left_branches = _licence_branches(left)
+    right_branches = _licence_branches(right)
+    for left_branch in left_branches:
+        for right_branch in right_branches:
+            if len(left_branch) != len(right_branch):
+                continue
+            if _atoms_compatible(list(left_branch), list(right_branch)):
+                return True
+    return False
+
+
+def _licence_display(text: str) -> str:
+    """A stable rendering of a licence, for prose that is compared verbatim."""
+    value = " ".join((text or "").split())
+    alias = _LICENCE_ALIASES.get(value.casefold())
+    if alias and len(alias) == 1:
+        return alias[0]
+    return value
+
+
+def _licence_key(text: str) -> str:
+    """Normalised licence, or the empty string when it is unresolved."""
+    value = " ".join((text or "").split())
+    if value.upper() in _UNRESOLVED_LICENCES:
+        return ""
+    return value
+
+
+def _section_ecosystem(section: str) -> str:
+    """The ecosystem a Markdown section inventories."""
+    if section.startswith("1."):
+        return "python"
+    if section.startswith("2."):
+        return "npm"
+    if section.startswith("3."):
+        return "external"
+    return "dataset"
+
+
+def _same_licence(left: Tuple[str, ...], right: Tuple[str, ...]) -> bool:
+    """Do two licence sets agree?
+
+    Two rules are at work here.
+
+    **An unresolved licence is a wildcard.**  It means the machine running
+    the comparison could not read the metadata, not that the licence changed.
+    Comparing it literally would make the check fail on every machine where
+    a declared-but-uninstalled component is absent -- which is every CI
+    runner, because the optional accelerators are not installed there.
+
+    **A licence is compared by what it denotes, not by how it is spelled.**
+    Upstream projects rewrite the *spelling* of their licence metadata while
+    keeping the licence itself: fastapi 0.110.0 says ``MIT License`` and
+    0.162.0 says ``MIT``; uvicorn 0.29.0 says ``BSD License`` and 0.54.0
+    says ``BSD-3-Clause``; matplotlib 3.8.0 says ``PSF`` and 3.11.2 says
+    ``Python Software Foundation License``.  All of those pairs are within
+    this project's declared ranges, so CI resolves them by whatever the
+    current upstream release happens to spell it -- and a literal comparison
+    then reports drift for a document nobody touched, saying nothing true
+    about the release.  :func:`_licences_compatible` answers the question the
+    gate actually asks: do these two strings denote the same licence?
+    """
+    left_set = {item for item in left if item}
+    right_set = {item for item in right if item}
+    if not left_set or not right_set:
+        # At least one side could not resolve the licence.
+        return True
+    return _licence_sets_compatible(left_set, right_set)
+
+
+def _licence_sets_compatible(
+    left: set, right: set, _taken: Optional[set] = None
+) -> bool:
+    """Can every licence on the left be paired with a different one on the right?
+
+    A greedy pairing would be wrong in principle: ``BSD License`` is
+    compatible with both ``BSD-2-Clause`` and ``BSD-3-Clause``, so pairing it
+    with the wrong one could strand the other side.  The sets hold one entry
+    per component, so the search space is tiny and a backtracking match is
+    both exact and cheap.
+    """
+    if not left:
+        return True
+    taken = _taken or set()
+    for candidate in sorted(left):
+        for other in sorted(right - taken):
+            if not _licences_compatible(candidate, other):
+                continue
+            taken.add(other)
+            if _licence_sets_compatible(left - {candidate}, right, taken):
+                return True
+            taken.discard(other)
+    return False
+
+
+# --------------------------------------------------------------------------- #
+# Record-level comparison
+# --------------------------------------------------------------------------- #
+#: The field of a component entry that records its *version*.
+#:
+#: A version is a property of the environment that produced the artefact, not
+#: of the release the artefact describes.  CI installs the declared ranges, so
+#: it resolves to different patch releases than the machine that wrote the
+#: committed file -- and a check that treats that difference as drift fails
+#: on every runner while saying nothing true about the tree.
+#:
+#: Every *other* field of a component entry is part of the release's
+#: statement: which packages ship, under which licence, required or optional.
+#: Those are compared exactly.
+_VERSION_FIELD = "version"
+
+
+def _compare_entries(
+    left: List[Tuple[str, Dict[str, str]]],
+    right: List[Tuple[str, Dict[str, str]]],
+) -> bool:
+    """Do two sequences of component entries agree?
+
+    The entries are compared *by position* rather than as a set: a document
+    that lists the same packages in a different order is a different document,
+    and so is one that lists an extra package.  Within an entry every field
+    is compared exactly except the version, which is an environment fact.
+    """
+    if len(left) != len(right):
+        return False
+    for (left_name, left_fields), (right_name, right_fields) in zip(left, right):
+        if left_name != right_name:
+            return False
+        for key, value in left_fields.items():
+            if key == _VERSION_FIELD:
+                continue
+            if key == "licence":
+                # An unresolved licence is a wildcard, not a change: it means
+                # the machine reading the metadata could not find it.
+                if not _same_licence(value, right_fields.get(key, ())):
+                    return False
+                continue
+            if right_fields.get(key) != value:
+                return False
+    return True
+
+
+def _normalise_newlines(text: str) -> str:
+    """The text with every line ending normalised to ``\\n``.
+
+    Git stores these files with LF endings, but a Windows checkout with
+    ``core.autocrlf`` writes them back with CRLF.  The generator always
+    produces LF, so without this normalisation the byte comparison reports
+    every one of these three files as stale on every Windows machine -- and
+    the file's content, which is what the check is about, is identical.
+    """
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _read_normalised(path: Path) -> str:
+    """The file's content with its line endings normalised."""
+    return _normalise_newlines(path.read_text(encoding="utf-8"))
+
+
+def _notices_entries(text: str) -> Optional[List[Tuple[str, Dict[str, str]]]]:
+    """The component entries of a NOTICE, in document order.
+
+    A NOTICE is prose with a few structured lines in it.  The prose is
+    compared byte-for-byte elsewhere; this function extracts only the
+    structured part, so that the prose is not silently ignored.
+    """
+    entries: List[Tuple[str, Dict[str, str]]] = []
+    ecosystem = ""
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        header = re.match(r"^--\s*(Python|JavaScript)\s+dependency notice", line)
+        if header:
+            ecosystem = "python" if header.group(1) == "Python" else "npm"
+            continue
+        if line.startswith("=") or line.startswith("BUNDLED") or line.startswith("EXTERNAL"):
+            ecosystem = "" if line.startswith("=") else ecosystem
+            continue
+        if line.startswith("UPSTREAM"):
+            ecosystem = ""
+            continue
+        match = re.match(r"^(\S+)\s+(\S+)\s+—\s+(.*)$", line)
+        if match and ecosystem:
+            name, version, rest = match.groups()
+            licence = re.sub(r"\s*<.*$", "", rest).strip()
+            entries.append(
+                (
+                    f"{ecosystem}:{name}",
+                    {
+                        "version": version,
+                        "licence": (_licence_key(licence),),
+                        "scope": "required",
+                    },
+                )
+            )
+            continue
+        match = re.match(r"^(\S+)\s+—\s+(.*)$", line)
+        if match:
+            name, rest = match.groups()
+            licence = re.sub(r"\s*<.*$", "", rest).strip()
+            entries.append(
+                (
+                    f"external:{name}",
+                    {
+                        "version": "",
+                        "licence": (_licence_key(licence),),
+                        "scope": "required",
+                    },
+                )
+            )
+    return entries or None
+
+
+def _markdown_entries(text: str) -> Optional[List[Tuple[str, Dict[str, str]]]]:
+    """The component entries of the Markdown licence report, in document order."""
+    entries: List[Tuple[str, Dict[str, str]]] = []
+    section = ""
+    header: List[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("## "):
+            section = line[3:].strip()
+            header = []
+            continue
+        if not (line.startswith("|") and line.endswith("|")):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if all(set(c) <= set("-: ") for c in cells):
+            continue
+        if not header:
+            header = cells
+            continue
+        if len(cells) != len(header):
+            continue
+        row = dict(zip(header, cells))
+        name = row.get("name", "")
+        if not name:
+            continue
+        ecosystem = _section_ecosystem(section)
+        if ecosystem in {"python", "npm"}:
+            scope = "required" if row.get("declared", "").lower() == "true" else "optional"
+        else:
+            scope = "required"
+        entries.append(
+            (
+                f"{ecosystem}:{name}",
+                {
+                    "version": row.get("version", ""),
+                    "licence": (_licence_key(row.get("license", "")),),
+                    "scope": scope,
+                },
+            )
+        )
+    return entries or None
+
+
+def _sbom_entries(text: str) -> Optional[List[Tuple[str, Dict[str, str]]]]:
+    """The component entries of an SBOM, in document order."""
+    stripped = text.lstrip()
+    if not stripped.startswith("{"):
+        return None
+    try:
+        doc = json.loads(text)
+    except ValueError:
+        return None
+    components = doc.get("components")
+    if not isinstance(components, list):
+        return None
+    entries: List[Tuple[str, Dict[str, str]]] = []
+    for component in components:
+        if not isinstance(component, dict):
+            continue
+        name = str(component.get("name", ""))
+        if str(component.get("type", "")) == "application":
+            continue
+        licences = []
+        for entry in component.get("licenses") or []:
+            if not isinstance(entry, dict):
+                continue
+            inner = entry.get("license")
+            if isinstance(inner, dict):
+                licences.append(str(inner.get("id") or inner.get("name") or ""))
+            else:
+                licences.append(str(entry.get("expression") or ""))
+        ecosystem = ""
+        bundled = ""
+        for prop in component.get("properties") or []:
+            if not isinstance(prop, dict):
+                continue
+            if prop.get("name") == "chemml:ecosystem":
+                ecosystem = str(prop.get("value", ""))
+            elif prop.get("name") == "chemml:bundled":
+                bundled = str(prop.get("value", ""))
+        entries.append(
+            (
+                f"{ecosystem}:{name}",
+                {
+                    "version": str(component.get("version", "")),
+                    "licence": tuple(sorted(_licence_key(item) for item in licences)),
+                    "scope": str(component.get("scope", "")),
+                    # The ecosystem and the redistribution flag are statements
+                    # the release makes about itself, so they are compared.
+                    # ``chemml:installed`` deliberately is not: whether a
+                    # package happens to be importable on the machine running
+                    # the check is an environment fact, not a release fact.
+                    "ecosystem": ecosystem,
+                    "bundled": bundled,
+                },
+            )
+        )
+    return entries or None
+
+
+def _artefact_entries(text: str) -> Optional[List[Tuple[str, Dict[str, str]]]]:
+    """The component entries of whichever artefact *text* is."""
+    stripped = text.lstrip()
+    if stripped.startswith("{"):
+        return _sbom_entries(text)
+    if "BUNDLED SOFTWARE" in text:
+        return _notices_entries(text)
+    return _markdown_entries(text)
+
+
+def _differs_only_in_versions(path: Path, expected: str) -> bool:
+    """True when the two artefacts assert the same thing about the release.
+
+    A byte comparison would call the on-disk file stale whenever the
+    machine's installed versions differ from the ones recorded when it was
+    generated -- which is every machine except the one that generated it.
+    Comparing the dependency facts instead asks the question a release
+    actually cares about: do these two documents ship the same packages under
+    the same licences?
+
+    The comparison is deliberately *narrower* than a component-set
+    comparison.  An earlier implementation extracted a dictionary of
+    components and compared the keys, which meant the prose around them --
+    the copyright holder, the project licence, the section headers, the
+    upstream attribution -- was never compared at all.  Editing any of those
+    lines left the check reporting "up to date" while the shipped document
+    said something different from what the generator produces.
+
+    So the artefacts are compared as **records**: the text is split into the
+    prose lines and the structured component entries, the prose is compared
+    byte-for-byte, and the entries are compared positionally with only the
+    version field exempted (see :data:`_VERSION_FIELD`).
+    """
+    try:
+        actual_text = _read_normalised(path)
+    except OSError:
+        return False
+
+    # 1. The prose must be identical.  Strip the structured entries from
+    #    both documents and compare what is left byte-for-byte.
+    if _prose_of(actual_text) != _prose_of(_normalise_newlines(expected)):
+        return False
+
+    # 2. The structured entries must agree, version aside.
+    actual = _artefact_entries(actual_text)
+    wanted = _artefact_entries(expected)
+    if actual is None or wanted is None:
+        return False
+    return _compare_entries(actual, wanted)
+
+
+def _prose_of(text: str) -> str:
+    """The document with its structured component entries removed.
+
+    What is left is the prose: the headings, the legal statements, the
+    section structure, the upstream attribution.  None of it depends on the
+    machine the artefact was generated on, so all of it must match exactly.
+    """
+    stripped = text.lstrip()
+    if stripped.startswith("{"):
+        # An SBOM is JSON: its prose is everything outside the component list.
+        try:
+            doc = json.loads(text)
+        except ValueError:
+            return text
+        rest = {k: v for k, v in doc.items() if k != "components"}
+        return json.dumps(rest, sort_keys=True, ensure_ascii=False)
+
+    kept: List[str] = []
+    ecosystem = ""
+    in_table = False
+    header: List[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+
+        # -- NOTICE ------------------------------------------------------- #
+        if "BUNDLED SOFTWARE" in text:
+            notice_header = re.match(r"^--\s*(Python|JavaScript)\s+dependency notice", line)
+            if notice_header:
+                ecosystem = "python" if notice_header.group(1) == "Python" else "npm"
+                kept.append(line)
+                continue
+            if line.startswith("=") or line.startswith("BUNDLED") or line.startswith("EXTERNAL"):
+                if line.startswith("="):
+                    ecosystem = ""
+                kept.append(line)
+                continue
+            if line.startswith("UPSTREAM"):
+                ecosystem = ""
+                kept.append(line)
+                continue
+            row = re.match(r"^(\S+)\s+(\S+)\s+—\s+(.*)$", line)
+            if row and ecosystem:
+                continue  # a bundled component entry
+            row = re.match(r"^(\S+)\s+—\s+(.*)$", line)
+            if row:
+                continue  # an external component entry
+            kept.append(line)
+            continue
+
+        # -- Markdown ----------------------------------------------------- #
+        if line.startswith("## "):
+            in_table = False
+            header = []
+            kept.append(line)
+            continue
+        if line.startswith("|") and line.endswith("|"):
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if all(set(c) <= set("-: ") for c in cells):
+                kept.append(line)
+                continue
+            if not header:
+                header = cells
+                kept.append(line)
+                continue
+            if len(cells) == len(header) and "name" in header:
+                continue  # a component table row
+            kept.append(line)
+            continue
+        kept.append(line)
+    return "\n".join(kept)
+
+
 def collect() -> Dict[str, Any]:
     python_deps = python_components()
     npm_deps = frontend_components()
@@ -792,13 +1658,29 @@ def main(argv: Optional[List[str]] = None) -> int:
     # supposed to check can never detect a stale or tampered one, and it made
     # the release manifest's recorded hashes drift on every gate run.  Writing
     # is now explicit; --check compares and refuses to touch anything.
+    #
+    # v0.7.4 fix: the comparison used to be byte-for-byte, which made the
+    # check unpassable on any machine but the one that generated the files.
+    # These artefacts record *installed* versions, and an installed version
+    # is a property of the environment, not of the release: CI resolves
+    # ``numpy>=1.26,<3.0`` to whatever was current that day, so the same
+    # commit produced a different SBOM on every runner and the check
+    # reported "stale" for a file nobody had touched.
+    #
+    # What a release actually asserts about its dependencies is *which*
+    # packages it ships and under *which* licence -- that is what a
+    # distributor needs to comply with, and it is stable across machines.
+    # The exact version stays in the file for a human to read; it simply
+    # does not decide whether the file is stale.
     drift: List[str] = []
     if args.check:
         for path, expected in targets:
             if not path.exists():
                 drift.append(f"missing:{path.relative_to(ROOT).as_posix()}")
                 continue
-            if path.read_text(encoding="utf-8") != expected:
+            if _read_normalised(path) != _normalise_newlines(expected):
+                if _differs_only_in_versions(path, expected):
+                    continue
                 drift.append(f"stale:{path.relative_to(ROOT).as_posix()}")
     else:
         for path, expected in targets:

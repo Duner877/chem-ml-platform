@@ -13,6 +13,18 @@ fastapi>=0.110,<1.0
 uvicorn[standard]>=0.29,<1.0
 pydantic>=2.6,<3.0
 
+# Multipart form parsing -- required by FastAPI the moment a route declares
+# ``UploadFile`` or ``File(...)``, and ``backend/routers/storage.py`` does
+# exactly that for the dataset and archive upload endpoints.
+#
+# FastAPI checks for this at *import* time, not at call time: a missing
+# package makes the whole application module unimportable, so the platform
+# does not start and no test can even be collected.  That is why it belongs
+# here and not in the optional group -- "the upload endpoint is unavailable"
+# is not a capability that can be degraded gracefully, because the module
+# that declares it will not load at all.
+python-multipart>=0.0.9,<1.0
+
 # --- scientific core ---------------------------------------------------------
 numpy>=1.26,<3.0
 scipy>=1.11,<2.0

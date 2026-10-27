@@ -97,15 +97,16 @@ python scripts/quality_gate.py
 | fastapi | `>=0.110,<1.0` | 0.143.0 |
 | uvicorn | `>=0.29,<1.0` | 0.54.0 |
 | pydantic | `>=2.6,<3.0` | 2.14.1 |
-| numpy | `>=1.26,<3.0` | 2.5.4 |
+| numpy | `>=1.26,<3.0` | 2.5.2 |
 | scipy | `>=1.11,<2.0` | 1.18.1 |
 | networkx | `>=3.2,<4.0` | 3.7 |
 | matplotlib | `>=3.8,<4.0` | 3.11.2 |
 | python-docx | `>=1.1,<2.0` | 1.2.0 |
+| python-multipart | `>=0.0.9,<1.0` | 0.0.32 |
 | pytest（dev） | `>=8.0` | 9.1.1 |
 | httpx（dev） | `>=0.27` | 0.28.1 |
 
-完整传递闭包共 **36** 个已解析包，见 `requirements.lock`。
+完整传递闭包共 **37** 个已解析包，见 `requirements.lock`。
 
 ---
 
@@ -135,9 +136,32 @@ ORCA / Gaussian / Psi4 / CP2K / GROMACS / LAMMPS / OpenMM / VASP / Quantum ESPRE
 
 ## 7. 已知限制
 
-- `requirements.lock` 反映的是**本机验证环境**。若目标环境的 Python 小版本不同
-  （例如 3.10 vs 3.13），部分包可能需要不同的轮文件，此时应回到
-  `requirements.runtime.txt` 的范围安装，再重跑质量门禁，而不是强行安装本锁文件。
+- `requirements.lock` 记录的是**通过 v0.7.4 质量门禁时验证过的确切版本集合**。
+  `scripts/lock_dependencies.py --check` 检查的是三件与宿主无关的事：
+  每个声明依赖都有对应的 pin、每个 pin 都落在声明范围内、锁文件头部版本与
+  `VERSION` 一致。它**不**要求本机当前安装的版本与锁文件逐字相同——
+  那是环境事实，不是发布声明；CI 按声明范围安装，解析出的补丁版本自然不同。
+  若目标环境的 Python 小版本不同（例如 3.10 vs 3.13），部分包可能需要不同的
+  轮文件，此时应回到 `requirements.runtime.txt` 的范围安装，再重跑质量门禁，
+  而不是强行安装本锁文件。
+- **许可证字符串的写法不是稳定的，比较按语义而非按字面。** 上游会在不改变许可证
+  的前提下改写自己的元数据写法，这些改写全部落在本项目的声明范围之内：
+
+  | 依赖 | 较旧版本写法 | 较新版本写法 |
+  |---|---|---|
+  | fastapi / pydantic | `MIT License` | `MIT` |
+  | uvicorn / httpx | `BSD License` | `BSD-3-Clause` |
+  | python-multipart | `Apache Software License` | `Apache-2.0` |
+  | matplotlib | `PSF` | `Python Software Foundation License` |
+
+  因此 `scripts/license_report.py --check` 判断的是「这两个字符串**指的是同一个许可证
+  吗**」，而不是「这两个字符串一样吗」。`scripts/license_report.py` 中的
+  `_LICENCE_ALIASES` 显式列出这些同义写法及其对应的精确 SPDX 标识；
+  `BSD License` 这类本身不指明修订号的写法，与该家族内的任一精确标识兼容，
+  而 `BSD-2-Clause` 与 `BSD-3-Clause` 之间**不**兼容——真实的许可证变更仍会被拦下。
+  标识表是写死在代码里的，而不是从某个许可证数据库推导的：后者会让门禁的结论
+  取决于运行该检查的机器上装的是哪个数据库版本，那正是本项要消除的那一类
+  「随机器而变的结论」。
 - 干净环境安装目前只在无虚拟机的本机条件下验证了「不依赖构建机绝对路径」与
   「从非应用目录启动后端」两项，见 `V07_2_CLEAN_ENV_TEST.md`；目标虚拟机上的
   完整安装验证标记为 `NOT_PERFORMED`。
