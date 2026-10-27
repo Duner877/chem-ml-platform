@@ -454,6 +454,28 @@ python -c "import json,pathlib; from workflow_engine.workflow import Workflow; \
 > CI 报的是 `EBADPLATFORM: Unsupported platform for @esbuild/win32-x64`。
 > 需要加平台包时，用 `optionalDependencies` 而不是 `dependencies` / `devDependencies`。
 
+> **lockfile 必须包含所有平台的变体，否则换台机器就装不上。**
+>
+> 这条比上一条更隐蔽。npm 生成的 `lockfileVersion: 3` lockfile，
+> `packages` 段里**只记录生成它的那台机器对应的平台变体**——
+> 在 Windows 上生成，就只有 `@rollup/rollup-win32-x64-msvc`，
+> 没有 `@rollup/rollup-linux-x64-gnu`。
+> 于是 `npm ci` 在 Linux 上会装不全，报的是
+> `Cannot find module '@rollup/rollup-linux-x64-gnu'`，
+> 而这条错误**不指向 lockfile**，看着像 vite 的问题。
+>
+> 正确做法是生成**全平台** lockfile：
+>
+> ```bash
+> cd frontend
+> npm install --package-lock-only --ignore-scripts --no-audit --no-fund --os --cpu
+> ```
+>
+> `--os --cpu` 不带值，表示「不按当前平台过滤」，npm 会把所有平台变体都写进 lockfile。
+> 生成后应当看到 **34 个**含平台名的条目（esbuild 25 个 + rollup 22 个，去重后），
+> 而不是只有 2 个。**改完必须在两个平台上各验证一次 `npm ci`**——
+> 只在 Windows 上验证，等于没验证。
+
 ### 6.5 错误处理
 
 - 节点内部**不要裸抛异常**，用 `PlatformError` + `ErrorCode`
@@ -587,6 +609,47 @@ lic.main(["--write", "--out-dir", str(tmp_path / "out")])
 
 仓库里另有一条回归测试 `test_writing_does_not_touch_the_repository` 盯着这件事。
 
+### 7.6 派生产物必须跟随源变更
+
+**改了锁文件，就必须重新生成派生产物。**
+
+前端 `package-lock.json` 一改，下列三样东西立刻过期：
+
+| 产物 | 生成命令 |
+| --- | --- |
+| `sbom.json`、`docs/THIRD_PARTY_LICENSES.md` | `python scripts/license_report.py --write` |
+| `docs/RELEASE_MANIFEST.json`、`docs/RELEASE_MANIFEST.md`、`SHA256SUMS` | `python scripts/release_manifest.py` |
+
+漏掉任何一样，CI 的 `license_sbom_report` 与 `release_manifest` 两个阶段就会报
+「stale」/「drifted」——而且报的是**依赖摘要对不上**，不告诉你是哪个改动引起的，
+排查起来很绕。**改依赖 → 重生成 → 再提交**，这三步要一起做。
+
+### 7.7 测试的断言口径
+
+**断言要验证性质，不要验证巧合。**
+
+`tests/test_v07_4_release_manifest.py` 里有一条测试，它断言「模块算出的摘要」
+等于「`git cat-file -p HEAD:sbom.json` 的内容」。
+
+这个断言在**工作区干净**时成立，在工作区刚改过产物时不成立——
+于是每次重新生成 `sbom.json` 之后，这条测试都会失败一次，
+而它其实并没有发现任何问题：它真正要验证的性质是
+「本模块实现的 clean filter 与 git 的 clean filter 对同一文件给出相同字节」。
+
+现在的写法是与 git 自己比：
+
+```python
+ours = subprocess.run(["git", "hash-object", "--stdin"], input=blob, ...)
+git  = subprocess.run(["git", "hash-object", "--path=sbom.json", "sbom.json"], ...)
+assert ours.stdout == git.stdout
+```
+
+这个断言在任何工作区状态下都成立，而且语义更准。
+（干净 clone 里两种口径等价，已验证。）
+
+> **通用教训**：当一条测试「只在特定状态下通过」时，先问它是不是把状态当成了性质。
+> 换一种与状态无关的比法，往往既能测到真正的东西，又不会在正常工作中假报警。
+
 ---
 
 ## 8. 发布与交付规范
@@ -676,8 +739,8 @@ cd desktop && npm run build             # 安装包（NSIS）
 
 | 项 | 现状 | 影响 |
 | --- | --- | --- |
-| 桌面已安装程序 | `Chem ML Platform/` 是 commit `01e9665` 构建的副本，**不含本次署名统一与 CI 修复** | 需要重新构建安装包才能同步 |
-| `desktop/dist/` | 已清空（`win-unpacked` 与旧安装包均已移除/归档） | 需 `npm run build` 重建 |
+| 桌面已安装程序 | `Chem ML Platform/` 目录里是**已安装版**，内容停留在更早的 commit `01e9665` | 重新运行安装包即可升级到当前 commit |
+| `desktop/dist/` | 已用当前 commit `cdae1b5` 重建：`Chem ML Platform Setup 0.7.4.exe`（79 MB）+ `win-unpacked/`（262 MB） | 无。`BUILD_INFO.json` 记录 `dirty: false` |
 | 冒烟测试覆盖 | 新增节点时**必须**补 `scripts/smoke_nodes.py` 覆盖，否则门禁不会发现 | 纪律问题，靠 review 保证 |
 | npm audit | `npm install` 报 3 个漏洞（2 moderate / 1 high），来自前端依赖树 | 未处理。升级需评估 React 18 / Vite 5 的兼容性 |
 

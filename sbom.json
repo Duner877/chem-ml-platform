@@ -485,6 +485,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@alloc/quick-lru"
+        }
       ]
     },
     {
@@ -512,6 +518,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/code-frame"
         }
       ]
     },
@@ -541,6 +553,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/compat-data"
+        }
       ]
     },
     {
@@ -568,6 +586,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/core"
         }
       ]
     },
@@ -597,6 +621,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/generator"
+        }
       ]
     },
     {
@@ -624,6 +654,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-compilation-targets"
         }
       ]
     },
@@ -653,6 +689,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-globals"
+        }
       ]
     },
     {
@@ -680,6 +722,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-module-imports"
         }
       ]
     },
@@ -709,6 +757,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-module-transforms"
+        }
       ]
     },
     {
@@ -737,12 +791,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-plugin-utils"
+        }
       ]
     },
     {
       "type": "library",
       "name": "@babel/helper-string-parser",
-      "version": "7.29.7",
+      "version": "7.29.11",
       "scope": "optional",
       "properties": [
         {
@@ -764,6 +824,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-string-parser"
         }
       ]
     },
@@ -793,6 +859,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-validator-identifier"
+        }
       ]
     },
     {
@@ -820,6 +892,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helper-validator-option"
         }
       ]
     },
@@ -849,12 +927,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/helpers"
+        }
       ]
     },
     {
       "type": "library",
       "name": "@babel/parser",
-      "version": "7.29.9",
+      "version": "7.29.11",
       "scope": "optional",
       "properties": [
         {
@@ -876,6 +960,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/parser"
         }
       ]
     },
@@ -905,6 +995,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-self"
+        }
       ]
     },
     {
@@ -932,6 +1028,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-source"
         }
       ]
     },
@@ -961,6 +1063,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/template"
+        }
       ]
     },
     {
@@ -989,12 +1097,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/traverse"
+        }
       ]
     },
     {
       "type": "library",
       "name": "@babel/types",
-      "version": "7.29.8",
+      "version": "7.29.11",
       "scope": "optional",
       "properties": [
         {
@@ -1016,6 +1130,760 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@babel/types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/aix-ppc64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/aix-ppc64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/android-arm",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/android-arm",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/android-arm"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/android-arm64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/android-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/android-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/android-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/android-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/android-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/darwin-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/darwin-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/darwin-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/darwin-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/darwin-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/freebsd-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/freebsd-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/freebsd-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/freebsd-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-arm",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-arm",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-arm"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-arm64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-ia32",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-ia32",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-ia32"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-loong64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-loong64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-loong64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-mips64el",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-mips64el"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-ppc64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-ppc64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-riscv64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-riscv64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-s390x",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-s390x",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-s390x"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/linux-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/linux-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/linux-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/netbsd-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/netbsd-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/openbsd-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/openbsd-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/sunos-x64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/sunos-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/sunos-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/win32-arm64",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/win32-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/win32-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@esbuild/win32-ia32",
+      "version": "0.21.5",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40esbuild/win32-ia32",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@esbuild/win32-ia32"
         }
       ]
     },
@@ -1079,6 +1947,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@jridgewell/gen-mapping"
+        }
       ]
     },
     {
@@ -1106,6 +1980,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@jridgewell/remapping"
         }
       ]
     },
@@ -1135,6 +2015,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@jridgewell/resolve-uri"
+        }
       ]
     },
     {
@@ -1162,6 +2048,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec"
         }
       ]
     },
@@ -1191,6 +2083,46 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@jridgewell/trace-mapping"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@napi-rs/lzma-linux-x64-gnu",
+      "version": "1.5.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40napi-rs/lzma-linux-x64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@napi-rs/lzma-linux-x64-gnu"
+        }
       ]
     },
     {
@@ -1218,6 +2150,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@nodelib/fs.scandir"
         }
       ]
     },
@@ -1247,6 +2185,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@nodelib/fs.stat"
+        }
       ]
     },
     {
@@ -1274,6 +2218,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@nodelib/fs.walk"
         }
       ]
     },
@@ -1303,12 +2253,834 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rolldown/pluginutils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-android-arm-eabi",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-android-arm-eabi",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-android-arm64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-android-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-android-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-darwin-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-darwin-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-darwin-x64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-darwin-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-darwin-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-freebsd-arm64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-freebsd-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-freebsd-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-freebsd-x64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-freebsd-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-freebsd-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-arm-gnueabihf",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-arm-gnueabihf",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-arm-musleabihf",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-arm-musleabihf",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-arm64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-arm64-musl",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-loong64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-loong64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-loong64-musl",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-loong64-musl",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-ppc64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-ppc64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-ppc64-musl",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-ppc64-musl",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-riscv64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-riscv64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-riscv64-musl",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-riscv64-musl",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-s390x-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-s390x-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-x64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-linux-x64-musl",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-openbsd-x64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-openbsd-x64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-openbsd-x64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-openharmony-arm64",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-openharmony-arm64",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-openharmony-arm64"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-win32-arm64-msvc",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-win32-arm64-msvc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-win32-ia32-msvc",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-win32-ia32-msvc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@rollup/rollup-win32-x64-gnu",
+      "version": "4.65.1",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "true"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/%40rollup/rollup-win32-x64-gnu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu"
+        }
       ]
     },
     {
       "type": "library",
       "name": "@rollup/rollup-win32-x64-msvc",
-      "version": "4.64.5",
+      "version": "4.65.1",
       "scope": "optional",
       "properties": [
         {
@@ -1365,6 +3137,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/babel__core"
+        }
       ]
     },
     {
@@ -1392,6 +3170,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/babel__generator"
         }
       ]
     },
@@ -1421,6 +3205,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/babel__template"
+        }
       ]
     },
     {
@@ -1448,6 +3238,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/babel__traverse"
         }
       ]
     },
@@ -1477,6 +3273,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-color"
+        }
       ]
     },
     {
@@ -1504,6 +3306,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-drag"
         }
       ]
     },
@@ -1533,6 +3341,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-interpolate"
+        }
       ]
     },
     {
@@ -1560,6 +3374,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-selection"
         }
       ]
     },
@@ -1589,6 +3409,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-transition"
+        }
       ]
     },
     {
@@ -1616,6 +3442,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/d3-zoom"
         }
       ]
     },
@@ -1645,6 +3477,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/estree"
+        }
       ]
     },
     {
@@ -1672,6 +3510,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/prop-types"
         }
       ]
     },
@@ -1701,6 +3545,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/react"
+        }
       ]
     },
     {
@@ -1728,6 +3578,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@types/react-dom"
         }
       ]
     },
@@ -1791,6 +3647,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@xyflow/react"
+        }
       ]
     },
     {
@@ -1818,6 +3680,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/@xyflow/system"
         }
       ]
     },
@@ -1847,6 +3715,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/any-promise"
+        }
       ]
     },
     {
@@ -1874,6 +3748,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/anymatch"
         }
       ]
     },
@@ -1903,12 +3783,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/arg"
+        }
       ]
     },
     {
       "type": "library",
       "name": "autoprefixer",
-      "version": "10.6.1",
+      "version": "10.6.2",
       "scope": "required",
       "properties": [
         {
@@ -1931,12 +3817,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/autoprefixer"
+        }
       ]
     },
     {
       "type": "library",
       "name": "baseline-browser-mapping",
-      "version": "2.11.28",
+      "version": "2.11.33",
       "scope": "optional",
       "properties": [
         {
@@ -1958,6 +3850,12 @@
           "license": {
             "id": "Apache-2.0"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/baseline-browser-mapping"
         }
       ]
     },
@@ -1987,6 +3885,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/binary-extensions"
+        }
       ]
     },
     {
@@ -2015,12 +3919,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/braces"
+        }
       ]
     },
     {
       "type": "library",
       "name": "browserslist",
-      "version": "4.29.3",
+      "version": "4.29.5",
       "scope": "optional",
       "properties": [
         {
@@ -2042,6 +3952,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/browserslist"
         }
       ]
     },
@@ -2071,12 +3987,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/camelcase-css"
+        }
       ]
     },
     {
       "type": "library",
       "name": "caniuse-lite",
-      "version": "1.0.30001815",
+      "version": "1.0.30001819",
       "scope": "optional",
       "properties": [
         {
@@ -2098,6 +4020,12 @@
           "license": {
             "id": "CC-BY-4.0"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/caniuse-lite"
         }
       ]
     },
@@ -2127,6 +4055,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/chokidar"
+        }
       ]
     },
     {
@@ -2154,6 +4088,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/glob-parent"
         }
       ]
     },
@@ -2183,6 +4123,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/classcat"
+        }
       ]
     },
     {
@@ -2210,6 +4156,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/commander"
         }
       ]
     },
@@ -2239,6 +4191,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/convert-source-map"
+        }
       ]
     },
     {
@@ -2266,6 +4224,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/cssesc"
         }
       ]
     },
@@ -2295,6 +4259,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/csstype"
+        }
       ]
     },
     {
@@ -2322,6 +4292,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-color"
         }
       ]
     },
@@ -2351,6 +4327,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-dispatch"
+        }
       ]
     },
     {
@@ -2378,6 +4360,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-drag"
         }
       ]
     },
@@ -2407,6 +4395,12 @@
             "id": "BSD-3-Clause"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-ease"
+        }
       ]
     },
     {
@@ -2434,6 +4428,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-interpolate"
         }
       ]
     },
@@ -2463,6 +4463,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-selection"
+        }
       ]
     },
     {
@@ -2490,6 +4496,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-timer"
         }
       ]
     },
@@ -2519,6 +4531,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-transition"
+        }
       ]
     },
     {
@@ -2546,6 +4564,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/d3-zoom"
         }
       ]
     },
@@ -2575,6 +4599,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/debug"
+        }
       ]
     },
     {
@@ -2602,6 +4632,12 @@
           "license": {
             "id": "Apache-2.0"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/didyoumean"
         }
       ]
     },
@@ -2631,12 +4667,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/dlv"
+        }
       ]
     },
     {
       "type": "library",
       "name": "electron-to-chromium",
-      "version": "1.5.452",
+      "version": "1.5.465",
       "scope": "optional",
       "properties": [
         {
@@ -2658,6 +4700,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/electron-to-chromium"
         }
       ]
     },
@@ -2687,6 +4735,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/es-errors"
+        }
       ]
     },
     {
@@ -2714,6 +4768,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/esbuild"
         }
       ]
     },
@@ -2743,6 +4803,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/escalade"
+        }
       ]
     },
     {
@@ -2770,6 +4836,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fast-glob"
         }
       ]
     },
@@ -2799,6 +4871,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/glob-parent"
+        }
       ]
     },
     {
@@ -2826,6 +4904,12 @@
           "license": {
             "id": "ISC"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fastq"
         }
       ]
     },
@@ -2855,6 +4939,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fill-range"
+        }
       ]
     },
     {
@@ -2882,6 +4972,46 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fraction.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fsevents",
+      "version": "2.3.3",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "chemml:ecosystem",
+          "value": "npm"
+        },
+        {
+          "name": "chemml:installed",
+          "value": "false"
+        },
+        {
+          "name": "chemml:bundled",
+          "value": "true"
+        }
+      ],
+      "purl": "pkg:npm/fsevents",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fsevents"
         }
       ]
     },
@@ -2911,6 +5041,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/function-bind"
+        }
       ]
     },
     {
@@ -2938,6 +5074,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/gensync"
         }
       ]
     },
@@ -2967,6 +5109,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/glob-parent"
+        }
       ]
     },
     {
@@ -2994,6 +5142,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/hasown"
         }
       ]
     },
@@ -3023,6 +5177,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/is-binary-path"
+        }
       ]
     },
     {
@@ -3050,6 +5210,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/is-core-module"
         }
       ]
     },
@@ -3079,6 +5245,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/is-extglob"
+        }
       ]
     },
     {
@@ -3106,6 +5278,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/is-glob"
         }
       ]
     },
@@ -3135,6 +5313,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/is-number"
+        }
       ]
     },
     {
@@ -3162,6 +5346,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/jiti"
         }
       ]
     },
@@ -3191,6 +5381,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/js-tokens"
+        }
       ]
     },
     {
@@ -3218,6 +5414,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/jsesc"
         }
       ]
     },
@@ -3247,12 +5449,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/json5"
+        }
       ]
     },
     {
       "type": "library",
       "name": "lilconfig",
-      "version": "3.1.3",
+      "version": "3.1.4",
       "scope": "optional",
       "properties": [
         {
@@ -3274,6 +5482,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/lilconfig"
         }
       ]
     },
@@ -3303,6 +5517,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/lines-and-columns"
+        }
       ]
     },
     {
@@ -3330,6 +5550,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/loose-envify"
         }
       ]
     },
@@ -3359,6 +5585,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/lru-cache"
+        }
       ]
     },
     {
@@ -3386,6 +5618,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/merge2"
         }
       ]
     },
@@ -3415,6 +5653,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/micromatch"
+        }
       ]
     },
     {
@@ -3442,6 +5686,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/ms"
         }
       ]
     },
@@ -3471,6 +5721,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/mz"
+        }
       ]
     },
     {
@@ -3499,12 +5755,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/nanoid"
+        }
       ]
     },
     {
       "type": "library",
       "name": "node-releases",
-      "version": "2.0.58",
+      "version": "2.0.60",
       "scope": "optional",
       "properties": [
         {
@@ -3526,6 +5788,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/node-releases"
         }
       ]
     },
@@ -3555,6 +5823,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/normalize-path"
+        }
       ]
     },
     {
@@ -3582,6 +5856,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/object-assign"
         }
       ]
     },
@@ -3611,6 +5891,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/object-hash"
+        }
       ]
     },
     {
@@ -3638,6 +5924,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/path-parse"
         }
       ]
     },
@@ -3667,6 +5959,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/picocolors"
+        }
       ]
     },
     {
@@ -3694,6 +5992,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/picomatch"
         }
       ]
     },
@@ -3723,12 +6027,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/pirates"
+        }
       ]
     },
     {
       "type": "library",
       "name": "postcss",
-      "version": "8.5.29",
+      "version": "8.5.32",
       "scope": "required",
       "properties": [
         {
@@ -3750,6 +6060,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss"
         }
       ]
     },
@@ -3779,6 +6095,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-import"
+        }
       ]
     },
     {
@@ -3806,6 +6128,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-js"
         }
       ]
     },
@@ -3835,6 +6163,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-load-config"
+        }
       ]
     },
     {
@@ -3863,12 +6197,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-nested"
+        }
       ]
     },
     {
       "type": "library",
       "name": "postcss-selector-parser",
-      "version": "6.1.4",
+      "version": "6.1.5",
       "scope": "optional",
       "properties": [
         {
@@ -3890,6 +6230,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-selector-parser"
         }
       ]
     },
@@ -3919,6 +6265,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/postcss-value-parser"
+        }
       ]
     },
     {
@@ -3947,6 +6299,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/queue-microtask"
+        }
       ]
     },
     {
@@ -3974,6 +6332,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/react"
         }
       ]
     },
@@ -4037,6 +6401,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/react-refresh"
+        }
       ]
     },
     {
@@ -4064,6 +6434,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/read-cache"
         }
       ]
     },
@@ -4093,6 +6469,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/readdirp"
+        }
       ]
     },
     {
@@ -4120,6 +6502,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/resolve"
         }
       ]
     },
@@ -4149,12 +6537,18 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/reusify"
+        }
       ]
     },
     {
       "type": "library",
       "name": "rollup",
-      "version": "4.64.5",
+      "version": "4.65.1",
       "scope": "optional",
       "properties": [
         {
@@ -4176,6 +6570,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/rollup"
         }
       ]
     },
@@ -4205,6 +6605,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/run-parallel"
+        }
       ]
     },
     {
@@ -4232,6 +6638,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/scheduler"
         }
       ]
     },
@@ -4261,6 +6673,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/semver"
+        }
       ]
     },
     {
@@ -4288,6 +6706,12 @@
           "license": {
             "id": "BSD-3-Clause"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/source-map-js"
         }
       ]
     },
@@ -4317,6 +6741,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/sucrase"
+        }
       ]
     },
     {
@@ -4344,6 +6774,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/supports-preserve-symlinks-flag"
         }
       ]
     },
@@ -4373,6 +6809,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/tailwindcss"
+        }
       ]
     },
     {
@@ -4400,6 +6842,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/thenify"
         }
       ]
     },
@@ -4429,6 +6877,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/thenify-all"
+        }
       ]
     },
     {
@@ -4456,6 +6910,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/tinyglobby"
         }
       ]
     },
@@ -4485,6 +6945,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/fdir"
+        }
       ]
     },
     {
@@ -4512,6 +6978,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/picomatch"
         }
       ]
     },
@@ -4541,6 +7013,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/to-regex-range"
+        }
       ]
     },
     {
@@ -4568,6 +7046,12 @@
           "license": {
             "id": "Apache-2.0"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/ts-interface-checker"
         }
       ]
     },
@@ -4597,6 +7081,12 @@
             "id": "Apache-2.0"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/typescript"
+        }
       ]
     },
     {
@@ -4624,6 +7114,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/update-browserslist-db"
         }
       ]
     },
@@ -4653,6 +7149,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/use-sync-external-store"
+        }
       ]
     },
     {
@@ -4680,6 +7182,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/util-deprecate"
         }
       ]
     },
@@ -4709,6 +7217,12 @@
             "id": "MIT"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/vite"
+        }
       ]
     },
     {
@@ -4737,6 +7251,12 @@
             "id": "ISC"
           }
         }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/yallist"
+        }
       ]
     },
     {
@@ -4764,6 +7284,12 @@
           "license": {
             "id": "MIT"
           }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://registry.npmjs.org/zustand"
         }
       ]
     },
