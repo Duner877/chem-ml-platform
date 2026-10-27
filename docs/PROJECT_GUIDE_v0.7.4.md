@@ -591,6 +591,19 @@ python scripts/node_catalog.py --check         # README 节点目录与注册表
 **重要**：CI 与本地**必须跑同一份代码**。门禁实现住在 `scripts/quality_gate.py`，
 CI 用 `python scripts/quality_gate.py --fast` 调用它，而不是在 workflow 里另写一套逻辑。
 
+**当前状态：10 个 job 全绿**（run #18，commit `7ce6678`，`conclusion: success`）。
+
+从 run #13 到 #18 共修掉 5 个根因，它们分属三类，每一类都值得记住：
+
+| 类别 | 根因 | 症状 |
+| --- | --- | --- |
+| **环境依赖** | ABACUS 只有 Windows 启动器；目录扫描撞 `PermissionError`；lockfile 只记本平台变体 | 跨机器才复现 |
+| **测试副作用** | 测试改写仓库真实产物 | 本地不复现，CI 每次报漂移 |
+| **断言口径** | 断言拿 `HEAD:<path>` 比对，隐含「工作区必须干净」 | 每次重生成产物就假失败 |
+
+排查这类问题的通用做法：**先看 CI 上传的 artifact**（`output/gate_logs/*.log`、
+`output/ci_logs/stage*.log`），本地日志里往往没有那些信息。
+
 ### 7.5 测试的副作用纪律
 
 **测试不得写入仓库的真实产物。**

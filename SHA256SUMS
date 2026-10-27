@@ -1,7 +1,7 @@
 # SHA256SUMS — Chem ML Platform v0.7.4 (Trusted Delivery Release)
-# commit cdae1b5 · generated 2026-10-27T12:55:44+00:00
+# commit 7ce6678 · generated 2026-10-27T13:02:33+00:00
 # verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
-10afeff7779f88e83c168307066592d2cdef333e25a52b450ea7784ba23103a2  C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip
+247acf3dfd8373452531b7ad10529885c5a6f12bdfea8dadb808180814cde5bc  C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip
 35feda0a5b2f82bffb463c83fad23dd5c5518a24ea7a871407f65d958adbc545  desktop/dist/Chem ML Platform Setup 0.7.4.exe
 7573440b1f8c667449cd984fa5358447e999d59123ded230f4b4f2891fdee7a7  desktop/dist/Chem ML Platform Setup 0.7.4.exe.blockmap
 d619b642f2b5c9b6b582fad63cc8c9cf51f05a7af10352ef36f1fa082fb7fc9d  sbom.json

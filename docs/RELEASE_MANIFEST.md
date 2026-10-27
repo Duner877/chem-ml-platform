@@ -1,16 +1,16 @@
 # Chem ML Platform v0.7.4 — Release Manifest
 
 - **codename**: Trusted Delivery Release
-- **commit**: `cdae1b5`
+- **commit**: `7ce6678`
 - **python**: 3.13.14
-- **generated**: 2026-10-27T12:55:44+00:00
+- **generated**: 2026-10-27T13:02:33+00:00
 - **declared / built / tested / published**: 21 / 20 / 19 / 0
 
 > `published` 仅在本机向发布渠道实际上传后才为真。本清单由本地构建生成，因此除已明确标注者外，全部产物均为**已构建、未发布**。
 
 | 产物 | 类型 | 状态 | 大小 | SHA-256 | 文件 |
 | --- | --- | --- | --- | --- | --- |
-| 源码归档（可直接 push 到 GitHub 的完整源码树） | 源码归档 | 已构建 · 已测试 | 2056 KiB | `10afeff7779f88e8…` | `C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip` |
+| 源码归档（可直接 push 到 GitHub 的完整源码树） | 源码归档 | 已构建 · 已测试 | 2076 KiB | `247acf3dfd837345…` | `C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip` |
 | Windows x64 NSIS 安装包（Electron shell + 后端源码 + 运行时探针） | 安装包 | 已构建 · 已测试 | 77373 KiB | `35feda0a5b2f82bf…` | `desktop/dist/Chem ML Platform Setup 0.7.4.exe` |
 | NSIS 差分更新块映射（由 electron-builder 同步产出） | 安装包 | 已构建 · 已测试 | 82 KiB | `7573440b1f8c6674…` | `desktop/dist/Chem ML Platform Setup 0.7.4.exe.blockmap` |
 | 与实际构建依赖对应的 CycloneDX 1.5 软件物料清单 | SBOM | 已构建 · 已测试 | 162 KiB | `d619b642f2b5c9b6…` | `sbom.json` |
@@ -38,9 +38,9 @@
 
 - 构建方式：`python scripts/package.py --name Chem-ML-Platform-v{version} --output ../Chem-ML-Platform-v{version}.zip`
 - 路径：`C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip`
-- 构建 commit：`cdae1b5`
-- SHA-256：`10afeff7779f88e83c168307066592d2cdef333e25a52b450ea7784ba23103a2`
-- 大小：2104872 B（2055.5 KiB）
+- 构建 commit：`7ce6678`
+- SHA-256：`247acf3dfd8373452531b7ad10529885c5a6f12bdfea8dadb808180814cde5bc`
+- 大小：2125952 B（2076.1 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
 - 测试说明：证据齐备: docs/RELEASE_MANIFEST.md, SHA256SUMS
 - 发布说明：未从本机上传到任何发布渠道
@@ -49,7 +49,7 @@
 
 - 构建方式：`cd desktop && npm install && npm run build`
 - 路径：`desktop/dist/Chem ML Platform Setup 0.7.4.exe`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`35feda0a5b2f82bffb463c83fad23dd5c5518a24ea7a871407f65d958adbc545`
 - 大小：79230063 B（77373.1 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -60,7 +60,7 @@
 
 - 构建方式：`cd desktop && npm run build`
 - 路径：`desktop/dist/Chem ML Platform Setup 0.7.4.exe.blockmap`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`7573440b1f8c667449cd984fa5358447e999d59123ded230f4b4f2891fdee7a7`
 - 大小：83687 B（81.7 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -71,7 +71,7 @@
 
 - 构建方式：`python scripts/license_report.py --write`
 - 路径：`sbom.json`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`d619b642f2b5c9b6b582fad63cc8c9cf51f05a7af10352ef36f1fa082fb7fc9d`
 - 大小：166348 B（162.4 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -82,7 +82,7 @@
 
 - 构建方式：`python scripts/quality_gate.py`
 - 路径：`output/quality_gate.json`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`4aae981f0e569f3610631b6236b860ad23b9c495469c148858fe2c4bf8d2b59a`
 - 易变产物：该报告的摘要随每次流水线运行变化（含耗时与日志路径），因此校验时按「存在性」比对，不锁定摘要。
 - 大小：14740 B（14.4 KiB）
@@ -94,7 +94,7 @@
 
 - 构建方式：`python scripts/quality_gate.py`
 - 路径：`output/quality_gate.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`53c16ef60dcc47800f1edeb3c0120a2f964761ca83758350be4fb73d3933662d`
 - 易变产物：该报告的摘要随每次流水线运行变化（含耗时与日志路径），因此校验时按「存在性」比对，不锁定摘要。
 - 大小：11631 B（11.4 KiB）
@@ -116,7 +116,7 @@
 
 - 构建方式：`python scripts/license_report.py --write`
 - 路径：`docs/THIRD_PARTY_LICENSES.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`56dc68db2650ec35cf8c95a306a326159ff50c8b2423ef14c252dfad6cb4f862`
 - 大小：16973 B（16.6 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -127,7 +127,7 @@
 
 - 构建方式：`(maintained by hand; see docs/PROVENANCE.md)`
 - 路径：`docs/PROVENANCE.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`fe33f0ecb1b5bcfff211be74b825f7db25b10666ff1bd985d58af0b13184192d`
 - 大小：13857 B（13.5 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -138,7 +138,7 @@
 
 - 构建方式：`python scripts/license_report.py --write`
 - 路径：`NOTICE`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`ebde2066b41e02caa58775050d53d99b25d0d0c3994737057485615962c99bd1`
 - 大小：19964 B（19.5 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -149,7 +149,7 @@
 
 - 构建方式：`python scripts/benchmark_lcms.py`
 - 路径：`docs/V07_2_SYNTHETIC_BENCHMARK.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661`
 - 大小：8813 B（8.6 KiB）
 - 构建 / 测试 / 发布：是 / 否 / 否
@@ -160,7 +160,7 @@
 
 - 构建方式：`python scripts/node_catalog.py --write`
 - 路径：`docs/node-catalog.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`6f0ed1944e5307019f70e66a772f6f14d0e1dbab58c887ea780a160b355ae2df`
 - 大小：16784 B（16.4 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -171,7 +171,7 @@
 
 - 构建方式：`pip install -r requirements.txt && pip freeze (see docs/V07_2_DEPENDENCIES.md)`
 - 路径：`requirements.lock`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`ee5a15f7058af12d1a8f27060caed436fd86a7411f8fd1c396ec1bc15a523d15`
 - 大小：1499 B（1.5 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -182,7 +182,7 @@
 
 - 构建方式：`npm install (committed lockfile)`
 - 路径：`frontend/package-lock.json`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`5b6940944e64cf828ebd3fdc005ed19cd86a43edb02b483f3913146fe7784c73`
 - 大小：98798 B（96.5 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -193,7 +193,7 @@
 
 - 构建方式：`(first-party source)`
 - 路径：`desktop/src/runtime-probe.js`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6`
 - 大小：21712 B（21.2 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -204,7 +204,7 @@
 
 - 构建方式：`python scripts/verify_reproducibility.py --repeat 2`
 - 路径：`output/reproducibility.json`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`1e50d806a3d9f7ecca7b4e0e3609a2bfa507a0bb567aba38a409f988992eb0cf`
 - 易变产物：该报告的摘要随每次流水线运行变化（含耗时与日志路径），因此校验时按「存在性」比对，不锁定摘要。
 - 大小：2026 B（2.0 KiB）
@@ -216,7 +216,7 @@
 
 - 构建方式：`(maintained by hand)`
 - 路径：`docs/V07_2_PLUGIN_SPEC.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a`
 - 大小：10003 B（9.8 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -227,7 +227,7 @@
 
 - 构建方式：`(maintained by hand; numbers quoted from output/quality_gate.json)`
 - 路径：`docs/V07_2_RELEASE_REPORT.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`0b84bfa610efcc25f901467c5aaa5b050b1a083b8e8bb4c4327013ad81b1537c`
 - 大小：37630 B（36.7 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -238,7 +238,7 @@
 
 - 构建方式：`(maintained by hand)`
 - 路径：`docs/V07_2_ISSUE_LOG.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`ea0c905bdcdeddd011cfa8a759488bd0fcd88729127dc1dcbb0ef2f3e3584105`
 - 大小：37522 B（36.6 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -249,7 +249,7 @@
 
 - 构建方式：`python scripts/clean_env_check.py`
 - 路径：`docs/V07_2_CLEAN_ENV_TEST.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`e862f3e7f7ea5b9f45a3aac1303ec9f13fb0d422f9760b4fbd67fd876d6831fc`
 - 大小：2449 B（2.4 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
@@ -260,7 +260,7 @@
 
 - 构建方式：`(maintained by hand)`
 - 路径：`docs/V07_2_REAL_DATA_VALIDATION_PLAN.md`
-- 构建 commit：`cdae1b5`
+- 构建 commit：`7ce6678`
 - SHA-256：`226e588b50068abd8bebe004d114b5691e36da48411ce6a476167fc8b32e37fd`
 - 大小：5914 B（5.8 KiB）
 - 构建 / 测试 / 发布：是 / 是 / 否
