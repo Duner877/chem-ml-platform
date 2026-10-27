@@ -240,6 +240,18 @@
         "to": "app/requirements.txt"
       },
       {
+        "from": "../requirements.runtime.txt",
+        "to": "app/requirements.runtime.txt"
+      },
+      {
+        "from": "../requirements.optional.txt",
+        "to": "app/requirements.optional.txt"
+      },
+      {
+        "from": "../requirements.lock",
+        "to": "app/requirements.lock"
+      },
+      {
         "from": "resources/python-runtime",
         "to": "python-runtime",
         "filter": [

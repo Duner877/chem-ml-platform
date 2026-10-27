@@ -621,6 +621,32 @@ def stage_electron_config(log_dir: Path) -> Tuple[str, str, dict]:
         return FAIL, "package.json main must be src/main.js", {}
     if "win" not in config.get("build", {}):
         return FAIL, "electron-builder win target missing", {}
+
+    # Every file the runtime probe reads must be shipped.  The probe resolves
+    # the required dependency set from ``requirements.runtime.txt``; when that
+    # file is absent it falls back to ``requirements.txt``, which is only a
+    # *manifest of groups* (``-r`` includes), not a list of packages.  The
+    # probe then reports "2 declared, 0 satisfied" and, worse, classifies the
+    # environment as OK -- the dependency check silently stops checking
+    # anything.  Shipping the file is the whole fix; this check keeps it
+    # shipped.
+    shipped = set()
+    for entry in config.get("build", {}).get("extraResources", []) or []:
+        target = str(entry.get("to", ""))
+        shipped.add(target.rsplit("/", 1)[-1])
+    required_installer_files = [
+        "requirements.txt",
+        "requirements.runtime.txt",
+        "requirements.optional.txt",
+        "requirements.lock",
+    ]
+    not_shipped = [name for name in required_installer_files if name not in shipped]
+    if not_shipped:
+        return FAIL, (
+            "the installer does not ship the dependency manifests the runtime "
+            f"probe reads: {not_shipped} -- add them to build.extraResources"
+        ), {"missing": not_shipped}
+
     return PASS, "electron shell configured (win/linux/mac targets declared)", {}
 
 
