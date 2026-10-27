@@ -24,7 +24,7 @@ Chem ML Platform v0.7.1 是一个**四层架构**：编辑层（前端）→ 服
                 │ @register_node 注册，execute() 调用
 ┌───────────────▼──────────────────────────────────────────────────────┐
 │  计算层  nodes/ + models/ + simulations/ + databases/                 │
-│  89 个科学节点 │ SMILES/描述符/指纹 │ EHT/LJ-MD │ 本地分子库/材料库     │
+│ 101 个科学节点 │ SMILES/描述符/指纹 │ EHT/LJ-MD │ 本地分子库/材料库     │
 │  ─────────────────────────────────────────────────────────────────   │
 │  统一运行时层（v0.6）                                                  │
 │  foundation/ 基座模型注册表（embed/similarity/predict/describe/catalog）│
@@ -65,7 +65,8 @@ class SavgolNode(ScientificNode):
 - `resolve(type_name)` — 类名 → 类；找不到时尝试别名，再找不到抛 `NodeNotFoundError`。
 - `create(type_name, params)` — 直接实例化。
 - `types()` / `categories()` — 供 `/api/nodes` 与前端面板使用。
-- `discover_package("nodes")` — 递归导入 `nodes/` 下所有模块（内置 89 个节点的入口）。
+- `discover_package("custom_nodes")` — 递归导入 `custom_nodes/` 下所有模块（内置 101 个节点的入口）；
+  `nodes/` 是同源兼容门面，旧命令仍可用。
 - `discover_plugins(directory)` — 导入插件目录下所有 `*.py`（第三方节点入口，读取 `CHEMML_PLUGINS`）。
 
 `nodes/loader.py` 是唯一入口：`load_nodes()` 先 `discover_package` 再 `discover_plugins`，保证幂等。
@@ -153,7 +154,7 @@ run(workflow)
 | 目录 | 职责 | 能否单独测试 |
 | --- | --- | --- |
 | `workflow_engine/` | 引擎原语，不 import `nodes/` | ✅ `pytest tests/test_engine.py` |
-| `nodes/` | 89 个科学节点，按分类分目录 | ✅ `scripts/smoke_nodes.py` |
+| `custom_nodes/` | 101 个科学节点，按设备分组（21 个分组目录） | ✅ `scripts/smoke_nodes.py` |
 | `models/` | 纯计算：SMILES、描述符、指纹、几何、谱学 | ✅ 单元测试 |
 | `simulations/` | EHT、紧束缚、LJ-MD、外部程序封装 | ✅ 单元测试 |
 | `databases/` | 本地分子库与材料库数据 + 加载器 | ✅ |

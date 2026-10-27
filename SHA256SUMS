@@ -1,17 +1,17 @@
 # SHA256SUMS — Chem ML Platform v0.7.4 (Trusted Delivery Release)
-# commit 26677fd · generated 2026-10-27T12:04:26+00:00
+# commit 075e5d4 · generated 2026-10-27T12:25:12+00:00
 # verify:  sha256sum -c SHA256SUMS   (Linux/macOS)   or   certutil -hashfile <file> SHA256 (Windows)
 3c9d294f9baebd5780262bed7d11f62fc0ed088a621154985823453c54bf649a  C:/Users/hanku/Desktop/Chem ML Platform/01-源码/Chem-ML-Platform-v0.7.4.zip
-7b1148dad1b744c59dfb3a21c770925fd42d67b0e8c87872c2502e46baae5582  sbom.json
+bffbbde2c2a1968fa59bcd29271010dae4f3de22578799a7bf4fa74dcb4ba9e3  sbom.json
 bd9fd73979cb8d1a499789b841b96da6a1598b6ee756cd8f3a164b53713cc1b1  output/quality_gate.json
 1186bae982e8f11ad31071fce1c3758d540591c1a36cb0adf6918d77646b0989  output/quality_gate.md
-2a91526f05fe74720f68f9db3fd3a17d5e9835eef0138debda31b975886a191a  docs/THIRD_PARTY_LICENSES.md
+942e09ba8d2bddb812645a716accaf2b4499ca554e01e717c0e379d33b6b05bd  docs/THIRD_PARTY_LICENSES.md
 fe33f0ecb1b5bcfff211be74b825f7db25b10666ff1bd985d58af0b13184192d  docs/PROVENANCE.md
 ceba37b6f4e08b6412517b0615241783361ca451aedc0667260d1fafb0ac95ac  NOTICE
 3658df1be7b08e403dfe8237d03b4c5b6a33be0b2983d242dacf07b329718661  docs/V07_2_SYNTHETIC_BENCHMARK.md
 6f0ed1944e5307019f70e66a772f6f14d0e1dbab58c887ea780a160b355ae2df  docs/node-catalog.md
 ee5a15f7058af12d1a8f27060caed436fd86a7411f8fd1c396ec1bc15a523d15  requirements.lock
-abf8189cc012b05cbb50b5bd1f0878d4e2821b684a3bdfc900ce1a1dc411f483  frontend/package-lock.json
+2c17ac32930e76e760b0ae43ef967f6bc1a66e5fd03cc860d63e35a25e52bf4e  frontend/package-lock.json
 347091c24dcdd022305d905a3339c39001dd57f13838f04630558dac6ce774e6  desktop/src/runtime-probe.js
 1e50d806a3d9f7ecca7b4e0e3609a2bfa507a0bb567aba38a409f988992eb0cf  output/reproducibility.json
 2868c3e7787562c2b8c377d289fa341e6625fd6f4dd1bcd9fd2e9379812afd7a  docs/V07_2_PLUGIN_SPEC.md

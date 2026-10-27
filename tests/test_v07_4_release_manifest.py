@@ -70,19 +70,35 @@ class TestTheManifestDescribesTheReleaseNotTheCheckout:
         Asserted against the real repository rather than a fixture, because
         the property only exists in a checkout: ``core.autocrlf`` rewrites the
         bytes on disk, and the manifest has to ignore that.
+
+        The comparison is made against **git's own** idea of the stored bytes
+        (``git hash-object --path``), not against ``HEAD:<path>``.  The two
+        agree only when the working tree happens to be clean, and a test that
+        fails every time an artefact has just been regenerated says nothing
+        about the manifest -- it just reports that there is work in progress.
+        What has to hold at all times is that the module's clean filter and
+        git's clean filter produce the same bytes for the same file.
         """
         blob = manifest_tool._tracked_bytes(ROOT / "sbom.json")
         if blob is None:
             pytest.skip("sbom.json is not tracked in this checkout")
 
-        committed = subprocess.run(
-            ["git", "cat-file", "-p", "HEAD:sbom.json"],
+        ours = subprocess.run(
+            ["git", "hash-object", "--stdin"],
+            cwd=str(ROOT),
+            input=blob,
+            capture_output=True,
+            timeout=30,
+        )
+        assert ours.returncode == 0
+        git = subprocess.run(
+            ["git", "hash-object", "--path=sbom.json", "sbom.json"],
             cwd=str(ROOT),
             capture_output=True,
             timeout=30,
         )
-        assert committed.returncode == 0
-        assert blob == committed.stdout, (
+        assert git.returncode == 0
+        assert ours.stdout.strip() == git.stdout.strip(), (
             "the digest must describe the bytes the repository stores, not the "
             "bytes this working tree happens to hold"
         )

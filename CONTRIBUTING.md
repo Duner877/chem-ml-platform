@@ -42,8 +42,11 @@ test(engine): 覆盖 DAG 菱形并行执行
 
 ## 提交新节点（最常见的贡献）
 
-1. 节点放 `nodes/<分类>/<节点名>.py`，一个文件一个节点，继承 `ScientificNode`，用 `@register_node` 装饰。
-2. 在 `nodes/<分类>/__init__.py` 中导出，确保 `nodes.load_nodes()` 能发现它。
+1. 节点放 `custom_nodes/<设备分组>/<节点名>.py`，一个文件一个节点，继承 `ScientificNode`，用 `@register_node` 装饰。
+   分组目录就是设备类型（如 `mass_spectrometry/`、`spectroscopy/`、`surface_characterization/`、`seismic/`），
+   新增设备就新建一个分组目录，节点放进去即被发现——不需要改任何注册表或索引。
+2. 在 `custom_nodes/<设备分组>/__init__.py` 中导出，确保 `custom_nodes.loader.load_nodes()` 能发现它。
+   `nodes/` 是兼容门面（旧命令仍可用），**新代码不要往 `nodes/` 里放节点**。
 3. **必须提供冒烟覆盖**：在 `scripts/smoke_nodes.py` 中为该节点补一组合成输入（参考同类节点的写法）。
 4. 节点自检清单：
    - [ ] `execute()` 返回的键与 `output_ports` 完全一致
@@ -73,7 +76,7 @@ python scripts/smoke_nodes.py --filter "<类名>"  # 新节点冒烟通过
 | 改动范围 | 必须通过 |
 | --- | --- |
 | 引擎（`workflow_engine/`） | `pytest tests/test_engine.py` |
-| 节点（`nodes/`、`models/`、`simulations/`） | `pytest tests/test_nodes.py` + `smoke_nodes.py` 全量 |
+| 节点（`custom_nodes/`、`models/`、`simulations/`） | `pytest tests/test_nodes.py` + `smoke_nodes.py` 全量 |
 | 工作流（`workflows/`） | `pytest tests/test_workflows.py` + `run_demo_workflows.py` |
 | 后端（`backend/`） | `pytest tests/`（含 API 测试） |
 | 前端（`frontend/`） | `npm run lint` + `npm run build` |
@@ -85,7 +88,7 @@ python scripts/smoke_nodes.py --filter "<类名>"  # 新节点冒烟通过
 
 1. 标题用 Conventional Commits 格式。
 2. 描述里写清：**做了什么 / 为什么 / 怎么验证的**（贴命令输出）。
-3. PR 必须满足：`pytest` 全绿、`smoke_nodes.py` 77/77、`run_demo_workflows.py` 3/3、前端 `npm run build` 成功。
+3. PR 必须满足：`pytest` 全绿、`smoke_nodes.py` 101/101、`run_demo_workflows.py` 11/11、前端 `npm run build` 成功。
 4. 一个 PR 只做一件事；拆不开的大改动先开 Issue 讨论设计。
 
 ## 科学严谨性

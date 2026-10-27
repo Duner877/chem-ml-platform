@@ -318,6 +318,21 @@ class MyNode(ScientificNode):
 常见类型：`Spectrum` / `Table` / `Image` / `Curve` / `Document` / `Structure` / `Scalar` / `Vector`。
 端口类型不匹配时引擎抛 `NodeInputError`，节点不需要自己检查。
 
+**端口类型不一定是 `ScientificObject` 的子类。** `Survey`（地震采集对象）就是一个 3 维道集数组，
+不是可渲染的科学对象，因此它在 `scripts/smoke_nodes.py` 的类型工厂表里没有通用条目。
+
+冒烟脚本的合成输入按**端口类型**分发：`FACTORY[data_type]` 找不到就回退成 `make_spectrum()`。
+所以新增一个非 `ScientificObject` 的端口类型时，必须同时在 `FACTORY` 里补一个工厂，
+否则节点会收到一个 `Spectrum`，然后报「expects X but received Spectrum」——
+看起来像节点坏了，其实是**夹具错了**。
+
+还有一类更隐蔽的情况：同一个节点的多个端口必须**互相自洽**。
+`SeismicSubmissionNode` 的 `velocity`（Image）要和 `survey` 的网格同形，
+通用工厂给的 64×64 显微图和 survey 的 20×40 网格对不上，
+节点会报 `operands could not be broadcast together`。
+这类节点要用 `SHARED_FIXTURE_NODES` + `NODE_PORT_OVERRIDES`，
+让所有端口从**同一份** fixture 派生，而不是各拿一个独立值。
+
 ### 4.4 能力与溯源声明
 
 节点必须声明（通过类属性或 docstring 标签）：
@@ -430,7 +445,14 @@ python -c "import json,pathlib; from workflow_engine.workflow import Workflow; \
 - NumPy / SciPy / NetworkX / Pydantic 之外请慎重
 - Python 依赖声明在 `requirements.txt`，锁定版本在 `requirements.lock`
 - npm 依赖锁定在 `frontend/package-lock.json` / `desktop/package-lock.json`
-- **锁定文件必须在 git 里**，不要手工改 lockfile
+- **锁定文件必须在 git 里**，不要手工改 lockfile（用 `npm install --package-lock-only` 重新生成）
+
+> **平台专用二进制包不要写成直接依赖。**
+> `@esbuild/win32-x64`、`@rollup/rollup-win32-x64-msvc` 这类包是 esbuild / rollup
+> 自己的 `optionalDependencies`，npm 会按当前平台自动挑选。
+> 把某一个平台变体提为直接依赖，会让 `npm ci` 在**其它平台直接失败**——
+> CI 报的是 `EBADPLATFORM: Unsupported platform for @esbuild/win32-x64`。
+> 需要加平台包时，用 `optionalDependencies` 而不是 `dependencies` / `devDependencies`。
 
 ### 6.5 错误处理
 
@@ -654,11 +676,10 @@ cd desktop && npm run build             # 安装包（NSIS）
 
 | 项 | 现状 | 影响 |
 | --- | --- | --- |
-| `smoke_nodes.py` | **98/101** 通过。3 个地震节点（`FWIInversionNode` / `SeismicForwardNode` / `SeismicSubmissionNode`）因 `survey` 端口期望 `Survey` 而收到 `Spectrum` 失败 | 地震反演链路需要修端口类型或冒烟输入 |
-| `CONTRIBUTING.md` | 仍写「节点放 `nodes/<分类>/`」「smoke 77/77」，与现状（`custom_nodes/` 分组、98/101）不符 | **文档滞后于代码，需同步** |
 | 桌面已安装程序 | `Chem ML Platform/` 是 commit `01e9665` 构建的副本，**不含本次署名统一与 CI 修复** | 需要重新构建安装包才能同步 |
 | `desktop/dist/` | 已清空（`win-unpacked` 与旧安装包均已移除/归档） | 需 `npm run build` 重建 |
 | 冒烟测试覆盖 | 新增节点时**必须**补 `scripts/smoke_nodes.py` 覆盖，否则门禁不会发现 | 纪律问题，靠 review 保证 |
+| npm audit | `npm install` 报 3 个漏洞（2 moderate / 1 high），来自前端依赖树 | 未处理。升级需评估 React 18 / Vite 5 的兼容性 |
 
 ---
 

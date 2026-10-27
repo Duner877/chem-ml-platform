@@ -45,7 +45,7 @@
 | @babel/template | 7.29.7 | MIT | False | True |
 | @babel/traverse | 7.29.10 | MIT | False | True |
 | @babel/types | 7.29.8 | MIT | False | True |
-| @esbuild/win32-x64 | 0.21.5 | MIT | True | True |
+| @esbuild/win32-x64 | 0.21.5 | MIT | False | True |
 | @jridgewell/gen-mapping | 0.3.13 | MIT | False | True |
 | @jridgewell/remapping | 2.3.5 | MIT | False | True |
 | @jridgewell/resolve-uri | 3.1.2 | MIT | False | True |
@@ -55,7 +55,7 @@
 | @nodelib/fs.stat | 2.0.5 | MIT | False | True |
 | @nodelib/fs.walk | 1.2.8 | MIT | False | True |
 | @rolldown/pluginutils | 1.0.0-beta.27 | MIT | False | True |
-| @rollup/rollup-win32-x64-msvc | 4.64.5 | MIT | True | True |
+| @rollup/rollup-win32-x64-msvc | 4.64.5 | MIT | False | True |
 | @types/babel__core | 7.20.5 | MIT | False | True |
 | @types/babel__generator | 7.27.0 | MIT | False | True |
 | @types/babel__template | 7.4.4 | MIT | False | True |

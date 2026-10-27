@@ -187,7 +187,7 @@ PY
 
 ```bash
 pytest tests/test_nodes.py -q
-python scripts/smoke_nodes.py --quiet        # 必须 77+/77+
+python scripts/smoke_nodes.py --quiet        # 必须全绿（当前 101/101）
 ```
 
 ## 10. 节点自检清单

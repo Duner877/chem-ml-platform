@@ -202,6 +202,98 @@ def make_reaction() -> Reaction:
     )
 
 
+#: The synthetic seismic fixture, built once and shared.  ``make_survey``
+#: hands out the survey itself; the truth section and the source signature
+#: come from the *same* acquisition, so they have to come from the same call.
+_SEISMIC_FIXTURE: Dict[str, Any] = {}
+
+
+def _seismic_fixture() -> Dict[str, Any]:
+    """The synthetic seismic benchmark: survey, truth section and wavelet.
+
+    Built once per process and cached: the benchmark runs a forward solver,
+    and the submission node needs the survey, the truth section and the
+    signature to describe one and the same acquisition.
+    """
+    if not _SEISMIC_FIXTURE:
+        from simulations.fwi_submission import synthetic_benchmark
+
+        survey, truth, wavelet = synthetic_benchmark(
+            n_depth=20,
+            n_lateral=40,
+            dx=20.0,
+            dt=0.002,
+            nt=300,
+            n_shots=3,
+            n_receivers=12,
+        )
+        _SEISMIC_FIXTURE.update(
+            {"survey": survey, "truth": truth, "wavelet": wavelet}
+        )
+    return _SEISMIC_FIXTURE
+
+
+def make_survey() -> Any:
+    """A small synthetic 2-D acoustic survey.
+
+    A ``Survey`` is deliberately *not* a ``ScientificObject`` (it is a 3-D
+    array of traces), so it has no factory in the type table below and the
+    generic path used to hand a ``Spectrum`` to the seismic nodes.  The
+    engine's type check then rejected the node with "expects Survey but
+    received Spectrum" -- the node was fine, the *fixture* was wrong.
+
+    The size is deliberately tiny: the smoke test checks that a node can be
+    driven to completion, not that the inversion is good.  At this size the
+    whole forward/inversion chain runs in about a second.
+    """
+    return _seismic_fixture()["survey"]
+
+
+def make_velocity_image(survey: Any = None) -> Image:
+    """A velocity section shaped like ``survey``'s grid.
+
+    The submission node compares the incoming velocity grid with the survey
+    grid, so the two have to come from the *same* acquisition -- a generic
+    greyscale micrograph of the wrong shape is not a velocity model.  The
+    physical range travels in the metadata, exactly as the seismic family
+    stores it, so the node can un-normalise it.
+    """
+    if survey is None:
+        survey = make_survey()
+    grid = np.asarray(survey.velocity, dtype=float)
+    lo, hi = float(grid.min()), float(grid.max())
+    image = Image.from_array(grid, pixel_size=float(survey.dx), pixel_unit="m",
+                              name="velocity model")
+    image.metadata["velocity_min"] = lo
+    image.metadata["velocity_max"] = hi
+    return image
+
+
+def make_wavelet_spectrum(survey: Any = None) -> Spectrum:
+    """The estimated source signature, as a spectrum over time."""
+    if survey is None:
+        survey = make_survey()
+    nt = int(survey.nt)
+    x = np.arange(nt) * float(survey.dt)
+    y = np.zeros(nt)
+    y[0] = 1.0
+    spectrum = Spectrum.from_arrays(
+        x, y, mode="Seismic", x_unit="s", y_unit="amplitude", name="source wavelet"
+    )
+    return spectrum
+
+
+def make_truth_image(survey: Any = None) -> Image:
+    """The synthetic truth section, shaped like ``survey``'s grid."""
+    fixture = _seismic_fixture()
+    grid = np.asarray(fixture["truth"], dtype=float)
+    if survey is None:
+        survey = fixture["survey"]
+    image = Image.from_array(grid, pixel_size=float(survey.dx), pixel_unit="m",
+                              name="truth section")
+    return image
+
+
 FACTORY: Dict[str, Any] = {
     "Spectrum": make_spectrum,
     "Molecule": make_molecule,
@@ -212,6 +304,9 @@ FACTORY: Dict[str, Any] = {
     "ScientificReport": make_report,
     "SpectralMatch": make_match,
     "Reaction": make_reaction,
+    # A survey is not a ScientificObject, but it is still a port type that a
+    # node can demand, so it needs a fixture of its own.
+    "Survey": make_survey,
 }
 
 #: Port *names* whose content is semantic rather than type driven.  A port
@@ -236,6 +331,20 @@ PORT_OVERRIDES: Dict[str, str] = {
 NODE_PORT_OVERRIDES: Dict[str, Dict[str, str]] = {
     "UnknownCompoundIdentificationNode": {"candidates": "library"},
     "MaterialDiscoveryNode": {"candidates": "material_table"},
+    # The submission node's three seismic inputs all describe *one*
+    # acquisition, so they are served from one shared fixture rather than
+    # from three independent ones.
+    "SeismicSubmissionNode": {
+        "velocity": "velocity_image",
+        "wavelet": "wavelet_spectrum",
+        "truth": "truth_image",
+    },
+}
+
+#: Nodes whose input ports must be mutually consistent, so they are served
+#: from a single shared fixture instead of one value per port.
+SHARED_FIXTURE_NODES = {
+    "SeismicSubmissionNode",
 }
 
 #: Material-facing ports take a material candidate table; molecule facing ports
@@ -320,6 +429,14 @@ def build_inputs(node_cls, type_name: str = "") -> Dict[str, Any]:
     """Create synthetic inputs for every input port of ``node_cls``."""
     node_overrides = NODE_PORT_OVERRIDES.get(type_name, {})
     inputs: Dict[str, Any] = {}
+
+    # A node whose ports have to agree with *each other* (the seismic
+    # submission node compares its velocity grid with the survey grid) needs
+    # one shared fixture rather than one independent value per port.  The
+    # builder below is asked for the shared object first.
+    shared: Dict[str, Any] = {}
+    if type_name in SHARED_FIXTURE_NODES:
+        shared["survey"] = make_survey()
     for port in node_cls.input_ports:
         name = port.name
         key = node_overrides.get(name) or PORT_OVERRIDES.get(name.lower())
@@ -328,8 +445,14 @@ def build_inputs(node_cls, type_name: str = "") -> Dict[str, Any]:
                 "library": make_library,
                 "training_set": make_training_set,
                 "material_table": make_material_table,
+                "velocity_image": lambda: make_velocity_image(shared.get("survey")),
+                "wavelet_spectrum": lambda: make_wavelet_spectrum(shared.get("survey")),
+                "truth_image": lambda: make_truth_image(shared.get("survey")),
             }[key]
             inputs[name] = [factory()] if port.multi else factory()
+            continue
+        if name == "survey" and "survey" in shared:
+            inputs[name] = shared["survey"]
             continue
         value = synthetic_value(port.data_type, name)
         inputs[name] = [value] if port.multi else value
