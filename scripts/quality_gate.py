@@ -624,6 +624,40 @@ def stage_electron_config(log_dir: Path) -> Tuple[str, str, dict]:
     return PASS, "electron shell configured (win/linux/mac targets declared)", {}
 
 
+def stage_desktop_syntax(log_dir: Path) -> Tuple[str, str, dict]:
+    """Parse the Electron main-process scripts before anything ships them.
+
+    A syntax error in ``desktop/src/main.js`` is invisible to every other
+    stage: the TypeScript linter only looks at ``frontend/``, electron-builder
+    copies the script into the package without parsing it, and the installer
+    then launches a main process that dies before ``app.whenReady()``.  The
+    symptom is an application that installs cleanly, shows no window, and
+    writes no log at all -- which is exactly the failure this stage exists to
+    prevent.
+
+    The check is a *parse*, not a run: ``node --check`` reports the syntax
+    error without executing anything, so no side effects are possible.
+    """
+    desktop = ROOT / "desktop"
+    scripts = sorted((desktop / "src").glob("*.js"))
+    if not scripts:
+        return SKIP, "no desktop/src scripts to check", {}
+
+    node = shutil.which("node") or shutil.which("node.exe")
+    if not node:
+        return SKIP, "node not available on this host", {}
+
+    for script in scripts:
+        status, code, detail = _run(
+            f"desktop_syntax_{script.name}", [node, "--check", str(script)],
+            cwd=desktop, timeout=60, log_dir=log_dir,
+        )
+        if status != PASS:
+            rel = script.relative_to(ROOT).as_posix()
+            return FAIL, f"{rel}: {detail}", {"exit_code": code, "file": rel}
+    return PASS, f"{len(scripts)} desktop scripts parse cleanly", {"files": len(scripts)}
+
+
 def _extract_json(text: str) -> Optional[str]:
     """Return the first complete top-level JSON object in ``text``, else ``None``.
 
@@ -1033,6 +1067,7 @@ def build_suite(fast: bool) -> List[Tuple[str, str, Callable[[Path], Tuple[str, 
         ("frontend_typescript", "build", stage_frontend_tsc, 600),
         ("frontend_production_build", "build", stage_frontend_build, 900),
         ("electron_build_config", "build", stage_electron_config, 120),
+        ("desktop_main_process_syntax", "build", stage_desktop_syntax, 120),
         ("desktop_runtime_probe", "desktop", stage_desktop_probe, 180),
         ("electron_installer_artefact", "build", stage_electron_installer, 60),
         ("version_consistency", "compliance", stage_version, 120),

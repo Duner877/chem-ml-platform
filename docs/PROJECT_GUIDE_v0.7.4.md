@@ -42,7 +42,7 @@
 - **全运行溯源**：每次运行产出 `provenance.json`，记录节点级溯源与资源快照
 - **受控外部程序执行**（`simulations/controlled.py`）：白名单 + 显式 argv + 超时/并发限制
 - **Electron 桌面外壳**（`desktop/`）：Windows 安装包 + 自动更新入口
-- **质量门禁**（`scripts/quality_gate.py`）：27 个阶段，每阶段独立退出码与日志证据
+- **质量门禁**（`scripts/quality_gate.py`）：28 个阶段，每阶段独立退出码与日志证据
 
 ### 一句话描述
 
@@ -538,7 +538,7 @@ python scripts/quality_gate.py --fast    # 跳过前端构建与安装包构建
 python scripts/quality_gate.py           # 全量
 ```
 
-**27 个阶段**，每个阶段独立退出码、独立日志、独立证据：
+**28 个阶段**，每个阶段独立退出码、独立日志、独立证据：
 
 | 阶段组 | 阶段 |
 | --- | --- |
@@ -547,7 +547,7 @@ python scripts/quality_gate.py           # 全量
 | integration | integration_tests · demo_workflows_dry_run · reproducibility_verification |
 | security | security_tests |
 | benchmark | benchmark_tests · synthetic_benchmark |
-| build | frontend_typescript · frontend_production_build · electron_build_config · electron_installer_artefact |
+| build | frontend_typescript · frontend_production_build · electron_build_config · desktop_main_process_syntax · electron_installer_artefact |
 | desktop | desktop_runtime_probe · desktop_tests |
 | compliance | version_consistency · release_manifest · dependency_licenses · license_sbom_report · release_cleanliness |
 | environment | host_dependent_tests · host_gpu_status |
@@ -662,6 +662,53 @@ assert ours.stdout == git.stdout
 
 > **通用教训**：当一条测试「只在特定状态下通过」时，先问它是不是把状态当成了性质。
 > 换一种与状态无关的比法，往往既能测到真正的东西，又不会在正常工作中假报警。
+
+---
+
+### 7.8 Electron 主进程必须先过语法检查
+
+**这条是 0.7.4 实际踩过的坑，写在最前面。**
+
+0.7.4 的首个安装包带着一个语法错误发布出去：
+`desktop/src/main.js` 第 771 行多了一个右括号。
+
+```js
+// 错误
+return { canceled: false, path: chosen, name: path.basename(chosen) });
+// 正确
+return { canceled: false, path: chosen, name: path.basename(chosen) };
+```
+
+它的伪装能力极强，因为**流水线里没有任何一个环节会检查它**：
+
+| 环节 | 做了什么 | 为什么没抓到 |
+| --- | --- | --- |
+| `npm run lint` | TypeScript 检查 | 只看 `frontend/`，不看 `desktop/src/` |
+| `electron-builder` | 打包 | **原样复制脚本，不解析** |
+| NSIS 安装器 | 安装 | 只是复制文件，不执行 |
+| CI 全绿 | 10 个 job 全 success | 上面每一环都没解析过它 |
+
+最终症状是一个**装得上、但打不开**的程序：主进程活着（GPU 进程、网络服务进程都起来了），
+但**没有渲染器进程、没有窗口、`backend.log` 里一条记录都没有**——
+因为模块在加载阶段就抛了，`app.whenReady()` 根本没机会执行。
+
+> 排障的关键信号是「**进程在、窗口没有、日志空白**」。
+> 这三条同时出现，先怀疑主进程脚本本身，而不是去查后端、端口、依赖。
+
+**现在的防线**（0.7.4 补上）：
+
+1. 门禁新增阶段 `desktop_main_process_syntax`，用 `node --check` 逐个解析
+   `desktop/src/*.js`。`node --check` 只解析不执行，没有副作用。
+2. 新增回归测试 `tests/test_v07_4_desktop_syntax.py`（5 条，desktop 分类）：
+   - 交付的脚本必须都能解析；
+   - `package.json` 的 `main` 指向的文件必须能解析；
+   - **门禁阶段必须能抓到坏脚本**——在临时目录里放一个故意写坏的文件，
+     断言阶段返回 `FAIL`。没有这一条，门禁阶段就只是一枚橡皮章。
+3. 阶段找不到 `node` 时返回 `SKIP` 并说明原因，不静默通过。
+
+> **通用教训**：一个检查若从未在「坏」的状态下被证明过，就不能算检查。
+> 加门禁阶段时，一定要同时写一条「它能失败」的测试。
+> 同理，一条流水线能产出产物，不等于它验证过产物——**打包器不解析代码**。
 
 ---
 
@@ -821,6 +868,50 @@ npm ci                                   # 或 npm install
 npm run build                            # 产出 dist/Chem ML Platform Setup <版本>.exe
 ```
 
+> **先提交再构建**。`BUILD_INFO.json` 记录构建时的 commit 与 `dirty` 标记，
+> 改动未提交时 `dirty: true`，这个安装包就无法对应到任何一个确切版本。
+
+---
+
+### 装不上 / 装上了打不开
+
+**装不上**（NSIS 报错、装完还是旧版、提示文件被占用）：
+
+```powershell
+# 1. 旧版进程还在跑，它锁着 exe，装到同一路径必然失败
+Get-Process | Where-Object { $_.ProcessName -like "*Chem*" } | Stop-Process -Force
+
+# 2. 走正规卸载，清掉注册表里的旧安装记录（手动删文件夹是不够的）
+& "<旧安装目录>\Uninstall Chem ML Platform.exe" /S
+
+# 3. 确认注册表已无残留
+Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |
+  Where-Object { $_.DisplayName -like "*Chem*" }
+
+# 4. 再装新的
+& "<新安装包路径>" /S
+```
+
+> **为什么必须走卸载器**：只删文件夹会留下注册表里的旧安装记录，
+> electron-builder 的 NSIS 会因此判定为「升级」，把新版装到**旧路径**并尝试覆盖——
+> 而旧路径的文件可能正被进程占用。
+
+**装上了但打不开**（进程在、没有窗口、日志空白）：
+
+```powershell
+# 1. 主进程脚本语法错误是首要怀疑对象
+node --check desktop/src/main.js
+
+# 2. 看日志有没有内容
+Get-Content "$env:APPDATA\Chem ML Platform\logs\backend.log" -Tail 20
+```
+
+| 现象 | 判断 |
+| --- | --- |
+| 进程在、无窗口、日志空白 | 主进程脚本加载失败 → `node --check` |
+| 有窗口、日志有记录、后端未起 | Python 运行时 → 看日志里的 `runtime probe:` |
+| 日志有记录、端口被占 | 端口冲突 → 结束占用进程或换端口 |
+
 ---
 
 ## 附：关键约定速查卡
@@ -842,6 +933,9 @@ npm run build                            # 产出 dist/Chem ML Platform Setup <�
 测试副作用      不得写入仓库真实产物
 门禁状态        PASS/FAIL/TIMEOUT/SKIP/ERROR，TIMEOUT 永远失败
 CI 与本地       必须跑同一份 quality_gate.py
+桌面主进程      改动后必须过 node --check（门禁阶段 desktop_main_process_syntax）
+安装顺序        停进程 -> 走卸载器 -> 再装；手动删文件夹会留下注册表残留
+打包顺序        先提交再构建，否则 BUILD_INFO 的 dirty 为 true
 ```
 
 ---

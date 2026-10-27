@@ -46,6 +46,7 @@ SUITE_BY_STEM: Dict[str, str] = {
     "test_v07_2_node_known_answers": "benchmark",
     # -- desktop: Electron shell, runtime probe, installer wiring -------------
     "test_v07_2_desktop_runtime": "desktop",
+    "test_v07_4_desktop_syntax": "desktop",
     # -- integration: multi-module behaviour through the real engine/API ------
     "test_engine": "integration",
     "test_workflows": "integration",

@@ -768,7 +768,7 @@ ipcMain.handle("pick-file", async (_event, options = {}) => {
   }
   const chosen = result.filePaths[0];
   logLine(`pick-file: ${chosen}`);
-  return { canceled: false, path: chosen, name: path.basename(chosen) });
+  return { canceled: false, path: chosen, name: path.basename(chosen) };
 });
 
 /**
