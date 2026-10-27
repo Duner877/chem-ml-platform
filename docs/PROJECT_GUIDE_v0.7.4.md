@@ -239,6 +239,50 @@ raise PlatformError(
 
 ---
 
+### 3.5 桌面端的 Python 运行时解析
+
+桌面端**不捆绑 Python 解释器**（这是 v0.7.2 的设计决定，理由见
+`desktop/resources/python-runtime/README.md`），改为在目标机上探测。
+
+**解析顺序**（`desktop/src/runtime-probe.js::resolvePythonCandidates()`）：
+
+1. `CHEMML_PYTHON` 环境变量——运维/用户显式指定
+2. `resources/python-runtime/python.exe`（捆绑运行时，当前刻意为空）
+3. `app/.venv/Scripts/python.exe`（随应用交付的虚拟环境）
+4. `.venv/`（应用根下的虚拟环境）
+5. `python` / `python3`（PATH）——**最后才尝试**
+
+> **第 5 项排在最后是有意的**：开发者机器上的全局解释器不得被静默
+> 当作已声明的运行时。
+
+**探测读哪个依赖清单**，同样有优先级：
+
+```
+requirements.runtime.txt  ->  requirements.lock  ->  requirements.txt
+```
+
+第一个是**真正的必需依赖集合**（fastapi / uvicorn / pydantic /
+python-multipart / numpy / scipy / networkx / matplotlib / python-docx）。
+`requirements.txt` 只是「清单的清单」（三行 `-r` 引用），**不是包列表**。
+
+> **安装包必须带上它们**。0.7.4 的第一个安装包只带了 `requirements.txt`，
+> 探测因此把它当成两条依赖解析，报出 `satisfied=0/2`，
+> **并且把环境分类为 `ok`——依赖校验静默地不再校验任何东西**。
+> 「声明要校验什么」这个声明本身，必须随软件一起交付。
+> 门禁的 `electron_build_config` 阶段现在会检查这件事。
+
+**多解释器环境下的注意事项**：PATH 上可能同时存在多个 Python，
+探测按 PATH 顺序取第一个——**不保证它装了依赖**。
+本机 `C:\Users\hanku\.workbuddy\binaries\python\...` 排在
+`D:\python 3.13.6` 前面，但前者没有 uvicorn。
+因此桌面的 `Chem ML Platform 启动.cmd` 显式设置
+`CHEMML_PYTHON=D:\python 3.13.6\python.exe`。运行时迁移时改这一行。
+
+> 探测修好之前，「选错解释器」会被静默放过；
+> 修好之后它会明确报 `dependencies_missing` 并给出指引——**这才是探测应有的行为**。
+
+---
+
 ## 4. 节点系统规范
 
 ### 4.1 目录组织（ComfyUI 模式）
