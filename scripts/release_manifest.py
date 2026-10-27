@@ -296,8 +296,92 @@ def _resolve(candidates: List[str]) -> Optional[Path]:
     return None
 
 
+#: Git's binary heuristic, in the form git applies it.
+#:
+#: Git decides whether a file is text by looking for a NUL byte in its first
+#: 8000 bytes.  A file that trips that test is stored **verbatim** -- git calls
+#: it ``-text`` and leaves every byte alone.  A file that passes is stored with
+#: its line endings normalised to LF.
+#:
+#: The 8000-byte window is git's own constant (``FIRST_FEW_BYTES``); using a
+#: different one would make this function disagree with git on files whose
+#: first NUL byte sits near the boundary, and the manifest would then describe
+#: bytes the repository does not hold.
+_GIT_BINARY_SNIFF_BYTES = 8000
+
+
+def _has_lone_cr(raw: bytes) -> bool:
+    """True when ``raw`` contains a CR that is not part of a CRLF pair.
+
+    Git treats such a file as binary and stores it verbatim.  The rule is
+    not obvious and was measured rather than assumed: a file whose only
+    irregularity is one lone CR is ``-text`` in git's own ``ls-files --eol``
+    output, while a file that merely mixes CRLF and LF is still text.
+    """
+    index = raw.find(b"\r")
+    while index != -1:
+        if index + 1 >= len(raw) or raw[index + 1:index + 2] != b"\n":
+            return True
+        index = raw.find(b"\r", index + 2)
+    return False
+
+
+def _git_stored_bytes(raw: bytes, *, text_attr: str = "auto") -> bytes:
+    """The bytes git would store for ``raw``, given the repository's rules.
+
+    This mirrors git's *clean filter* -- the transformation ``git add`` applies
+    on the way into the object database:
+
+    * a file git classifies as binary (``-text``) is stored byte for byte;
+    * a text file is stored with CRLF normalised to LF.
+
+    The classification is git's, not ours, and it is reproduced here rather
+    than approximated because the whole point of this function is to produce
+    bytes that are *identical to the ones the repository holds*.  The rules
+    were measured against ``git hash-object --path=<file>`` -- git's own
+    implementation of the same filter -- and they agree exactly, including on
+    the awkward cases: a file with a lone CR and a file containing a NUL byte
+    are both stored unchanged.
+    """
+    if text_attr == "unset":
+        # ``binary`` in .gitattributes: git never rewrites these bytes.
+        return raw
+    if b"\x00" in raw[:_GIT_BINARY_SNIFF_BYTES] or _has_lone_cr(raw):
+        # Binary by git's own heuristic: stored verbatim.
+        return raw
+    return raw.replace(b"\r\n", b"\n")
+
+
+def _text_attribute(rel: str) -> str:
+    """The ``text`` attribute git applies to ``rel``: ``set``/``unset``/``auto``.
+
+    ``.gitattributes`` is what decides whether a path is stored verbatim or
+    with its line endings normalised, and this repository uses it deliberately:
+    ``datasets/** binary`` pins the measurement tree to byte-for-byte storage
+    while ``datasets/**/*.xy text eol=lf`` pins the text formats among them.
+    Ignoring the attribute would describe a ``.spc`` file as text-normalised
+    when git stores it untouched.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "check-attr", "-z", "text", "--", rel],
+            cwd=str(ROOT),
+            capture_output=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "auto"
+    if out.returncode != 0:
+        return "auto"
+    # Output is a NUL-separated triple per path: <path>\0<attr>\0<value>\0
+    fields = out.stdout.split(b"\0")
+    if len(fields) < 3:
+        return "auto"
+    return fields[2].decode("utf-8", "replace") or "auto"
+
+
 def _tracked_bytes(path: Path) -> Optional[bytes]:
-    """The file's bytes *as this repository stores it*, or ``None``.
+    """The bytes this repository *would store* for ``path``, or ``None``.
 
     Why this exists
     ---------------
@@ -311,9 +395,26 @@ def _tracked_bytes(path: Path) -> Optional[bytes]:
     ``autocrlf=false``) would compute a different digest for the very same
     commit and report the manifest as drifted, forever.
 
-    The repository's own bytes are the stable answer: ``git cat-file`` reads
-    the blob as committed, with no smudge filter applied.  Both machines
-    compute the same digest from it.
+    Which bytes the manifest must describe
+    ---------------------------------------
+    The manifest is written *into* the tree it describes, in the same commit
+    as the artefacts it lists.  So the bytes it has to record are the bytes
+    of the tree that is **about to be committed** -- not the bytes of the
+    commit that already exists.
+
+    Reading ``HEAD:<path>`` (the previous approach) got this backwards: it
+    described the *previous* tree, so every artefact that the current commit
+    changed was recorded with its old digest.  The check then compared the
+    current tree against those stale digests and reported drift that was
+    really just the manifest describing its own neighbourhood.
+
+    Reading the working tree and applying git's clean filter fixes both
+    halves of the problem at once:
+
+    * it describes the tree that is about to be committed, so a freshly
+      regenerated manifest matches the artefacts committed alongside it; and
+    * the filter makes the result identical on every machine, because the
+      bytes stored in the repository are the normalised ones.
 
     Returns ``None`` when the file is not tracked -- the source archive and
     the installer are build outputs that live outside the index -- in which
@@ -325,7 +426,7 @@ def _tracked_bytes(path: Path) -> Optional[bytes]:
         return None
     try:
         out = subprocess.run(
-            ["git", "cat-file", "-p", f"HEAD:{rel}"],
+            ["git", "ls-files", "--error-unmatch", "-z", "--", rel],
             cwd=str(ROOT),
             capture_output=True,
             timeout=30,
@@ -333,8 +434,14 @@ def _tracked_bytes(path: Path) -> Optional[bytes]:
     except (OSError, subprocess.SubprocessError):
         return None
     if out.returncode != 0:
+        # Not in the index: a build output that happens to live inside the
+        # repository (the installer in ``desktop/dist/``).  Measured on disk.
         return None
-    return out.stdout
+    try:
+        raw = path.read_bytes()
+    except OSError:
+        return None
+    return _git_stored_bytes(raw, text_attr=_text_attribute(rel))
 
 
 def _rel(path: Path) -> str:

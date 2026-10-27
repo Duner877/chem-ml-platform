@@ -150,9 +150,26 @@ class TestAbacusExternalPathDeliversData(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.bindir = Path(tempfile.mkdtemp(prefix="abacus_fakebin_"))
         (cls.bindir / "body.py").write_text(_FAKE_BODY, encoding="utf-8")
-        (cls.bindir / "abacus.cmd").write_text(
-            f'@echo off\r\n"{sys.executable}" "%~dp0body.py" %*\r\n', encoding="utf-8"
-        )
+        if os.name == "nt":
+            # Windows: ``shutil.which`` honours PATHEXT, so the launcher has to
+            # carry an extension -- and ``abacus.cmd`` is also what the
+            # official ABACUS Windows installer emits.
+            (cls.bindir / "abacus.cmd").write_text(
+                f'@echo off\r\n"{sys.executable}" "%~dp0body.py" %*\r\n', encoding="utf-8"
+            )
+        else:
+            # POSIX: there is no PATHEXT, so ``which`` looks for a file named
+            # exactly ``abacus`` and requires the executable bit.  Without this
+            # launcher the external backend is not discoverable at all, the
+            # engine silently falls back to the internal one, and every test
+            # in this class fails on a Linux runner while passing on Windows --
+            # which is how a Windows-only assumption reaches CI unnoticed.
+            launcher = cls.bindir / "abacus"
+            launcher.write_text(
+                f'#!/bin/sh\nexec "{sys.executable}" "{cls.bindir / "body.py"}" "$@"\n',
+                encoding="utf-8",
+            )
+            launcher.chmod(0o755)
         cls._old_path = os.environ.get("PATH", "")
         os.environ["PATH"] = f"{cls.bindir}{os.pathsep}{cls._old_path}"
 
@@ -186,10 +203,23 @@ class TestAbacusExternalPathDeliversData(unittest.TestCase):
         )
 
     def test_fake_executable_is_discoverable(self) -> None:
-        """Windows note: an extensionless file is invisible to ``which``."""
+        """The launcher must be findable by the tool that has to find it.
+
+        On Windows that means ``abacus.cmd`` (PATHEXT), on POSIX it means an
+        extensionless ``abacus`` with the executable bit.  Both are created in
+        ``setUpClass``, so a platform that ships neither fails here with a
+        clear message instead of failing six unrelated tests downstream.
+        """
         import shutil
 
-        self.assertIsNotNone(shutil.which("abacus"))
+        found = shutil.which("abacus")
+        self.assertIsNotNone(
+            found,
+            "the fake ABACUS launcher is not on PATH -- the external backend "
+            "cannot be discovered and the tests below would silently exercise "
+            "the internal engine instead",
+        )
+        self.assertTrue(os.access(found, os.X_OK))
 
     def test_bands_run_populates_the_spectrum_port(self) -> None:
         result = self._run("bands")

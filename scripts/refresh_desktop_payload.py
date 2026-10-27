@@ -294,8 +294,29 @@ def _candidate_install_dirs() -> list[Path]:
     here = ROOT.parent
     seen: dict[str, Path] = {}
 
+    def is_dir(path: Path) -> bool:
+        """Whether ``path`` is a directory we are allowed to look at.
+
+        ``Path.is_dir()`` answers "no" for a path that does not exist, but it
+        *raises* ``PermissionError`` for a path that exists and cannot be
+        entered -- and the difference matters here.  The candidate scan walks
+        every ancestor of the repository, and on a CI runner one of those
+        ancestors (``/home/packer``) belongs to another user.  A scan that
+        crashes on an unreadable neighbour reports nothing at all, which is
+        the opposite of what a verification tool is for.
+
+        An unreadable directory is therefore treated the same way as a
+        missing one: not a candidate.  It cannot be launched from, so it is
+        not a candidate, and failing to *see* it is not the same as failing
+        to *check* it.
+        """
+        try:
+            return path.is_dir()
+        except OSError:
+            return False
+
     def offer(path: Path) -> None:
-        if not path.is_dir():
+        if not is_dir(path):
             return
         lowered = str(path).lower()
         if any(marker in lowered for marker in _BACKUP_MARKERS):
@@ -339,11 +360,11 @@ def _candidate_install_dirs() -> list[Path]:
         for child in sorted(base.glob("*")):
             offer(child / "desktop" / "dist" / "win-unpacked" / "resources" / "app")
             # A plain unpacked install (what the NSIS installer writes).
-            if child.is_dir():
+            if is_dir(child):
                 offer(child / "resources" / "app")
         # One level deeper, so ``Desktop/0.5/Chem ML Platform/`` is reachable.
         for child in sorted(base.glob("*/*")):
-            if child.is_dir():
+            if is_dir(child):
                 offer(child / "resources" / "app")
     # The repo's own build output is always in the list -- whether or not it
     # has been built yet.
